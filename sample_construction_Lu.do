@@ -4,7 +4,7 @@
 
 ********************************************************************************
 
-* 1. Introduce monetary policy shocks
+* 1. Monetary policy shocks
 
 * brw: US monetary policy surprise, 1994-2021
 cd "D:\Project E\monetary policy\brw"
@@ -38,6 +38,54 @@ save lsap_91_19,replace
 
 ********************************************************************************
 
+* 2. Exchange rates
+
+* Construct exchange rate from PWT10.0
+cd "D:\Project C\PWT10.0"
+use PWT100,clear
+keep if year>=1999 & year<=2019 
+keep countrycode country currency_unit year xr pl_c rgdpna
+merge n:1 countrycode country currency_unit using pwt_country_name,nogen
+merge n:1 countrycode year using "D:\Project C\IMF CPI\CPI_99_19_code",nogen
+drop if xr==.
+* Bilateral nominal exchange rate relative to RMB at the same year
+gen NER=8.27825/xr if year==1999
+forv i=2000/2019{
+	global xr_CN_`i'=xr[`i'-1305]
+	replace NER=${xr_CN_`i'}/xr if year==`i'
+}
+label var NER "Nominal exchange rate in terms of RMB at the same year"
+* Bilateral real exchange rate = NER*foreign CPI/Chinese CPI
+gen RER=NER*cpi/80.69 if year==1999
+forv i=2000/2019{
+	global cpi_CN_`i'=cpi[`i'-1305]
+	replace RER=NER*cpi/${cpi_CN_`i'} if year==`i'
+}
+label var RER "Real exchange rate to China price at the same year"
+sort coun_aim year
+by coun_aim: gen dlnNER= ln(NER)-ln(NER[_n-1]) if year==year[_n-1]+1
+by coun_aim: gen dlnRER= ln(RER)-ln(RER[_n-1]) if year==year[_n-1]+1
+by coun_aim: gen dlnrgdp=ln(rgdpna)-ln(rgdpna[_n-1]) if year==year[_n-1]+1
+by coun_aim: gen inflation=ln(cpi)-ln(cpi[_n-1]) if year==year[_n-1]+1
+* Flag countries pegged to the US dollar
+gen peg_USD=1 if countrycode=="ABW" | countrycode=="BHS" | countrycode=="PAN" | countrycode=="BHR"  | countrycode=="BRB" | countrycode=="BLZ" | countrycode=="BMU" | currency_unit =="East Caribbean Dollar" | currency_unit =="Netherlands Antillian Guilder"| currency_unit =="US Dollar" | countrycode=="DJI" | countrycode=="HKG" | countrycode=="JOR" | countrycode=="LBN" | countrycode=="MAC" | countrycode=="MDV" | countrycode=="OMN" | countrycode=="PAN" | countrycode=="QAT" | countrycode=="SAU" | countrycode=="ARE" | xr==1
+replace peg_USD=0 if peg_USD==.
+gen OECD=1 if countrycode=="AUT" | countrycode=="BEL" | countrycode=="CAN" | countrycode=="DEU"  | countrycode=="DNK" | countrycode=="FRA" | countrycode=="GRC" | countrycode=="ISL" | countrycode=="IRL" | countrycode=="ITA" | countrycode=="LUX" | countrycode=="NLD" | countrycode=="NOR" | countrycode=="PRT" | countrycode=="ESP" | countrycode=="SWE" | countrycode=="CHE" | countrycode=="TUR" | countrycode=="USA" | countrycode=="GBR" | countrycode=="JPN" | countrycode=="FIN" | countrycode=="AUS" | countrycode=="NZL" | countrycode=="MEX" | countrycode=="CZE" | countrycode=="HUN" | countrycode=="KOR" | countrycode=="POL" | countrycode=="SVK" | countrycode=="CHL" | countrycode=="SVN" | countrycode=="EST" | countrycode=="ISR" | countrycode=="LVA" | countrycode=="LTU" 
+replace OECD=0 if OECD==.
+gen EU=1 if coun_aim=="比利时" | coun_aim=="比利时" | coun_aim=="法国" | coun_aim=="德国" | coun_aim=="意大利" | coun_aim=="卢森堡" | coun_aim=="荷兰" | coun_aim=="丹麦" | coun_aim=="爱尔兰" | coun_aim=="希腊" | coun_aim=="葡萄牙" | coun_aim=="西班牙" | coun_aim=="奥地利" | coun_aim=="芬兰" | coun_aim=="瑞典"
+replace EU=0 if EU==.
+cd "D:\Project E\ER"
+save RER_99_19.dta,replace
+
+use RER_99_19,clear
+keep if countrycode=="USA"
+keep year NER coun_aim
+rename NER NER_US
+gen dlnNER_US=ln(NER_US)-ln(NER_US[_n-1]) if year==year[_n-1]+1
+save US_NER_99_19.dta,replace
+
+********************************************************************************
+
 * 2. Sample Construction
 
 * 2.1 Firm-level matched sample, 2000-2007
@@ -55,7 +103,7 @@ replace assembly=0 if assembly==.
 collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process assembly)
 * add other firm-level variables
 merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade)
-merge n:1 FRDM year using ".\CIE\cie_credit",nogen keep(matched) keepusing (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc scratio scratio_lag *_cic2 *_US ownership affiliate)
+merge n:1 FRDM year using ".\CIE\cie_credit",nogen keep(matched) keepusing (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc scratio *_cic2 *_US ownership affiliate)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched)
 merge n:1 FRDM year HS6 using customs_matched_destination,nogen keep(matched)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
@@ -67,32 +115,34 @@ foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口
 	drop if strmatch(EN, "*`key'*") 
 }
 cd "D:\Project E"
-save customs_matched_exp,clear
+save customs_matched_exp,replace
 
 cd "D:\Project E"
 use customs_matched_exp,replace
 * add exchange rates and other macro variables
-merge n:1 year using US_NER_99_19,nogen keep(matched)
-merge n:1 year coun_aim using RER_99_19.dta,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
+merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched)
+merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
 drop if dlnRER==.
 * calculate quantity changes
 sort FRDM HS6 coun_aim year
-by FRDM HS6 coun_aim: gen dlnquantity=ln(quantity_year)-ln(quantity_year[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnquant=ln(quant_year)-ln(quant_year[_n-1]) if year==year[_n-1]+1
 * calculate price changes 
 sort FRDM HS6 coun_aim year
 gen price_RMB=value_year*NER_US/quant_year
 gen price_US=value_year/quant_year
 by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
 by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
-drop dlnprice==.
+drop if dlnprice==.
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
+sort FRDM HS6 coun_aim year
 by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
 cd "D:\Project E"
-merge m:1 year using ".\monetary policy\brw\brw_94_21",nogen keep(matched)
-merge m:1 year using ".\monetary policy\mpu\mpu_85_22",nogen keep(matched)
-merge m:1 year using ".\monetary policy\lsap\lsap_91_19",nogen keep(matched)
+merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
+merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
+merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
+merge m:1 year using ".\MPS\others\shock_ea",nogen keep(matched)
 * construct country exposures
 bys FRDM year: egen export_sum=total(value_year)
 gen value_year_US=value_year if coun_aim=="美国"
@@ -119,13 +169,15 @@ xtset group_id year
 format EN %30s
 save sample_matched_exp,replace
 
+*-------------------------------------------------------------------------------
+
 * 2.2 Product-level matched sample, 2000-2007
 
 cd "D:\Project E"
 use "D:\Project D\HS6_exp_00-19",clear
 * add exchange rates and other macro variables
-merge n:1 year using ".\exchange rate\US_NER_99_19",nogen keep(matched)
-merge n:1 year coun_aim using ".\exchange rate\RER_99_19.dta",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
+merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched)
+merge n:1 year coun_aim using ".\ER\RER_99_19.dta",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
 drop if dlnRER==.
 * calculate quantity changes
 sort HS6 coun_aim year
@@ -142,9 +194,9 @@ bys HS6 coun_aim year: egen MS=pc(value),prop
 by HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
 cd "D:\Project E"
-merge m:1 year using ".\monetary policy\brw\brw_94_21",nogen keep(matched)
-merge m:1 year using ".\monetary policy\mpu\mpu_85_22",nogen keep(matched)
-merge m:1 year using ".\monetary policy\lsap\lsap_91_19",nogen keep(matched)
+merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
+merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
+merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
 * construct country exposures
 bys year: egen export_sum=total(value)
 gen value_US=value if coun_aim=="美国"
