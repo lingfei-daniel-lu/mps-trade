@@ -24,7 +24,6 @@ collapse (sum) USMPU, by(year)
 gen USMPU_lag=USMPU[_n-1]
 save mpu_85_22,replace
 
-
 * lsap & fwgd: US large scale asset purchasing and forward guidance, 
 cd "D:\Project E\monetary policy\lsap"
 use lsap_shock,replace
@@ -41,7 +40,8 @@ save lsap_91_19,replace
 
 * 2. Sample Construction
 
-* Firm-level matched sample, 2000-2007
+* 2.1 Firm-level matched sample, 2000-2007
+
 cd "D:\Project C\sample_matched"
 use customs_matched,clear
 * keep only export records
@@ -66,20 +66,28 @@ gen lnrSI=ln(rSI)
 foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
 	drop if strmatch(EN, "*`key'*") 
 }
-* calculate market shares
-bys HS6 coun_aim year: egen MS=pc(value_year),prop
+cd "D:\Project E"
+save customs_matched_exp,clear
+
+cd "D:\Project E"
+use customs_matched_exp,replace
 * add exchange rates and other macro variables
-merge n:1 year using "D:\Project C\PWT10.0\US_NER_99_19",nogen keep(matched)
-merge n:1 year coun_aim using "D:\Project C\PWT10.0\RER_99_19.dta",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
-* calculate price changes
+merge n:1 year using US_NER_99_19,nogen keep(matched)
+merge n:1 year coun_aim using RER_99_19.dta,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
+drop if dlnRER==.
+* calculate quantity changes
+sort FRDM HS6 coun_aim year
+by FRDM HS6 coun_aim: gen dlnquantity=ln(quantity_year)-ln(quantity_year[_n-1]) if year==year[_n-1]+1
+* calculate price changes 
 sort FRDM HS6 coun_aim year
 gen price_RMB=value_year*NER_US/quant_year
 gen price_US=value_year/quant_year
 by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
 by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
+drop dlnprice==.
+* calculate market shares
+bys HS6 coun_aim year: egen MS=pc(value_year),prop
 by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
-by FRDM HS6 coun_aim: egen year_count=count(year)
-drop if dlnRER==. | dlnprice==.
 * add monetary policy shocks
 cd "D:\Project E"
 merge m:1 year using ".\monetary policy\brw\brw_94_21",nogen keep(matched)
@@ -109,4 +117,57 @@ foreach var of local varlist {
 }
 xtset group_id year
 format EN %30s
-save sample_matched_exp_mp,replace
+save sample_matched_exp,replace
+
+* 2.2 Product-level matched sample, 2000-2007
+
+cd "D:\Project E"
+use "D:\Project D\HS6_exp_00-19",clear
+* add exchange rates and other macro variables
+merge n:1 year using ".\exchange rate\US_NER_99_19",nogen keep(matched)
+merge n:1 year coun_aim using ".\exchange rate\RER_99_19.dta",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
+drop if dlnRER==.
+* calculate quantity changes
+sort HS6 coun_aim year
+by HS6 coun_aim: gen dlnquantity=ln(quantity)-ln(quantity[_n-1]) if year==year[_n-1]+1
+* calculate price changes 
+sort HS6 coun_aim year
+gen price_RMB=value*NER_US/quant
+gen price_US=value/quant
+by HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
+by HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
+drop if dlnprice==.
+* calculate market shares
+bys HS6 coun_aim year: egen MS=pc(value),prop
+by HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
+* add monetary policy shocks
+cd "D:\Project E"
+merge m:1 year using ".\monetary policy\brw\brw_94_21",nogen keep(matched)
+merge m:1 year using ".\monetary policy\mpu\mpu_85_22",nogen keep(matched)
+merge m:1 year using ".\monetary policy\lsap\lsap_91_19",nogen keep(matched)
+* construct country exposures
+bys year: egen export_sum=total(value)
+gen value_US=value if coun_aim=="美国"
+replace value_US=0 if value_US==.
+bys year: egen export_sum_US=total(value_US) 
+gen exposure_US=export_sum_US/export_sum
+gen value_EU=value if EU==1
+replace value_EU=0 if value_US==.
+bys year: egen export_sum_EU=total(value_EU) 
+gen exposure_EU=export_sum_EU/export_sum
+* construct different periods
+gen prezlb=1 if year<2008
+replace prezlb =0 if prezlb==.
+gen zlb=1 if year>=2008 & year<2016
+replace zlb=0 if zlb==.
+gen postzlb=1 if year>=2016
+replace postzlb=0 if postzlb==.
+* construct group id
+gen HS2=substr(HS6,1,2)
+drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
+egen group_id=group(HS6 coun_aim)
+* drop outliers
+winsor2 dlnprice, trim
+winsor2 dlnprice_USD, trim
+xtset group_id year
+save sample_HS6,replace
