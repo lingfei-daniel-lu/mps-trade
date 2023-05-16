@@ -7,7 +7,7 @@
 * 1. Monetary policy shocks
 
 * brw: US monetary policy surprise, 1994-2021
-cd "D:\Project E\monetary policy\brw"
+cd "D:\Project E\MPS\brw"
 use BRW_mps,replace
 collapse (sum) brw_fomc, by(year)
 rename brw_fomc brw
@@ -15,7 +15,7 @@ gen brw_lag=brw[_n-1]
 save brw_94_21,replace
 
 * mpu: US monetary policy uncertainty. 1985-2022
-cd "D:\Project E\monetary policy\mpu"
+cd "D:\Project E\MPS\mpu"
 import excel HRS_MPU_monthly.xlsx, sheet("Sheet1") firstrow clear
 gen year=substr(Month,1,4) if substr(Month,1,1)!=" "
 replace year=substr(Month,2,4) if substr(Month,1,1)==" "
@@ -24,8 +24,8 @@ collapse (sum) USMPU, by(year)
 gen USMPU_lag=USMPU[_n-1]
 save mpu_85_22,replace
 
-* lsap & fwgd: US large scale asset purchasing and forward guidance, 
-cd "D:\Project E\monetary policy\lsap"
+* lsap & fwgd: US large scale asset purchasing and forward guidance
+cd "D:\Project E\MPS\lsap"
 use lsap_shock,replace
 gen year=substr(date,-4,.)
 destring year,replace
@@ -35,6 +35,14 @@ gen ffr_lag=ffr[_n-1]
 gen lsap_lag=lsap[_n-1]
 gen fwgd_lag=fwgd[_n-1]
 save lsap_91_19,replace
+
+* ea shock: EU monetary policy 1999-2021
+cd "D:\Project E\MPS\others"
+use shock_ea,replace
+gen target_ea_lag=target_ea[_n-1]
+gen path_ea_lag=path_ea[_n-1]
+gen lsap_ea_lag=lsap_ea[_n-1]
+save ea_91_19,replace
 
 ********************************************************************************
 
@@ -142,7 +150,7 @@ cd "D:\Project E"
 merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
 merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
 merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
-merge m:1 year using ".\MPS\others\shock_ea",nogen keep(matched)
+merge m:1 year using ".\MPS\others\ea_91_19",nogen keep(matched)
 * construct country exposures
 bys FRDM year: egen export_sum=total(value_year)
 gen value_year_US=value_year if coun_aim=="美国"
@@ -150,7 +158,7 @@ replace value_year_US=0 if value_year_US==.
 bys FRDM year: egen export_sum_US=total(value_year_US) 
 gen exposure_US=export_sum_US/export_sum
 gen value_year_EU=value_year if EU==1
-replace value_year_EU=0 if value_year_US==.
+replace value_year_EU=0 if value_year_EU==.
 bys FRDM year: egen export_sum_EU=total(value_year_EU) 
 gen exposure_EU=export_sum_EU/export_sum
 * construct group id
@@ -160,6 +168,7 @@ egen group_id=group(FRDM HS6 coun_aim)
 * drop outliers
 winsor2 dlnprice, trim
 winsor2 dlnprice_USD, trim
+winsor2 dlnquant, trim
 * construct interaction terms
 local varlist "FPC_US ExtFin_US Invent_US Tang_US"
 foreach var of local varlist {
