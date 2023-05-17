@@ -94,9 +94,71 @@ save US_NER_99_19.dta,replace
 
 ********************************************************************************
 
-* 2. Sample Construction
+* 3. CIE data with credit constraints
 
-* 2.1 Firm-level matched sample, 2000-2007
+cd "D:\Project C\sample_matched\CIE"
+use cie_98_07,clear
+keep if year>=1999
+drop CFS CFC CFHMT CFF CFL CFI
+tostring cic_adj,replace
+gen cic2=substr(cic_adj,1,2)
+* Add markup and tfp info
+merge 1:1 FRDM year using "D:\Project C\markup\cie_99_07_markup", nogen keepus(Markup_DLWTLD Markup_lag tfp_tld tfp_lag) keep(matched master)
+winsor2 Markup_*, replace
+winsor2 tfp_*, replace
+* Calculate firm-level markup from CIE
+sort FRDM year 
+gen rSI=SI/OutputDefl*100
+gen rTOIPT=TOIPT/InputDefl*100
+gen rCWP=CWP/InputDefl*100
+gen rkap=FA/inv_deflator*100
+gen tc=rTOIPT+rCWP+0.15*rkap
+gen SoC=rSI/tc
+winsor2 SoC*, replace
+* Calculate firm-level financial constraints from CIE
+gen Tang=FA/TA
+gen Invent=STOCK/SI
+gen RDint=RND/SI
+gen Cash=(TWC-NAR-STOCK)/TA
+gen Liquid=(TWC-CL)/TA
+gen Levg=TA/TL
+gen Arec=NAR/SI
+drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Levg<0
+bys cic2: egen RDint_cic2=mean(RDint)
+local varlist "Tang Invent Cash Liquid Levg Arec"
+foreach var of local varlist {
+	winsor2 `var', replace
+	bys cic2: egen `var'_cic2 = median(`var')
+}
+* Add FLL (2015) measures
+merge n:1 cic2 using "D:\Project C\credit\FLL_Appendix\FLL_Appendix_A1",nogen keep(matched) keepus(ExtFin)
+rename ExtFin ExtFin_cic2
+* Add MWZ (2015) measures
+merge n:1 cic_adj using "D:\Project C\credit\CIC_MWZ",nogen keep(matched)
+* (PCA) FPC is the first principal component of external finance dependence and asset tangibility
+pca Tang_US ExtFin_US
+factor Tang_US ExtFin_US,pcf
+factortest Tang_US ExtFin_US
+rotate, promax(3) factors(1)
+predict f1
+rename f1 FPC_US
+pca Tang_cic2 ExtFin_cic2
+factor Tang_cic2 ExtFin_cic2,pcf
+factortest Tang_cic2 ExtFin_cic2
+rotate, promax(3) factors(1)
+predict f1
+rename f1 FPC_cic2
+* Match affiliation info
+merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
+replace affiliate=0 if affiliate==.
+sort FRDM EN year
+save cie_credit_v2,replace
+
+********************************************************************************
+
+* 4. Sample Construction
+
+* 4.1 Firm-level matched sample, 2000-2007
 
 cd "D:\Project C\sample_matched"
 use customs_matched,clear
@@ -111,13 +173,11 @@ replace assembly=0 if assembly==.
 collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process assembly)
 * add other firm-level variables
 merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade)
-merge n:1 FRDM year using ".\CIE\cie_credit",nogen keep(matched) keepusing (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc scratio *_cic2 *_US ownership affiliate)
+merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepusing (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc SoC Arec *_cic2 *_US ownership affiliate)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched)
-merge n:1 FRDM year HS6 using customs_matched_destination,nogen keep(matched)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
 replace dist=dist/1000
 replace distw=distw/1000
-gen lnrSI=ln(rSI)
 * drop trade service firms
 foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
 	drop if strmatch(EN, "*`key'*") 
@@ -146,11 +206,15 @@ bys HS6 coun_aim year: egen MS=pc(value_year),prop
 sort FRDM HS6 coun_aim year
 by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
-cd "D:\Project E"
 merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
 merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
 merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
 merge m:1 year using ".\MPS\others\ea_91_19",nogen keep(matched)
+merge m:1 year using ".\control\pwt1001",nogen keep(matched)
+merge m:1 year using ".\control\oil_price",nogen keep(matched)
+merge m:1 year using ".\control\vix",nogen keep(matched)
+merge m:1 year using ".\control\ave_irate",nogen keep(matched)
+merge m:1 year using ".\control\oil_shock_year",nogen keep(matched)
 * construct country exposures
 bys FRDM year: egen export_sum=total(value_year)
 gen value_year_US=value_year if coun_aim=="美国"
@@ -180,7 +244,7 @@ save sample_matched_exp,replace
 
 *-------------------------------------------------------------------------------
 
-* 2.2 Product-level matched sample, 2000-2007
+* 4.2 Product-level matched sample, 2000-2007
 
 cd "D:\Project E"
 use "D:\Project D\HS6_exp_00-19",clear
