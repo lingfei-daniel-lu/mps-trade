@@ -42,7 +42,20 @@ use shock_ea,replace
 gen target_ea_lag=target_ea[_n-1]
 gen path_ea_lag=path_ea[_n-1]
 gen lsap_ea_lag=lsap_ea[_n-1]
-save ea_91_19,replace
+save ea_99_19,replace
+
+* uk shock: UK and Japan monetary policy, 1998-2015
+cd "D:\Project E\MPS\others"
+use shock_uk,replace
+gen shock_uk_lag=shock_uk[_n-1]
+save uk_98_15,replace
+
+* japan shock: Japan monetary policy, 1999-2020
+cd "D:\Project E\MPS\others"
+use shock_japan,replace
+gen target_japan_lag=target_japan[_n-1]
+gen path_japan_lag=path_japan[_n-1]
+save japan_99_20,replace
 
 ********************************************************************************
 
@@ -173,7 +186,7 @@ replace assembly=0 if assembly==.
 collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process assembly)
 * add other firm-level variables
 merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade)
-merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepusing (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc SoC Arec *_cic2 *_US ownership affiliate)
+merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc SoC Arec *_cic2 *_US ownership affiliate)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
 replace dist=dist/1000
@@ -209,12 +222,14 @@ by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
 merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
 merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
-merge m:1 year using ".\MPS\others\ea_91_19",nogen keep(matched)
-merge m:1 year using ".\control\pwt1001",nogen keep(matched)
-merge m:1 year using ".\control\oil_price",nogen keep(matched)
-merge m:1 year using ".\control\vix",nogen keep(matched)
-merge m:1 year using ".\control\ave_irate",nogen keep(matched)
-merge m:1 year using ".\control\oil_shock_year",nogen keep(matched)
+merge m:1 year using ".\MPS\others\ea_99_19",nogen keep(matched)
+merge m:1 year using ".\MPS\others\uk_98_15",nogen keep(matched)
+merge m:1 year using ".\MPS\others\japan_99_20",nogen keep(matched)
+* add other time series controls
+* merge m:1 year using ".\control\china\pwt100_CN",nogen keep(matched)
+merge m:1 year using ".\control\us\vix",nogen keep(matched) keepus(ave_vixcls)
+merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilprice goilprice)
+merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
 * construct country exposures
 bys FRDM year: egen export_sum=total(value_year)
 gen value_year_US=value_year if coun_aim=="美国"
@@ -225,6 +240,7 @@ gen value_year_EU=value_year if EU==1
 replace value_year_EU=0 if value_year_EU==.
 bys FRDM year: egen export_sum_EU=total(value_year_EU) 
 gen exposure_EU=export_sum_EU/export_sum
+drop export_sum_* value_year_*
 * construct group id
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
@@ -233,11 +249,6 @@ egen group_id=group(FRDM HS6 coun_aim)
 winsor2 dlnprice, trim
 winsor2 dlnprice_USD, trim
 winsor2 dlnquant, trim
-* construct interaction terms
-local varlist "FPC_US ExtFin_US Invent_US Tang_US"
-foreach var of local varlist {
-	gen brw_`var' = `var'*brw
-}
 xtset group_id year
 format EN %30s
 save sample_matched_exp,replace
