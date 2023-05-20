@@ -186,7 +186,6 @@ replace assembly=0 if assembly==.
 collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process assembly)
 * add other firm-level variables
 merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade)
-merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc SoC Arec *_cic2 *_US ownership affiliate)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
 replace dist=dist/1000
@@ -200,6 +199,8 @@ save customs_matched_exp,replace
 
 cd "D:\Project E"
 use customs_matched_exp,replace
+* merge with CIE data
+merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc SoC Arec *_cic2 *_US ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched)
 merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
