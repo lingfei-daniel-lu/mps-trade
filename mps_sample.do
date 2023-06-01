@@ -109,7 +109,7 @@ save US_NER_99_19.dta,replace
 
 * 3. CIE data with credit constraints
 
-cd "D:\Project C\sample_matched\CIE"
+cd "D:\Project C\CIE"
 use cie_98_07,clear
 keep if year>=1999
 drop CFS CFC CFHMT CFF CFL CFI
@@ -121,6 +121,7 @@ winsor2 Markup_*, replace
 winsor2 tfp_*, replace
 * Calculate firm-level markup from CIE
 sort FRDM year 
+keep if SI>0
 gen rSI=SI/OutputDefl*100
 gen rTOIPT=TOIPT/InputDefl*100
 gen rCWP=CWP/InputDefl*100
@@ -136,6 +137,8 @@ gen Cash=(TWC-NAR-STOCK)/TA
 gen Liquid=(TWC-CL)/TA
 gen Levg=TA/TL
 gen Arec=NAR/SI
+sort FRDM year
+by FRDM: gen dArec=Arec-Arec[_n-1] if year==year[_n-1]+1
 drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Levg<0
 bys cic2: egen RDint_cic2=mean(RDint)
 local varlist "Tang Invent Cash Liquid Levg Arec"
