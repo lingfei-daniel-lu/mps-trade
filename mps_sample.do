@@ -129,8 +129,8 @@ tostring cic_adj,replace
 gen cic2=substr(cic_adj,1,2)
 * Add markup and tfp info
 merge 1:1 FRDM year using "D:\Project C\markup\cie_99_07_markup", nogen keepus(Markup_DLWTLD Markup_lag tfp_tld tfp_lag) keep(matched master)
-winsor2 Markup_*, replace
-winsor2 tfp_*, replace
+winsor2 Markup_*, trim replace by(cic2)
+winsor2 tfp_*, trim replace by(cic2)
 * Calculate firm-level markup from CIE
 sort FRDM year 
 keep if SI>0
@@ -140,7 +140,7 @@ gen rCWP=CWP/InputDefl*100
 gen rkap=FA/inv_deflator*100
 gen tc=rTOIPT+rCWP+0.15*rkap
 gen SoC=rSI/tc
-winsor2 SoC*, replace
+winsor2 SoC*, trim replace by(cic2)
 * Calculate firm-level financial constraints from CIE
 gen Tang=FA/TA
 gen Invent=STOCK/SI
@@ -220,16 +220,15 @@ merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) k
 merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched)
 merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
 drop if dlnRER==.
-* calculate quantity changes
-sort FRDM HS6 coun_aim year
-by FRDM HS6 coun_aim: gen dlnquant=ln(quant_year)-ln(quant_year[_n-1]) if year==year[_n-1]+1
-* calculate price changes 
-sort FRDM HS6 coun_aim year
+* calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
 gen price_US=value_year/quant_year
+gen MC_RMB=price_RMB/Markup_DLWTLD
+sort FRDM HS6 coun_aim year
+by FRDM HS6 coun_aim: gen dlnquant=ln(quant_year)-ln(quant_year[_n-1]) if year==year[_n-1]+1
 by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
 by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
-drop if dlnprice==.
+by FRDM HS6 coun_aim: gen dlnMC=ln(MC_RMB)-ln(MC_RMB[_n-1]) if year==year[_n-1]+1
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
 sort FRDM HS6 coun_aim year
@@ -260,11 +259,12 @@ drop export_sum_* value_year_*
 * construct group id
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-egen group_id=group(FRDM HS6 coun_aim)
+egen group_id=group(FRDM HS6 coun_aim process assembly)
 * drop outliers
 winsor2 dlnprice, trim
 winsor2 dlnprice_USD, trim
 winsor2 dlnquant, trim
+winsor2 dlnMC, trim
 xtset group_id year
 format EN %30s
 save sample_matched_exp,replace

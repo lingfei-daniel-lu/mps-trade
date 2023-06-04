@@ -16,9 +16,9 @@ use sample_matched_exp,clear
 
 * Baseline
 eststo firm_brw0: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw: reghdfe dlnprice_tr dlnRER brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_lag: reghdfe dlnprice_tr dlnRER brw_lag dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_fixed: reghdfe dlnprice_tr dlnRER brw dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
+eststo firm_brw: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_lag: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_fixed: reghdfe dlnprice_tr brw dlnRER dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
 
 esttab firm_brw0 firm_brw firm_brw_lag firm_brw_fixed using "D:\Project E\tables\table_brw.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag)
 
@@ -100,7 +100,7 @@ esttab firm_brw_FPC_cic2 firm_brw_ExtFin_cic2 firm_brw_Tang_cic2 firm_brw_Invent
 
 *-------------------------------------------------------------------------------
 
-* 2. Regression of quantity change on monetary policy shocks
+* 2. Regression of other changes on monetary policy shocks
 cd "D:\Project E"
 use sample_matched_exp,clear
 
@@ -108,6 +108,11 @@ use sample_matched_exp,clear
 eststo firm_brw_quant: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_quant_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_quant_fixed: reghdfe dlnquant_tr dlnRER brw dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
+
+* Marginal cost
+eststo firm_brw_MC: reghdfe dlnMC_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_MC_lag: reghdfe dlnMC_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_MC_fixed: reghdfe dlnMC_tr dlnRER brw dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
 
 *-------------------------------------------------------------------------------
 
