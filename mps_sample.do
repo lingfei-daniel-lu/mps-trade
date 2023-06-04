@@ -59,7 +59,7 @@ save japan_99_20,replace
 
 ********************************************************************************
 
-* 2. Exchange rates
+* 2. Exchange rates and macro variables
 
 * Construct exchange rate from PWT10.0
 cd "D:\Project C\PWT10.0"
@@ -104,6 +104,18 @@ keep year NER coun_aim
 rename NER NER_US
 gen dlnNER_US=ln(NER_US)-ln(NER_US[_n-1]) if year==year[_n-1]+1
 save US_NER_99_19.dta,replace
+
+cd "D:\Project E\Almanac"
+import excel bankcredit.xlsx, sheet("Sheet1") firstrow clear
+drop UsesofFunds
+rename (Year TotalLoans ShorttermLoans LoanstoIndustrialSector LongtermLoans) (year Total_loans ST_loans IST_loans LT_loans)
+merge 1:1 year using "D:\Project E\control\china\PWT100_CN",nogen keep(matched) keepus(cgdpo)
+merge 1:1 year using "D:\Project E\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
+local varlist "Total_loans ST_loans IST_loans LT_loans"
+foreach var of local varlist {
+	gen `var'_r = `var'*100/(cgdpo*NER_US)
+}
+save bank_credit,replace
 
 ********************************************************************************
 
