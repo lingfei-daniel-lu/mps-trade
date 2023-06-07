@@ -111,9 +111,9 @@ drop UsesofFunds
 rename (Year TotalLoans ShorttermLoans LoanstoIndustrialSector LongtermLoans) (year Total_loans ST_loans IST_loans LT_loans)
 merge 1:1 year using "D:\Project E\control\china\PWT100_CN",nogen keep(matched) keepus(cgdpo)
 merge 1:1 year using "D:\Project E\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
-local varlist "Total_loans ST_loans IST_loans LT_loans"
+local varlist "Total ST IST LT"
 foreach var of local varlist {
-	gen `var'_r = `var'*100/(cgdpo*NER_US)
+	gen `var'_lr = `var'_loans*100/(cgdpo*NER_US)
 }
 save bank_credit,replace
 
@@ -138,6 +138,7 @@ gen rSI=SI/OutputDefl*100
 gen rTOIPT=TOIPT/InputDefl*100
 gen rCWP=CWP/InputDefl*100
 gen rkap=FA/inv_deflator*100
+gen vc=rTOIPT+rCWP
 gen tc=rTOIPT+rCWP+0.15*rkap
 gen SoC=rSI/tc
 winsor2 SoC*, trim replace by(cic2)
@@ -149,8 +150,9 @@ gen Cash=(TWC-NAR-STOCK)/TA
 gen Liquid=(TWC-CL)/TA
 gen Levg=TA/TL
 gen Arec=NAR/SI
+gen FNr=FN/TL
+gen IEr=IE/TL
 sort FRDM year
-by FRDM: gen dArec=Arec-Arec[_n-1] if year==year[_n-1]+1
 drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Levg<0
 bys cic2: egen RDint_cic2=mean(RDint)
 local varlist "Tang Invent Cash Liquid Levg Arec"
@@ -196,12 +198,10 @@ drop exp_imp
 * mark processing or assembly trade
 gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
 replace process=0 if process==.
-gen assembly = 1 if shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
-replace assembly=0 if assembly==.
-collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process assembly)
+collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
 * add other firm-level variables
-merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade)
-merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched)
+merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
+merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
 replace dist=dist/1000
 replace distw=distw/1000
@@ -215,11 +215,14 @@ save customs_matched_exp,replace
 cd "D:\Project E"
 use customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus (FRDM year EN cic_adj cic2 Markup_* tfp_* rSI rTOIPT rCWP rkap tc SoC Arec *_cic2 *_US ownership affiliate)
+merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus (FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec Fr Ir *_cic2 *_US ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched)
 merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
 drop if dlnRER==.
+* calculate import intensity
+gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
+winsor2 imp_int, trim replace
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
 gen price_US=value_year/quant_year
@@ -246,7 +249,6 @@ merge m:1 year using ".\control\us\vix",nogen keep(matched) keepus(ave_vixcls)
 merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilprice goilprice)
 merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
 * construct country exposures
-bys FRDM year: egen export_sum=total(value_year)
 gen value_year_US=value_year if coun_aim=="美国"
 replace value_year_US=0 if value_year_US==.
 bys FRDM year: egen export_sum_US=total(value_year_US) 
@@ -259,12 +261,9 @@ drop export_sum_* value_year_*
 * construct group id
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-egen group_id=group(FRDM HS6 coun_aim process assembly)
+egen group_id=group(FRDM HS6 coun_aim process)
 * drop outliers
-winsor2 dlnprice, trim
-winsor2 dlnprice_USD, trim
-winsor2 dlnquant, trim
-winsor2 dlnMC, trim
+winsor2 dlnprice dlnprice_USD dlnquant dlnMC, trim
 xtset group_id year
 format EN %30s
 save sample_matched_exp,replace
