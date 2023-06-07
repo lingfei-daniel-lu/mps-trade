@@ -1,10 +1,12 @@
 \documentclass[10pt]{beamer}
-\usetheme{cambridgeUS}
+\usetheme{CambridgeUS}
+\usecolortheme{beaver}
 \usepackage{graphicx}
 \usepackage{color}
-\usepackage{mathptmx} % font of Greek letters
+\usepackage{mathptmx}
 \usepackage{geometry}
 \usepackage{multicol}
+\usepackage{hyperref}
 
 \colorlet{shadecolor}{blue!15}
 \newtheorem{prop}{Proposition}
@@ -13,15 +15,15 @@
 		{\end{prop}\end{shaded}}
 
 \title[Global Monetary Policy Spillover Through Trade Channel]{Global Monetary Policy Spillover Through Trade Channel}
-\author[Yao\&Lu (2023)]{\large Yao and Lu (2023) \\ \vspace{0.5cm} Presented by Lingfei Lu and Jingbo Yao, HKUST \\ \vspace{0.5cm} HKUST-Jinan Macro Student Mini Symposium, 2023}
+\author[Yao\&Lu (2023)]{\large Lingfei LU, Jingbo YAO \\ \vspace{0.5cm} Department of Economics, HKUST \\ \vspace{0.5cm} HKUST-Jinan Macro Student Symposium 2023}
 \date{\today}
 \logo{\includegraphics[scale=0.15]{UST4C_L3.eps}}
 
 \begin{document}
 	
-	\begin{frame}[plain]
-		\maketitle {}
-	\end{frame}
+    \begin{frame}[plain]
+	\maketitle {}
+    \end{frame}
 
 %----------------------------------------
 
@@ -33,4 +35,42 @@
 	\end{itemize}
 \end{frame}
 
-\end{document}	
+\section{Model}
+
+\section{Empirical}
+
+\begin{frame}{Data: Customs Transaction Records}
+	\begin{itemize}
+		\item The first dataset is the transaction level records from the General Administration of Customs of China (GACC) during 2000-2011.
+		\begin{itemize}
+			\item This dataset provides information on
+			all Chinese trade transactions, including import and export values, quantities, units, product names and codes, source and destination countries, and types of enterprises.
+			\item The categories of products are coded by the Harmonized Coding and Description System (HS) from the World Customs Organization (WCO).
+		\end{itemize}
+		\item We drop unwanted observations referring to \cite{lmx2015}:
+		\begin{itemize}
+			\item products with inconsistent missing information of unit or quantity
+			\item special product categories such as arms (HS2=93), antiques (HS2=97), and special categories (HS2=98 and 99)
+			\item transactions existing for only one year without any change over time.
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Data: Firm-level Information}
+	\begin{itemize}
+		\item The second dataset is the Annual Survey of Chinese Industrial Enterprises (CIE) database from the National Bureau of Statistics of China (NBSC).
+		\begin{itemize}
+			\item This dataset covers all state-owned enterprises and above-scale firms
+			with annual sales of more than 5 million RMB from 1999 to 2007.
+			\item The data provide details about firms’ identification code, ownership, industry
+			type, and about 80 other variables in the balance sheet, including the number of employees, total wage payments, the value of fixed assets, sales income, total operation inputs, etc.
+		\end{itemize}
+		\item To merge it with customs records, we match the identification codes based on the contact information of firms as in \cite{fan-li-yeaple2015}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Data: Monetary Policy Surprise}
+
+\end{frame}
+
+\end{document}
