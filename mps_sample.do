@@ -14,6 +14,8 @@ rename brw_fomc brw
 gen brw_lag=brw[_n-1]
 save brw_94_21,replace
 
+twoway scatter brw year, xtitle(US monetary policy shock) ytitle(Year) title("Monetary policy shock series by BRW(2021)") savegraph("D:\Project E\figures\BRW.png") replace
+
 * mpu: US monetary policy uncertainty. 1985-2022
 cd "D:\Project E\MPS\mpu"
 import excel HRS_MPU_monthly.xlsx, sheet("Sheet1") firstrow clear
