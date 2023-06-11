@@ -39,19 +39,20 @@
 
 \section{Empirical}
 
-\begin{frame}{Data: Monetary Policy Surprise}
+\begin{frame}{Data: Monetary Policy Shock}
     \begin{itemize}
-        \item First, we use a U.S. monetary policy shock series developed by \cite{brw2021}
-        that stably bridges periods of conventional and unconventional policymaking, is largely unpredictable, and contains no significant central bank information effect
+        \item First, we use a U.S. monetary policy shock series developed by \cite{brw2021}.
+        \begin{itemize}
+            \item This new measure is largely unpredictable and contains no significant central bank information effect. Thus, it is argued to be more exogenous than often-used alternatives such as target rates. This measure stably bridges periods of conventional and unconventional monetary policy.
+        \end{itemize}
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Data: Customs Transaction Records}
 	\begin{itemize}
-		\item Second, we use the transaction level records from the General Administration of Customs of China (GACC) during 2000-2011.
+		\item Second, we use the transaction level records from the General Administration of Customs of China (GACC) from 2000-2007.
 		\begin{itemize}
-			\item This dataset provides information on
-			all Chinese trade transactions, including import and export values, quantities, units, product names and codes, source and destination countries, and types of enterprises.
+			\item This dataset provides information on all Chinese trade transactions, including import and export values, quantities, units, product names and codes, source and destination countries, and types of enterprises.
 			\item The categories of products are coded by the Harmonized Coding and Description System (HS) from the World Customs Organization (WCO).
 		\end{itemize}
 		\item We drop unwanted observations referring to \cite{lmx2015}:
@@ -65,7 +66,7 @@
 
 \begin{frame}{Data: Firm-level Information}
 	\begin{itemize}
-		\item Third, we use annual surveys of Chinese manufacturing firms conducted by the National Bureau of Statistics of China (NBSC).
+		\item Third, we introduce annual surveys of Chinese manufacturing firms conducted by the National Bureau of Statistics of China (NBSC).
 		\begin{itemize}
 			\item This dataset covers all state-owned enterprises and above-scale firms with annual sales of more than 5 million RMB from 1999 to 2007.
 			\item The data provide details about firms’ identification code, ownership, industry type, and 80 other balance sheet variables, including the number of employees, total wage payments, fixed assets, sales income, total operation inputs, etc.
