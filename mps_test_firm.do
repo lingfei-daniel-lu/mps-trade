@@ -55,7 +55,7 @@ gen brw_rCWP=brw*ln(rCWP)
 eststo firm_brw_rSI: reghdfe dlnprice_tr dlnRER brw brw_rSI dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_rCWP: reghdfe dlnprice_tr dlnRER brw brw_rCWP dlnrgdp, a(group_id) vce(cluster group_id year)
 
-* Import intensity
+* Import and export intensity
 gen brw_imp = imp_int*brw
 gen imp_major=1 if imp_int>=0.3
 replace imp_major=0 if imp_major==.
@@ -63,6 +63,16 @@ gen brw_imp_major = imp_major*brw
 
 eststo firm_brw_imp: reghdfe dlnprice_tr brw brw_imp dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_imp_major: reghdfe dlnprice_tr brw brw_imp_major dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_imp_minor: reghdfe dlnprice_tr brw brw_imp_major dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+
+gen brw_exp = exp_int*brw
+gen exp_major=1 if exp_int>=0.3
+replace exp_major=0 if exp_major==.
+gen brw_exp_major = exp_major*brw
+
+eststo firm_brw_imp: reghdfe dlnprice_tr brw brw_imp dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_imp_major: reghdfe dlnprice_tr brw brw_imp_major dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_imp_minor: reghdfe dlnprice_tr brw brw_imp_major dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
 * 1.2 Subsamples
 
