@@ -7,6 +7,10 @@
 \usepackage{geometry}
 \usepackage{multicol}
 \usepackage{hyperref}
+\usepackage{threeparttable}
+\usepackage{array} % for adding extra space between table columns
+\usepackage{booktabs} % for adding extra space between table columns
+\usepackage{multirow}
 
 \colorlet{shadecolor}{blue!15}
 \newtheorem{prop}{Proposition}
@@ -35,19 +39,19 @@
 	\end{itemize}
 \end{frame}
 
-\section{Model}
 
 \section{Empirical}
 
 \begin{frame}{Data: Monetary Policy Shock}
     \begin{itemize}
-        \item First, we use a U.S. monetary policy shock series developed by \cite{brw2021}.
+        \item First, we use a U.S. monetary policy shock series as in \cite{brw2021}.
         \begin{itemize}
-            \item This new measure is largely unpredictable and contains no significant central bank information effect. Thus, it is argued to be more exogenous than often-used alternatives such as target rates. This measure stably bridges periods of conventional and unconventional monetary policy.
+            \item This series is derived from a two-step, partial-least squares estimation using daily interest rate data across a wide spectrum of maturities.
+            \item It only contains unpredictable Fed policy surprises and no significant central bank information effect.
         \end{itemize}
         \begin{figure}[htbp]
 		\centering
-		\includegraphics[width=0.9\columnwidth]{latex/BRW.png}
+		\includegraphics[width=0.65\columnwidth]{latex/BRW.png}
 		\label{sum.brw}
 	\end{figure}
     \end{itemize}
@@ -55,33 +59,177 @@
 
 \begin{frame}{Data: Customs Transaction Records}
 	\begin{itemize}
-		\item Second, we use the transaction level records from the General Administration of Customs of China (GACC) from 2000-2007.
+		\item Second, we use trade transaction records from the General Administration of Customs of China (GACC).
 		\begin{itemize}
-			\item This dataset provides information on all Chinese trade transactions, including import and export values, quantities, units, product names and codes, source and destination countries, and types of enterprises.
-			\item The categories of products are coded by the Harmonized Coding and Description System (HS) from the World Customs Organization (WCO).
-		\end{itemize}
-		\item We drop unwanted observations referring to \cite{lmx2015}:
-		\begin{itemize}
-			\item products with inconsistent missing information of unit or quantity
-			\item special product categories such as arms (HS2=93), antiques (HS2=97), and special categories (HS2=98 and 99)
-			\item transactions existing for only one year without any change over time.
-		\end{itemize}
+			\item This dataset provides universal information on Chinese trade transactions, including import and export values, quantities, units, product names and codes, source and destination countries, and types of enterprises.
+                \item The firm-level transaction records range from 2000-2011, while product-level aggregates are available until 2019.
+                \item The categories of products are coded by the Harmonized Coding and Description System (HS) from the World Customs Organization (WCO).
+                \item We drop unwanted observations referring to \cite{lmx2015}: products with missing information of unit or quantity; special product categories such as arms and antiques; and transactions existing for only one year.
+		\end{itemize}		
 	\end{itemize}
 \end{frame}
 
 \begin{frame}{Data: Firm-level Information}
 	\begin{itemize}
-		\item Third, we introduce annual surveys of Chinese manufacturing firms conducted by the National Bureau of Statistics of China (NBSC).
+		\item Third, we use annual surveys of Chinese manufacturing firms conducted by the National Bureau of Statistics of China (NBSC).
 		\begin{itemize}
 			\item This dataset covers all state-owned enterprises and above-scale firms with annual sales of more than 5 million RMB from 1999 to 2007.
 			\item The data provide details about firms’ identification code, ownership, industry type, and 80 other balance sheet variables, including the number of employees, total wage payments, fixed assets, sales income, total operation inputs, etc.
 		\end{itemize}
-		\item To merge it with customs records, we match the identification codes based on the contact information of firms as in \cite{fan-li-yeaple2015}.
+		\item To merge the firm data with customs records, we match the identification codes based on firms' contact information as in \cite{fan-li-yeaple2015}.
+            \begin{itemize}
+                \item The matched period of the two datasets is from 2000 to 2007.
+            \end{itemize}
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{}
-    
+\begin{frame}{Summary Statistics}
+    \begin{table}[htbp]
+        \centering
+	\caption{Summary statistics for customs and firm data}
+	\label{summ.sample}
+        \resizebox{0.95\columnwidth}{!}
+        {
+	\begin{tabular}{lcccccc}
+		\toprule
+            & \multicolumn{1}{l}{\#observations} & \multicolumn{1}{l}{Mean} & \multicolumn{1}{l}{Median} & \multicolumn{1}{l}{Std. dev} & \multicolumn{1}{l}{P10} & \multicolumn{1}{l}{P90} \\
+            \midrule
+		\textbf{Panel A: Customs records} &       &       &       &       &       &  \\
+		Annual Export Price Change & 11,400,795 & 0.0259 & 0.0060 & 0.6653 & -0.5001 & 0.5709 \\
+		Annual Import Price Change  & 8,580,234 & 0.0236 & -0.0021 & 1.0171 & -0.8523 & 0.9388 \\
+		\midrule
+		\textbf{Panel B: Firm information} &       &       &       &       &       &  \\
+		Sales Income (×1000 RMB) & 1,745,511 & 78826.33 & 17630 & 714350.5 & 5318  & 111319 \\
+		Employment (persons)& 1,745,511 & 262.95 & 108   & 964.64 & 30    & 500 \\
+		Fixed Asset (×1000 RMB) & 1,745,511 & 27437.2 & 4043  & 312024.8 & 573   & 36968 \\
+		Operation Input (×1000 RMB) & 1,745,511 & 61682.99 & 13971 & 562923.1 & 4035  & 168810 \\
+		Current wage payable (×1000 RMB) & 1,745,511 & 3730.16 & 1121  & 28699.16 & 266   & 6300 \\
+		\midrule
+		\textbf{Panel C: Matched sample} &       &       &       &       &       &  \\
+		Annual Export Price Change & 1,724,591 & 0.0239 & 0.0062 & 0.6802 & -0.4828 & 0.5495 \\
+		Annual Import Price Change  & 1,478,176 & -0.0902 & -0.0019 & 1.3747 & -1.2688 & 1.0616 \\
+		\bottomrule
+	\end{tabular}
+        }
+    \end{table}
+\end{frame}
+
+\begin{frame}{Baseline Empirical Strategy}
+    \begin{itemize}
+        \item We first estimate the unconditional impact of U.S. monetary policy shocks on Chinese exporters' annual price change following \cite{di}
+        \begin{equation}
+	   \Delta \ln P_{i j c t}=\beta^P_1 M P_{t} + \beta^P_2 M P_{t-1}+ \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
+	\label{eq.baseline}
+        \end{equation}
+        \item We also test whether firms significantly adjust their export quantities in the face of monetary policy shocks.
+        \begin{equation}
+	   \Delta \ln Q_{i j c t}=\beta^Q_1 M P_{t} + \beta^Q_2 M P_{t-1}+ \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
+	\label{eq.quantity}
+        \end{equation}
+        \item The baseline US Fed monetary policy shocks $MP^US_t$ are from \cite{brw2021}. We also include monetary shocks from three other major central banks, the European Central Bank, the Bank of England, and the Bank of Japan.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Baseline Empirical Strategy}
+    \begin{itemize} 
+        \item The export price $P_{i j c t}$ are computed as the unit value in Chinese RMB:
+    		$$
+    		P_{ijct}=\frac{V_{ijct}\cdot NER^US_{t}}{Q_{ijct}}
+    		$$
+            where value (in US dollar) $V_{ijct}$ and quantities $Q_{ijct}$ are known for each HS6 product $i$, by firm $j$, from country $c$, in year $t$.
+        \item If an unexpected foreign (e.g., US) monetary policy tightening, $MP > 0$, raises the average export price of Chinese firms, we would expect that $ \beta^P > 0$. Conversely, if the export price is suppressed, there should be $ \beta^P < 0$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{US shock vs EU shock}
+    \begin{itemize}
+        \item A positive \textbf{US Fed} monetary policy shock will \textbf{increase} the average export price of Chinese firms, while a positive \textbf{ECB} monetary policy shock will \textbf{decrease} the average export price.
+        \begin{columns}
+    	\column{0.5\columnwidth}
+    	\begin{figure}[htbp]
+    	   \centering
+    		\includegraphics[width=\columnwidth]{latex/US_shock.png}
+    		\label{fig.US_shock}
+    	\end{figure}
+    	\column{0.5\columnwidth}
+    	\begin{figure}[htbp]
+    		\centering
+    		\includegraphics[width=\columnwidth]{latex/EU_shock.png}
+    		\label{fig.EU_shock}
+    	\end{figure}
+        \end{columns}
+        \item However, the UK and Japan monetary policy shocks have no significant effect on China's export price.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Baseline Results}
+    \begin{itemize}
+        \item A one-percentage point annual tightening shock implies that the average export price increases by 0.13 percentage points in the same year.
+    \end{itemize}
+    \begin{table}[htbp]
+        \centering  
+        \vspace{-3mm}
+        \caption{Effect of U.S. monetary policy shocks on Chinese export prices}
+        \resizebox{0.65\columnwidth}{!}{
+        \begin{threeparttable}
+            \begin{tabular}{lccccc}
+                \toprule
+                      & \multicolumn{2}{c}{2000-2007}   & \multicolumn{1}{c}{2000-2005}  & \multicolumn{2}{c}{2000-2007} \\
+                      & (1)   & (2)   & (3)   & (4)   & (5) \\
+                \midrule
+                      & \multicolumn{5}{c}{Dependent variable: $\Delta ln(price)_{ijct}$} \\
+                \midrule
+                $brw_{t}$   & 0.136*** & 0.134*** & 0.196*** &       & 0.126*** \\
+                      & (0.025) & (0.025) & (0.022) &       & (0.028) \\
+                      &       &       &       &       &  \\
+                $brw_{t-1}$ &       &       &       & 0.063 & 0.038 \\
+                      &       &       &       & (0.033) & (0.029) \\
+                      &       &       &       &       &  \\
+                $\Delta ln(RER_t)$ &       & 0.056* & 0.113*** & 0.109** & 0.080** \\
+                      &       & (0.025) & (0.013) & (0.039) & (0.022) \\
+                      &       &       &       &       &  \\
+                $\Delta ln(rGDP_t)$ & 0.263** & 0.275** & 0.023 & 0.465*** & 0.280** \\
+                      & (0.105) & (0.104) & (0.060) & (0.083) & (0.083) \\
+                      &       &       &       &       &  \\
+                Fixed effects   &  \multicolumn{5}{c}{Firm-product–country fixed effects}\\   
+                Observations    & 1079974 & 1079974 & 579972 & 1079974 & 1079974 \\
+                \bottomrule
+            \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at firm-product-country level and year level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels; All regressions include a constant term and firm-product-country level fixed effects.
+            \end{tablenotes}
+        \end{threeparttable}
+        }
+	\label{tab.baseline}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Decomposition of Price: Markup vs. Marginal Cost}
+    \begin{itemize}
+        \item Since we do not know the input of each exported product, we follow the method of \cite{dlw2012} to derive the firm-specific markup as the ratio of the factor’s output elasticities to its firm-specific factor payment shares $\mu_{jt}=\theta_{jt}^{X}/\alpha_{jt}^{X}$.
+        \item Therefore, the marginal cost of production is estimated as the unit value over the firm-level markup: $MC_{ijct}=P_{ijct}/\mu_{jt}$.
+        \item We conduct firm-level and transaction-level regressions of markups and marginal costs on monetary policy shocks.
+        \begin{equation}
+            \Delta \ln \mu_{j t}=\beta^{\mu} M P_{t} + \varepsilon_{jt}
+    	\label{eq.markup}
+        \end{equation}
+        \begin{equation}
+            \Delta \ln MC_{ijct}=\beta^{mc} M P_{t} + \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
+    	\label{eq.mc}
+        \end{equation}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Firm Heterogeneity}
+    \begin{itemize}
+        \item Next, we introduce interaction terms $EXP \in \mathbf{Z}$ to test whether heterogeneity in firms' exposure to monetary policy shocks affects the degree of markups.
+        \begin{equation}
+    	\Delta \ln P_{i j c t}=\beta_1 M P_{t}^{US} + \beta_2 (M P_{t}^{US} \times EXP_{jt})+ \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
+    	\label{eq.exposure}
+        \end{equation}
+        \item $EXP_{jt}$ includes export intensity, import intensity, 
+    \end{itemize}
 \end{frame}
 
 
@@ -116,7 +264,7 @@ $$
 
 
 \begin{itemize}
-    \item The consumer earns nominal income from labor, with a wage of $W_{t}$, receives dividends from ownership in firms, $D_{t}$, and receives a lump-sum transfer from the fiscal authority, $T_{t}$. It can save via one-period nominal bonds, $S_{t}$, that pay gross nominal interest rate, $R_{t}$. The consumption index is a composition of home and foreign goods, so
+    \item The consumer earns nominal income from labor, with a wage of $W_{t}$, receives dividends from ownership in firms, $D_{t}$, and receives a lump-sum transfer from the fiscal authority, $T_{t}$. It can save via a one-period deposit, $S_{t}$, that pays gross nominal interest rate, $R_{t}$. The consumption index is a composition of home and foreign goods, so
 \end{itemize}
 
 
@@ -269,33 +417,233 @@ $$
 
 \end{frame}
 
-\begin{frame}{Market Clearing}
+\begin{frame}{Financial intermediary}
+    
+\begin{itemize}
+    \item The financial intermediary receives household deposits and a cash injection $X_t$ from the monetary authority. These funds are lent to firms at a gross nominal interest rate of $R_t$.
+\end{itemize}
 
 \begin{itemize}
-    \item Goods market clearing requires that total production by the home firms is split between supply to the home and foreign markets respectively and satisfies the local demand in each market.
+    \item  Intermediaries operate costlessly in a competitive environment, so profits in the intermediary industry are 
+\end{itemize}
+
+$$
+\Pi_t=R_t(S_t+X_t)-R_tS_t=X_t
+$$
+
+\begin{itemize}
+    \item Equilibrium in the market for loans implies that 
+\end{itemize}
+
+$$
+W_tL_t=S_t+X_t
+$$ 
+
+\begin{itemize}
+    \item where $L_t$ is aggregate labor demand by firms
 \end{itemize}
 
 
-\begin{equation}
-Y_t=C_{Ht}+C_{Ht}^*
-\end{equation}
+\end{frame}
 
-\begin{equation}
-B_{t+1}/R_t-B_t=NX_t
-\end{equation}
-
-\begin{equation}
-NX_t=\varepsilon_t P_{Ht}^*C_{Ht}^*-P_{Ft}*C_{Ft}
-\end{equation}
+\begin{frame}{Shocks}
 
 \begin{itemize}
-    \item The monetary policy in both countries is implemented via a conventional Taylor rule. 
+    \item It is assumed that the productivity shocks $\left(A_{t}\right)$ obey stationary $A R(1)$ processes, where the non-stochastic steady state value of productivity is normalized to unity.
+\end{itemize}
+$$
+\begin{gathered}
+\ln A_{t}=\rho_{A} \ln A_{t-1}+s_{A} \varepsilon_{A, t}
+\end{gathered}
+$$
+
+\begin{itemize}
+    \item The Taylor rule of the central bank's policy rate follows the following process:
+\end{itemize}
+\begin{gather*}
+\ln R_{t}=\left(1-\rho_{r}\right) \ln R +\rho_{r}\ln R_{t-1} + \left(1-\rho_{r}\right)\left[\phi_{\pi}\left(\ln \Pi_{t}-\ln \Pi\right)+ \\ 
+\phi_{x}\left(\ln Y_{t}-\ln Y_{t}^{N}\right)\right] +s_{r}\varepsilon_{r,t}+s_{g}^{H}\varepsilon_{g, t}
+\end{gather*}
+
+\begin{itemize}
+    \item where $\varepsilon_{g, t}$  is the global monetary monetary policy shock and $s_{g}^{H}$ is the corresponding responding coefficient. All the shocks are assumed to be IID.
+\end{itemize}
+
+\begin{itemize}
+    \item For the foreign central bank:
+\end{itemize}
+\begin{gather*}
+\ln R_{t}^{*}=\left(1-\rho_{r}^{*}\right) \ln R^{*}+ \rho_{r}^{*}\ln R_{t-1}^{*} + \left(1-\rho_{r}^{*}\right)\left[\phi_{\pi}^{*}\left(\ln \Pi_{t}^{*}-\ln \Pi^{*}\right)+ \\ \phi_{x}^{*}\left(\ln Y_{t}^{*}-\ln Y_{t}^{N*}\right)\right] 
+ +s_{r}^{*}\varepsilon_{r, t}+s_{g}^{F}\varepsilon_{g, t}
+\end{gather*}
+
+
+\end{frame}
+
+\begin{frame}{Aggregation}
+
+\begin{itemize}
+    \item Goods market clearing conditions for 
+     the home and foreign countries are
+\end{itemize}
+\begin{gather*}
+(1-\gamma) Y_{t}=(1-\gamma)C_{H, t}+\gamma C_{H, t}^{*} \\
+\gamma Y_{t}^{*}=(1-\gamma)C_{F, t}+\gamma C_{F, t}^{*}
+\end{gather*}
+\begin{itemize}
+    \item Then we obtain
+\end{itemize}
+\begin{gather*}
+P_{H, t} Y_{t}=(1-\gamma)P_{t}C_{t}+\gamma P_{t}C_{t}^{*} \\
+P_{F, t} Y_{t}^{*}=(1-\gamma) P_{t}C_{t}+\gamma P_{t}C_{t}^{*} \\
+\frac{P_{H, t}}{P_{F, t}}=\frac{Y_{t}^{*}}{Y_{t}}
+\end{gather*}
+
+\end{frame}
+
+\begin{frame}{Aggregation (continued)}
+
+\begin{itemize}
+    \item If we assume that initial net international asset holding is 0, then the trade balance is zero:
+\end{itemize}
+
+
+$$
+\begin{aligned}
+P_{H, t} Y_{t} & =P_{t}C_{t} \\
+P_{F, t}^{*} Y_{t}^{*} & =P_{t}^{*}C_{t} .
+\end{aligned}
+$$
+
+\begin{itemize}
+    \item Zero trade balance condition and Equation also imply complete risk sharing between home and foreign countries:
+\end{itemize}
+
+
+$$
+C_{t}=C_{t}^{*}
+$$
+
+\begin{itemize}
+    \item we can also get
+\end{itemize}
+
+
+$$
+Y_{t}=\frac{P_{t}}{P_{H, t}}C_{t}=k^{-1}C_{t} \mathcal{T}_{t}^{\gamma}
+$$
+
+\begin{itemize}
+    \item where the second equality is from price index Equation and definition of $\mathcal{T}_t$ (terms of trade).  
+\end{itemize}
+  
+\end{frame}
+
+\begin{frame}{Aggregation (continued)}
+
+\begin{itemize}
+    \item On the supply side,
+\end{itemize}
+
+$$
+Y_{t}=\frac{A_{t} L_{t}}{V_{t}}
+$$
+
+$$
+V_{t} \equiv \int_{0}^{1}\left(\frac{P_{H, t}(f)}{P_{H, t}}\right)^{-\epsilon} d f \geq 1
+$$
+
+$$
+\mathcal{T}_{t}=\frac{Y_{t}}{Y_{t}^{*}}
+$$
+
+\begin{itemize}
+    \item Combining the labor supply and demand, and then using the aggregate demand and the aggregate production, yields the real marginal cost (in terms of the home producer index):
+\end{itemize}
+
+
+$$
+\begin{aligned}
+m c_{t} & =w_{t}R_{t} / A_{t} \\
+& =\psi\left(k Y_{t}^{1-\gamma}\left(Y_{t}^{*}\right)^{\gamma}-C_{t}^{b}\right)^{\sigma} Y_{t}^{\chi+\gamma} A_{t}^{-\chi} V_{t}^{\chi}R_{t}
+\end{aligned}
+$$  
+\end{frame}
+    
+\begin{frame}{Linear model}
+
+\begin{itemize}
+    \item The IS curve for home country is
+\end{itemize}
+
+
+$$
+x_{t}= & \mathbb{E}_{t} x_{t+1}-\frac{1}{\sigma_{0}}\left(r_{t}-\mathbb{E}_{t} \pi_{t+1}-r_t^N\right)
+$$
+$$
+r_{t}^{N}=\sigma_{0} \mathbb{E}_{t} \Delta y_{t+1}^{N}+\kappa_{0} y_{t+1}^{*}
+$$
+\begin{itemize}
+    \item The Phillips curve for home produced goods is
+\end{itemize}
+
+$$
+\pi_{H, t}=\nu\left[\varkappa y_{t}-(1+\chi) a_{t}+\kappa_{0}y_{t}^{*}+\textcolor{blue}{r_t}\right]+\beta \mathbb{E}_{t} \pi_{H, t+1}
+$$
+
+\begin{itemize}
+    \item Or
+\end{itemize}
+
+$$
+\pi_{H, t} & =\nu \varkappa\left(y_{t}-y_{t}^{N}\right)+\textcolor{blue}{\nu(r_t-r_t^N)}+\beta \mathbb{E}_{t} \pi_{H, t+1}
+$$
+
+\begin{itemize}
+    \item where $\nu=\frac{(1-\phi)(1-\phi \beta)}{\phi}$, $\sigma_0=\sigma-\kappa_{0}$, $\varkappa=\chi+\sigma-\kappa_{0}$ and $\kappa_{0}=\sigma \gamma-\gamma$. Lowercase variables with a $t$ subscript denote $\log$ deviations from the non-stochastic steady state. $y_{t}$ and $y_{t}^{*}$ are the output of home and foreign countries, and $\pi_{H, t}$ and $\pi_{F, t}$ are home and foreign PPI inflation. $r_{t}$ and $r_{t}^{*}$ are the short-term nominal interest rates.
 \end{itemize}
 
 \end{frame}
 
+\begin{frame}{Linear model (continued)}
+
+\begin{itemize}
+    \item We can define $y_{t}^{N}$ and $y_{t}^{N *}$ as the equilibrium level of output consistent with price flexibility in the domestic country while taking foreign output as exogenously given:
+\end{itemize}
+
+$$
+\begin{gathered}
+y_{t}^{N}=\varkappa^{-1}\left[(1+\chi) a_{t}-\kappa_{0} y_{t}^{*}+r_t^N\right], \\
+y_{t}^{N *}=\varkappa^{*-1}\left[(1+\chi) a_{t}^{*}-\kappa_{0}^{*} y_{t}+r_t^{N*}\right] .
+\end{gathered}
+$$
 
 
+
+\begin{itemize}
+    \item where $\kappa_{0}=\sigma \gamma-\gamma$. And $r_{t}^{N}$ and $r_{t}^{N *}$ are the natural rates of interest of the two countries.
+\end{itemize}
+
+\begin{itemize}
+    \item Terms of trade is the difference of output gap between two countries plus the natural level of terms of trade:
+\end{itemize}
+
+
+$$
+\tau_{t}=y_{t}-y_{t}^{*}
+$$
+\begin{itemize}
+    \item The model is closed by policy rules for conventional and unconventional monetary policy.
+\end{itemize}
+
+
+$$
+\begin{gathered}
+r_{t}^{s}=\rho_{r} r_{t-1}^{s}+\left(1-\rho_{r}\right)\left[\phi_{\pi} \pi_{t}+\phi_{x} x_{t}\right]+s_{r} \varepsilon_{r, t} \\
+q e_{t}=\rho_{q} q e_{t-1}+s_{q} \varepsilon_{q, t} .
+\end{gathered}
+$$
+\end{frame}
 
 \section*{Reference}
 
