@@ -93,10 +93,13 @@ by coun_aim: gen inflation=ln(cpi)-ln(cpi[_n-1]) if year==year[_n-1]+1
 * Flag countries pegged to the US dollar
 gen peg_USD=1 if countrycode=="ABW" | countrycode=="BHS" | countrycode=="PAN" | countrycode=="BHR"  | countrycode=="BRB" | countrycode=="BLZ" | countrycode=="BMU" | currency_unit =="East Caribbean Dollar" | currency_unit =="Netherlands Antillian Guilder"| currency_unit =="US Dollar" | countrycode=="DJI" | countrycode=="HKG" | countrycode=="JOR" | countrycode=="LBN" | countrycode=="MAC" | countrycode=="MDV" | countrycode=="OMN" | countrycode=="PAN" | countrycode=="QAT" | countrycode=="SAU" | countrycode=="ARE" | xr==1
 replace peg_USD=0 if peg_USD==.
+* Other country groups
 gen OECD=1 if countrycode=="AUT" | countrycode=="BEL" | countrycode=="CAN" | countrycode=="DEU"  | countrycode=="DNK" | countrycode=="FRA" | countrycode=="GRC" | countrycode=="ISL" | countrycode=="IRL" | countrycode=="ITA" | countrycode=="LUX" | countrycode=="NLD" | countrycode=="NOR" | countrycode=="PRT" | countrycode=="ESP" | countrycode=="SWE" | countrycode=="CHE" | countrycode=="TUR" | countrycode=="USA" | countrycode=="GBR" | countrycode=="JPN" | countrycode=="FIN" | countrycode=="AUS" | countrycode=="NZL" | countrycode=="MEX" | countrycode=="CZE" | countrycode=="HUN" | countrycode=="KOR" | countrycode=="POL" | countrycode=="SVK" | countrycode=="CHL" | countrycode=="SVN" | countrycode=="EST" | countrycode=="ISR" | countrycode=="LVA" | countrycode=="LTU" 
 replace OECD=0 if OECD==.
 gen EU=1 if coun_aim=="比利时" | coun_aim=="比利时" | coun_aim=="法国" | coun_aim=="德国" | coun_aim=="意大利" | coun_aim=="卢森堡" | coun_aim=="荷兰" | coun_aim=="丹麦" | coun_aim=="爱尔兰" | coun_aim=="希腊" | coun_aim=="葡萄牙" | coun_aim=="西班牙" | coun_aim=="奥地利" | coun_aim=="芬兰" | coun_aim=="瑞典"
 replace EU=0 if EU==.
+gen EME=1 if coun_aim=="台湾省" | coun_aim=="巴西" | coun_aim=="智利" | coun_aim=="哥伦比亚" | coun_aim=="捷克" | coun_aim=="匈牙利" | coun_aim=="印度" | coun_aim=="印度" | coun_aim=="马来西亚" | coun_aim=="墨西哥" | coun_aim=="摩洛哥" | coun_aim=="秘鲁" | coun_aim=="菲律宾" | coun_aim=="波兰" | coun_aim=="俄罗斯" | coun_aim=="南非" | coun_aim=="韩国" | coun_aim=="泰国" | coun_aim=="土耳其"
+replace EME=0 if EME==.
 cd "D:\Project E\ER"
 save RER_99_19.dta,replace
 
@@ -152,8 +155,10 @@ gen Cash=(TWC-NAR-STOCK)/TA
 gen Liquid=(TWC-CL)/TA
 gen Levg=TA/TL
 gen Arec=NAR/SI
-gen FNr=FN/TL
-gen IEr=IE/TL
+gen FNoL=FN/TL
+gen IEoL=IE/TL
+gen FNoS=FN/SI
+gen IEoS=IE/SI
 sort FRDM year
 drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Levg<0
 bys cic2: egen RDint_cic2=mean(RDint)
@@ -186,6 +191,19 @@ replace affiliate=0 if affiliate==.
 sort FRDM EN year
 save cie_credit_v2,replace
 
+cd "D:\Project E"
+use "D:\Project C\CIE\cie_credit_v2",clear
+merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
+sort FRDM year
+drop if Arec<0 | FN<0 | IE<0
+by FRDM: gen dArec=Arec-Arec[_n-1] if year==year[_n-1]+1
+by FRDM: gen dFNoL=FNoL-FNoL[_n-1] if year==year[_n-1]+1
+by FRDM: gen dlnFN=ln(FN)-ln(FN[_n-1]) if year==year[_n-1]+1
+by FRDM: gen dIEoL=IEoL-IEoL[_n-1] if year==year[_n-1]+1
+by FRDM: gen dlnIE=ln(IE)-ln(IE[_n-1]) if year==year[_n-1]+1
+winsor2 dArec dFNoL dlnFN dIEoL dlnIE, trim
+save cie_credit_brw,replace
+
 ********************************************************************************
 
 * 4. Sample Construction
@@ -217,10 +235,10 @@ save customs_matched_exp,replace
 cd "D:\Project E"
 use customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus (FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec Fr Ir *_cic2 *_US ownership affiliate)
+merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec FN* IE* *_cic2 *_US ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched)
-merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
+merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
 * calculate import intensity
 gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
