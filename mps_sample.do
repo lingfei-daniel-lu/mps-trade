@@ -159,6 +159,7 @@ gen FNoL=FN/TL
 gen IEoL=IE/TL
 gen FNoS=FN/SI
 gen IEoS=IE/SI
+gen CWPoP=rCWP/PERSENG
 sort FRDM year
 drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Levg<0
 bys cic2: egen RDint_cic2=mean(RDint)
@@ -189,19 +190,20 @@ rename f1 FPC_cic2
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
 sort FRDM EN year
+cd "D:\Project C\CIE"
 save cie_credit_v2,replace
 
 cd "D:\Project E"
 use "D:\Project C\CIE\cie_credit_v2",clear
 merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
+drop if SI<0 |Arec<0 | FN<0 | IE<0 | CWP<0
 sort FRDM year
-drop if Arec<0 | FN<0 | IE<0
+by FRDM: gen lnSI_lag=ln(rSI[_n-1]) if year==year[_n-1]+1
 by FRDM: gen dArec=Arec-Arec[_n-1] if year==year[_n-1]+1
 by FRDM: gen dFNoL=FNoL-FNoL[_n-1] if year==year[_n-1]+1
-by FRDM: gen dlnFN=ln(FN)-ln(FN[_n-1]) if year==year[_n-1]+1
 by FRDM: gen dIEoL=IEoL-IEoL[_n-1] if year==year[_n-1]+1
-by FRDM: gen dlnIE=ln(IE)-ln(IE[_n-1]) if year==year[_n-1]+1
-winsor2 dArec dFNoL dlnFN dIEoL dlnIE, trim
+by FRDM: gen dlnCWPoP=ln(CWPoP)-ln(CWPoP[_n-1]) if year==year[_n-1]+1
+winsor2 dArec dFNoL dIEoL dlnCWPoP, trim
 save cie_credit_brw,replace
 
 ********************************************************************************

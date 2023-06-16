@@ -145,17 +145,21 @@ esttab firm_brw_MC0 firm_brw_MC firm_brw_Markup firm_brw_Markup_lag using "D:\Pr
 
 *-------------------------------------------------------------------------------
 
-* 3. Regression of credit variables on monetary policy shocks
+* 3. Regression of firm-level variables on monetary policy shocks
+cd "D:\Project E"
+use cie_credit_brw,clear
 
 * Account receivable to sales income
-eststo Arec_brw: reghdfe dArec_tr brw, a(FRDM) vce(cluster FRDM year)
-eststo Arec_brw_lag: reghdfe dArec brw_lag, a(FRDM) vce(cluster FRDM year)
+eststo Arec_brw: reghdfe dArec_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
 
 * Financial expense and interest expense to total liability
-eststo _brw: reghdfe dFNr_tr brw, a(FRDM) vce(cluster FRDM year)
-eststo FN_brw: reghdfe dlnFN_tr brw, a(FRDM) vce(cluster FRDM year)
-eststo IEr_brw: reghdfe dIEr_tr brw, a(FRDM) vce(cluster FRDM year)
-eststo IE_brw: reghdfe dlnIE_tr brw, a(FRDM) vce(cluster FRDM year)
+eststo FNoL_brw: reghdfe dFNoL_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
+eststo IEoL_brw: reghdfe dIEoL_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
+
+* Wage payment per worker
+eststo CWPoP_brw: reghdfe dlnCWPoP_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
+
+esttab Arec_brw FNoL_brw IEoL_brw CWPoP_brw using "D:\Project E\tables\table_brw_interest.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw)
 
 * Loans to GDP
 cd "D:\Project E"
