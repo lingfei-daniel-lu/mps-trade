@@ -231,15 +231,15 @@ replace distw=distw/1000
 foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
 	drop if strmatch(EN, "*`key'*") 
 }
-cd "D:\Project E"
+cd "D:\Project E\customs"
 save customs_matched_exp,replace
 
 cd "D:\Project E"
-use customs_matched_exp,replace
+use ".\customs\customs_matched_exp",replace
 * merge with CIE data
 merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec FN* IE* *_cic2 *_US ownership affiliate)
 * add exchange rates and other macro variables
-merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched)
+merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
 * calculate import intensity
@@ -247,7 +247,7 @@ gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
 winsor2 imp_int, trim replace
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
-gen price_US=value_year/quant_year
+gen price_USD=value_year/quant_year
 gen MC_RMB=price_RMB/Markup_DLWTLD
 sort FRDM HS6 coun_aim year
 by FRDM HS6 coun_aim: gen dlnquant=ln(quant_year)-ln(quant_year[_n-1]) if year==year[_n-1]+1
@@ -285,19 +285,19 @@ gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 egen group_id=group(FRDM HS6 coun_aim process)
 * drop outliers
-winsor2 dlnprice dlnprice_USD dlnquant dlnMC, trim
+winsor2 dlnprice* dlnquant dlnMC, trim
 xtset group_id year
 format EN %30s
 save sample_matched_exp,replace
 
 *-------------------------------------------------------------------------------
 
-* 4.2 Product-level matched sample, 2000-2007
+* 4.2 Product-level matched sample, 2000-2019
 
 cd "D:\Project E"
 use "D:\Project D\HS6_exp_00-19",clear
 * add exchange rates and other macro variables
-merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched)
+merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ".\ER\RER_99_19.dta",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
 drop if dlnRER==.
 * calculate quantity changes
@@ -306,7 +306,7 @@ by HS6 coun_aim: gen dlnquantity=ln(quantity)-ln(quantity[_n-1]) if year==year[_
 * calculate price changes 
 sort HS6 coun_aim year
 gen price_RMB=value*NER_US/quant
-gen price_US=value/quant
+gen price_USD=value/quant
 by HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
 by HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
 drop if dlnprice==.
@@ -344,3 +344,54 @@ winsor2 dlnprice, trim
 winsor2 dlnprice_USD, trim
 xtset group_id year
 save sample_HS6,replace
+
+*-------------------------------------------------------------------------------
+
+* 4.3 Customs data, 2000-2015
+cd "D:\Project E\custom_0015"
+use custom_0015_exp,clear
+rename (hs_2 hs_4 hs_6) (HS2 HS4 HS6)
+tostring country,replace
+merge n:1 country using "D:\Project C\customs data\customs_country_code",nogen keep(matched)
+sort party_id coun_aim year
+order party_id HS* coun* year
+format coun_aim %20s
+cd "D:\Project E\customs"
+save customs_0015_exp,replace
+
+cd "D:\Project E"
+use ".\customs\customs_0015_exp",clear
+* add exchange rates and other macro variables
+merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
+merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+drop if dlnRER==.
+* calculate changes of price, quantity and marginal cost
+gen price_RMB=value*NER_US/quant
+gen price_USD=value/quant
+sort party_id HS6 coun_aim year
+by party_id HS6 coun_aim: gen dlnquant=ln(quant)-ln(quant[_n-1]) if year==year[_n-1]+1
+by party_id HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
+by party_id HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
+* calculate market shares
+bys HS6 coun_aim year: egen MS=pc(value),prop
+sort party_id HS6 coun_aim year
+by party_id HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
+* add monetary policy shocks
+merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
+merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
+merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
+merge m:1 year using ".\MPS\others\ea_99_19",nogen keep(matched)
+merge m:1 year using ".\MPS\others\uk_98_15",nogen keep(matched)
+merge m:1 year using ".\MPS\others\japan_99_20",nogen keep(matched)
+* add other time series controls
+* merge m:1 year using ".\control\china\pwt100_CN",nogen keep(matched)
+merge m:1 year using ".\control\us\vix",nogen keep(matched) keepus(ave_vixcls)
+merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilprice goilprice)
+merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
+* construct group id
+drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
+egen group_id=group(party_id HS6 coun_aim)
+* drop outliers
+winsor2 dlnprice* dlnquant, trim
+xtset group_id year
+save sample_long_exp,replace

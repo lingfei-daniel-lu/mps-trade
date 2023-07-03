@@ -9,10 +9,13 @@
 *-------------------------------------------------------------------------------
 
 * 1. Regressions of price change on monetary policy shocks
-cd "D:\Project E"
-use sample_matched_exp,clear
+
+*-------------------------------------------------------------------------------
 
 * 1.1 Baseline
+
+cd "D:\Project E"
+use sample_matched_exp,clear
 
 * Baseline
 eststo firm_brw0: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
@@ -32,7 +35,12 @@ eststo firm_brw_USD: reghdfe dlnprice_USD_tr dlnRER brw dlnrgdp, a(group_id) vce
 eststo firm_brw_lag_USD: reghdfe dlnprice_USD_tr dlnRER brw_lag dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_fixed_USD: reghdfe dlnprice_USD_tr dlnRER brw dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
 
+*-------------------------------------------------------------------------------
+
 * 1.2 Alternative shocks
+
+cd "D:\Project E"
+use sample_matched_exp,clear
 
 * Large scale asset purchase and forward guidance
 eststo firm_lsap: reghdfe dlnprice_tr lsap fwgd dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
@@ -49,7 +57,11 @@ esttab firm_eus0 firm_eus firm_eus_lag firm_eus_fixed using "D:\Project E\tables
 
 binscatter dlnprice_tr target_ea, xtitle(EU monetary policy shock) ytitle(China's export price change) title(EU MPS and China's Export Price) savegraph("D:\Project E\figures\EU_shock.png") replace
 
+*-------------------------------------------------------------------------------
+
 * 1.3 Firm-level heterogeneity
+
+cd "D:\Project E"
 use sample_matched_exp,clear
 
 * Firm size
@@ -89,7 +101,12 @@ gen brw_exposure_EU=brw*exposure_EU
 eststo firm_brw_expoEU: reghdfe dlnprice_tr brw brw_exposure_EU dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 gen eus_exposure_EU=target_ea*exposure_EU
 
+*-------------------------------------------------------------------------------
+
 * 1.4 Subsamples
+
+cd "D:\Project E"
+use sample_matched_exp,clear
 
 * US vs ROW
 eststo firm_brw_US: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="美国", a(group_id) vce(cluster group_id year)
@@ -131,6 +148,7 @@ esttab firm_brw_FPC_cic2 firm_brw_ExtFin_cic2 firm_brw_Tang_cic2 firm_brw_Invent
 *-------------------------------------------------------------------------------
 
 * 2. Regression of markup and marginal cost on monetary policy shocks
+
 cd "D:\Project E"
 use sample_matched_exp,clear
 
@@ -146,6 +164,7 @@ esttab firm_brw_MC0 firm_brw_MC firm_brw_Markup firm_brw_Markup_lag using "D:\Pr
 *-------------------------------------------------------------------------------
 
 * 3. Regression of firm-level variables on monetary policy shocks
+
 cd "D:\Project E"
 use cie_credit_brw,clear
 
