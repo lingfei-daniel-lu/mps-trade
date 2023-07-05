@@ -351,9 +351,8 @@ save sample_HS6,replace
 cd "D:\Project E\custom_0015"
 use custom_0015_exp,clear
 rename (hs_2 hs_4 hs_6) (HS2 HS4 HS6)
-tostring country,replace
-merge n:1 country using "D:\Project C\customs data\customs_country_code",nogen keep(matched)
-sort party_id coun_aim year
+merge n:1 country using "D:\Project C\customs data\customs_country_namecode",nogen keep(matched)
+sort party_id HS6 coun_aim year
 order party_id HS* coun* year
 format coun_aim %20s
 cd "D:\Project E\customs"
@@ -364,7 +363,6 @@ use ".\customs\customs_0015_exp",clear
 * add exchange rates and other macro variables
 merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
-drop if dlnRER==.
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
@@ -376,6 +374,7 @@ by party_id HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if ye
 bys HS6 coun_aim year: egen MS=pc(value),prop
 sort party_id HS6 coun_aim year
 by party_id HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
+drop if dlnRER==. | dlnprice==.
 * add monetary policy shocks
 merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
 merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
@@ -390,8 +389,9 @@ merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilpric
 merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
 * construct group id
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
+sort party_id HS6 coun_aim year
 egen group_id=group(party_id HS6 coun_aim)
 * drop outliers
 winsor2 dlnprice* dlnquant, trim
 xtset group_id year
-save sample_long_exp,replace
+save sample_customs_exp,replace

@@ -17,16 +17,17 @@
 cd "D:\Project E"
 use sample_matched_exp,clear
 
-* Baseline
+* Price
 eststo firm_brw0: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_lag: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
 * Quantity
+eststo firm_brw_quant0: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_quant: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_quant_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
-esttab firm_brw0 firm_brw firm_brw_lag firm_brw_quant firm_brw_quant_lag using "D:\Project E\tables\table_brw.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag)
+esttab firm_brw0 firm_brw firm_brw_lag firm_brw_quant0 firm_brw_quant firm_brw_quant_lag using "D:\Project E\tables\table_brw.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag)
 
 binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("US MPS and China's Export Price") savegraph("D:\Project E\figures\US_shock.png") replace
 
@@ -117,7 +118,10 @@ eststo firm_brw_EME: reghdfe dlnprice_tr brw dlnRER dlnrgdp if EME==1, a(group_i
 
 esttab firm_brw_US firm_brw_nonUS firm_brw_EU firm_brw_OECD firm_brw_EME using "D:\Project E\tables\table_brw_country_sub.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw dlnRER dlnrgdp)
 
+*-------------------------------------------------------------------------------
+
 * 1.5 Credit constraints
+
 cd "D:\Project E"
 use sample_matched_exp,clear
 
@@ -147,7 +151,7 @@ esttab firm_brw_FPC_cic2 firm_brw_ExtFin_cic2 firm_brw_Tang_cic2 firm_brw_Invent
 
 *-------------------------------------------------------------------------------
 
-* 2. Regression of markup and marginal cost on monetary policy shocks
+* 1.6 Markups and marginal costs
 
 cd "D:\Project E"
 use sample_matched_exp,clear
@@ -163,10 +167,14 @@ esttab firm_brw_MC0 firm_brw_MC firm_brw_Markup firm_brw_Markup_lag using "D:\Pr
 
 *-------------------------------------------------------------------------------
 
-* 3. Regression of firm-level variables on monetary policy shocks
+* 2. Regression of aggregate variables on monetary policy shocks
+
+*-------------------------------------------------------------------------------
 
 cd "D:\Project E"
 use cie_credit_brw,clear
+
+* 2.1 Firm-level credits
 
 * Account receivable to sales income
 eststo Arec_brw: reghdfe dArec_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
@@ -179,6 +187,8 @@ eststo IEoL_brw: reghdfe dIEoL_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
 eststo CWPoP_brw: reghdfe dlnCWPoP_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
 
 esttab Arec_brw FNoL_brw IEoL_brw CWPoP_brw using "D:\Project E\tables\table_brw_interest.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw)
+
+* 2.1 National credits
 
 * Loans to GDP
 cd "D:\Project E"

@@ -8,7 +8,8 @@
 
 *-------------------------------------------------------------------------------
 
-* 1. Regression of price change on brw
+* 1. Regressions of price change on monetary policy shocks
+
 cd "D:\Project E"
 use sample_HS6,clear
 
