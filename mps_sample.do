@@ -63,7 +63,8 @@ save japan_99_20,replace
 
 * 2. Exchange rates and macro variables
 
-* Construct exchange rate from PWT10.0
+* 2.1 Construct exchange rate from PWT10.0
+
 cd "D:\Project C\PWT10.0"
 use PWT100,clear
 keep if year>=1999 & year<=2019 
@@ -71,6 +72,9 @@ keep countrycode country currency_unit year xr pl_c rgdpna
 merge n:1 countrycode country currency_unit using pwt_country_name,nogen
 merge n:1 countrycode year using "D:\Project C\IMF CPI\CPI_99_19_code",nogen
 drop if xr==.
+save PWT100_99_19,replace
+
+use PWT100_99_19,clear
 * Bilateral nominal exchange rate relative to RMB at the same year
 gen NER=8.27825/xr if year==1999
 forv i=2000/2019{
@@ -91,15 +95,28 @@ by coun_aim: gen dlnRER= ln(RER)-ln(RER[_n-1]) if year==year[_n-1]+1
 by coun_aim: gen dlnrgdp=ln(rgdpna)-ln(rgdpna[_n-1]) if year==year[_n-1]+1
 by coun_aim: gen inflation=ln(cpi)-ln(cpi[_n-1]) if year==year[_n-1]+1
 * Flag countries pegged to the US dollar
-gen peg_USD=1 if countrycode=="ABW" | countrycode=="BHS" | countrycode=="PAN" | countrycode=="BHR"  | countrycode=="BRB" | countrycode=="BLZ" | countrycode=="BMU" | currency_unit =="East Caribbean Dollar" | currency_unit =="Netherlands Antillian Guilder"| currency_unit =="US Dollar" | countrycode=="DJI" | countrycode=="HKG" | countrycode=="JOR" | countrycode=="LBN" | countrycode=="MAC" | countrycode=="MDV" | countrycode=="OMN" | countrycode=="PAN" | countrycode=="QAT" | countrycode=="SAU" | countrycode=="ARE" | xr==1
-replace peg_USD=0 if peg_USD==.
+gen peg_USD=0
+local peg_code "ABW BHS PAN BHR BRB BLZ BMU DJI HKG JOR LBN MAC MDV OMN PAN QAT SAU ARE"
+foreach code of local peg_code{
+	replace peg_USD=1 if countrycode=="`code'"
+}
+replace peg_USD=1 if currency_unit =="East Caribbean Dollar" | currency_unit =="Netherlands Antillian Guilder"| currency_unit =="US Dollar" | xr==1
 * Other country groups
-gen OECD=1 if countrycode=="AUT" | countrycode=="BEL" | countrycode=="CAN" | countrycode=="DEU"  | countrycode=="DNK" | countrycode=="FRA" | countrycode=="GRC" | countrycode=="ISL" | countrycode=="IRL" | countrycode=="ITA" | countrycode=="LUX" | countrycode=="NLD" | countrycode=="NOR" | countrycode=="PRT" | countrycode=="ESP" | countrycode=="SWE" | countrycode=="CHE" | countrycode=="TUR" | countrycode=="USA" | countrycode=="GBR" | countrycode=="JPN" | countrycode=="FIN" | countrycode=="AUS" | countrycode=="NZL" | countrycode=="MEX" | countrycode=="CZE" | countrycode=="HUN" | countrycode=="KOR" | countrycode=="POL" | countrycode=="SVK" | countrycode=="CHL" | countrycode=="SVN" | countrycode=="EST" | countrycode=="ISR" | countrycode=="LVA" | countrycode=="LTU" 
-replace OECD=0 if OECD==.
-gen EU=1 if coun_aim=="比利时" | coun_aim=="比利时" | coun_aim=="法国" | coun_aim=="德国" | coun_aim=="意大利" | coun_aim=="卢森堡" | coun_aim=="荷兰" | coun_aim=="丹麦" | coun_aim=="爱尔兰" | coun_aim=="希腊" | coun_aim=="葡萄牙" | coun_aim=="西班牙" | coun_aim=="奥地利" | coun_aim=="芬兰" | coun_aim=="瑞典"
-replace EU=0 if EU==.
-gen EME=1 if coun_aim=="台湾省" | coun_aim=="巴西" | coun_aim=="智利" | coun_aim=="哥伦比亚" | coun_aim=="捷克" | coun_aim=="匈牙利" | coun_aim=="印度" | coun_aim=="印度" | coun_aim=="马来西亚" | coun_aim=="墨西哥" | coun_aim=="摩洛哥" | coun_aim=="秘鲁" | coun_aim=="菲律宾" | coun_aim=="波兰" | coun_aim=="俄罗斯" | coun_aim=="南非" | coun_aim=="韩国" | coun_aim=="泰国" | coun_aim=="土耳其"
-replace EME=0 if EME==.
+gen OECD=0
+local OECD_code "AUT BEL CAN DEU DNK FRA GRC ISL IRL ITA LUX NLD NOR PRT ESP SWE CHE TUR USA GBR JPN FIN AUS NZL MEX CZE HUN KOR POL SVK CHL SVN EST ISR LVA LTU"
+foreach code of local OECD_code{
+	replace OECD=1 if countrycode=="`code'"
+}
+gen EU=0
+local EU_code "BEL FRA DEU ITA LUX NLD DNK IRL GRC PRT ESP AUT FIN SWE"
+foreach code of local EU_code{
+	replace EU=1 if countrycode=="`code'"
+}
+gen EME=0
+local EME_code "TWN BRA CHL COL CZE HUN IND IDN MYS MEX MAR PER PHL POL RUS ZAF KOR THA TUR"
+foreach code of local EME_code{
+	replace EME=1 if countrycode=="`code'"
+}
 cd "D:\Project E\ER"
 save RER_99_19.dta,replace
 
@@ -109,6 +126,8 @@ keep year NER coun_aim
 rename NER NER_US
 gen dlnNER_US=ln(NER_US)-ln(NER_US[_n-1]) if year==year[_n-1]+1
 save US_NER_99_19.dta,replace
+
+* 2.2 Bank credit
 
 cd "D:\Project E\Almanac"
 import excel bankcredit.xlsx, sheet("Sheet1") firstrow clear
@@ -121,6 +140,33 @@ foreach var of local varlist {
 	gen `var'_lr = `var'_loans*100/(cgdpo*NER_US)
 }
 save bank_credit,replace
+
+* 2.3 World Bank import
+
+cd "D:\Project E\worldbank"
+import excel ".\API_NE.IMP.GNFS.CD_DS2_en_excel_v2_5729220.xls", sheet("Data") cellrange(A4:BO270) firstrow clear
+drop IndicatorName IndicatorCode CountryName
+reshape long imp, i(CountryCode) j(year)
+rename (CountryCode imp) (countrycode imp_country)
+drop if imp_country==.
+save wb_imp_60_22,replace
+
+cd "D:\Project E\worldbank"
+import excel ".\API_NE.EXP.GNFS.CD_DS2_en_excel_v2_5728863.xls", sheet("Data") cellrange(A4:BO270) firstrow clear
+drop IndicatorName IndicatorCode CountryName
+reshape long exp, i(CountryCode) j(year)
+rename (CountryCode exp) (countrycode exp_country)
+drop if exp_country==.
+save wb_exp_60_22,replace
+
+cd "D:\Project E\worldbank"
+use "D:\Project D\HS6_exp_00-19",clear
+collapse (sum) value, by(coun_aim year)
+merge n:1 coun_aim using "D:\Project C\customs data\customs_country_namecode",nogen keep(matched)
+merge 1:1 countrycode year using wb_imp_60_22,nogen keep(matched)
+gen exposure_CN_imp=value/imp_country
+replace exposure_CN=1 if exposure_CN>=1
+save wb_exposure_CN,replace
 
 ********************************************************************************
 
@@ -208,9 +254,9 @@ save cie_credit_brw,replace
 
 ********************************************************************************
 
-* 4. Sample Construction
+* 4. Customs data
 
-* 4.1 Firm-level matched sample, 2000-2007
+* 4.1 Matched customs data, 2000-2007
 
 cd "D:\Project C\sample_matched"
 use customs_matched,clear
@@ -233,6 +279,48 @@ foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口
 }
 cd "D:\Project E\customs"
 save customs_matched_exp,replace
+
+cd "D:\Project C\sample_matched"
+use customs_matched,clear
+* keep only import records
+keep if exp_imp =="imp"
+drop exp_imp
+* mark processing or assembly trade
+gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
+replace process=0 if process==.
+collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
+* add other firm-level variables
+merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
+merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
+merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
+replace dist=dist/1000
+replace distw=distw/1000
+* drop trade service firms
+foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
+	drop if strmatch(EN, "*`key'*") 
+}
+cd "D:\Project E\customs"
+save customs_matched_imp,replace
+
+*-------------------------------------------------------------------------------
+
+* 4.2 Universal customs data, 2000-2015
+
+cd "D:\Project E\custom_0015"
+use custom_0015_exp,clear
+rename (hs_2 hs_4 hs_6) (HS2 HS4 HS6)
+merge n:1 country using "D:\Project C\customs data\customs_country_namecode",nogen keep(matched)
+sort party_id HS6 coun_aim year
+order party_id HS* coun* year
+format coun_aim %20s
+cd "D:\Project E\customs"
+save customs_0015_exp,replace
+
+********************************************************************************
+
+* 5. Sample Construction
+
+* 5.1 Firm-level matched sample, 2000-2007
 
 cd "D:\Project E"
 use ".\customs\customs_matched_exp",replace
@@ -266,7 +354,6 @@ merge m:1 year using ".\MPS\others\ea_99_19",nogen keep(matched)
 merge m:1 year using ".\MPS\others\uk_98_15",nogen keep(matched)
 merge m:1 year using ".\MPS\others\japan_99_20",nogen keep(matched)
 * add other time series controls
-* merge m:1 year using ".\control\china\pwt100_CN",nogen keep(matched)
 merge m:1 year using ".\control\us\vix",nogen keep(matched) keepus(ave_vixcls)
 merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilprice goilprice)
 merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
@@ -281,6 +368,7 @@ bys FRDM year: egen export_sum_EU=total(value_year_EU)
 gen exposure_EU=export_sum_EU/export_sum
 drop export_sum_* value_year_*
 * construct group id
+drop if dlnprice==.
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 egen group_id=group(FRDM HS6 coun_aim process)
@@ -290,9 +378,65 @@ xtset group_id year
 format EN %30s
 save sample_matched_exp,replace
 
+cd "D:\Project E"
+use ".\customs\customs_matched_imp",replace
+* merge with CIE data
+merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec FN* IE* *_cic2 *_US ownership affiliate)
+* add exchange rates and other macro variables
+merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
+merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+drop if dlnRER==.
+* calculate import intensity
+gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
+winsor2 imp_int, trim replace
+* calculate changes of price, quantity and marginal cost
+gen price_RMB=value_year*NER_US/quant_year
+gen price_USD=value_year/quant_year
+gen MC_RMB=price_RMB/Markup_DLWTLD
+sort FRDM HS6 coun_aim year
+by FRDM HS6 coun_aim: gen dlnquant=ln(quant_year)-ln(quant_year[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnMC=ln(MC_RMB)-ln(MC_RMB[_n-1]) if year==year[_n-1]+1
+* calculate market shares
+bys HS6 coun_aim year: egen MS=pc(value_year),prop
+sort FRDM HS6 coun_aim year
+by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
+* add monetary policy shocks
+merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
+merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
+merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
+merge m:1 year using ".\MPS\others\ea_99_19",nogen keep(matched)
+merge m:1 year using ".\MPS\others\uk_98_15",nogen keep(matched)
+merge m:1 year using ".\MPS\others\japan_99_20",nogen keep(matched)
+* add other time series controls
+merge m:1 year using ".\control\us\vix",nogen keep(matched) keepus(ave_vixcls)
+merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilprice goilprice)
+merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
+* construct country imposures
+gen value_year_US=value_year if coun_aim=="美国"
+replace value_year_US=0 if value_year_US==.
+bys FRDM year: egen import_sum_US=total(value_year_US) 
+gen imposure_US=import_sum_US/import_sum
+gen value_year_EU=value_year if EU==1
+replace value_year_EU=0 if value_year_EU==.
+bys FRDM year: egen import_sum_EU=total(value_year_EU) 
+gen imposure_EU=import_sum_EU/import_sum
+drop import_sum_* value_year_*
+* construct group id
+drop if dlnprice==.
+gen HS2=substr(HS6,1,2)
+drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
+egen group_id=group(FRDM HS6 coun_aim process)
+* drop outliers
+winsor2 dlnprice* dlnquant dlnMC, trim
+xtset group_id year
+format EN %30s
+save sample_matched_imp,replace
+
 *-------------------------------------------------------------------------------
 
-* 4.2 Product-level matched sample, 2000-2019
+* 5.2 Product-level matched sample, 2000-2019
 
 cd "D:\Project E"
 use "D:\Project D\HS6_exp_00-19",clear
@@ -347,16 +491,7 @@ save sample_HS6,replace
 
 *-------------------------------------------------------------------------------
 
-* 4.3 Customs data, 2000-2015
-cd "D:\Project E\custom_0015"
-use custom_0015_exp,clear
-rename (hs_2 hs_4 hs_6) (HS2 HS4 HS6)
-merge n:1 country using "D:\Project C\customs data\customs_country_namecode",nogen keep(matched)
-sort party_id HS6 coun_aim year
-order party_id HS* coun* year
-format coun_aim %20s
-cd "D:\Project E\customs"
-save customs_0015_exp,replace
+* 5.3 Customs universal sample, 2000-2015
 
 cd "D:\Project E"
 use ".\customs\customs_0015_exp",clear

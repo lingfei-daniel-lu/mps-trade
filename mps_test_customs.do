@@ -1,4 +1,4 @@
-* This do-file is to run regressions for Yao and Lu (2023)
+* This do-file is to run regressions for Lu and Yao (2023)
 
 * Note: brw is monetary policy surprise; mpu is monetary policy uncertainty; lsap is large scale asset purchasing; fwgd is forward guidance.
 
@@ -8,12 +8,10 @@
 
 *-------------------------------------------------------------------------------
 
-* 1. Regressions of price change on monetary policy shocks
+* 1. Baseline
 
 cd "D:\Project E"
 use sample_customs_exp,clear
-
-* 1.1 Baseline
 
 * Price
 eststo customs_brw: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
@@ -23,10 +21,9 @@ eststo customs_brw_lag: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) 
 eststo customs_brw_quant: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo customs_brw_quant_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
-
 *-------------------------------------------------------------------------------
 
-* 1.2 Different periods
+* 2. Different periods
 
 cd "D:\Project E"
 use sample_customs_exp,clear
