@@ -313,8 +313,7 @@ merge n:1 country using "D:\Project C\customs data\customs_country_namecode",nog
 sort party_id HS6 coun_aim year
 order party_id HS* coun* year
 format coun_aim %20s
-cd "D:\Project E\customs"
-save customs_0015_exp,replace
+save customs_00_15_exp,replace
 
 ********************************************************************************
 
@@ -323,7 +322,7 @@ save customs_0015_exp,replace
 * 5.1 Firm-level matched sample, 2000-2007
 
 cd "D:\Project E"
-use ".\customs\customs_matched_exp",replace
+use customs\customs_matched_exp,replace
 * merge with CIE data
 merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec FN* IE* *_cic2 *_US ownership affiliate)
 * add exchange rates and other macro variables
@@ -376,10 +375,10 @@ egen group_id=group(FRDM HS6 coun_aim process)
 winsor2 dlnprice* dlnquant dlnMC, trim
 xtset group_id year
 format EN %30s
-save sample_matched_exp,replace
+save samples\sample_matched_exp,replace
 
 cd "D:\Project E"
-use ".\customs\customs_matched_imp",replace
+use customs\customs_matched_imp,replace
 * merge with CIE data
 merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec FN* IE* *_cic2 *_US ownership affiliate)
 * add exchange rates and other macro variables
@@ -432,7 +431,7 @@ egen group_id=group(FRDM HS6 coun_aim process)
 winsor2 dlnprice* dlnquant dlnMC, trim
 xtset group_id year
 format EN %30s
-save sample_matched_imp,replace
+save samples\sample_matched_imp,replace
 
 *-------------------------------------------------------------------------------
 

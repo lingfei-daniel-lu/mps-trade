@@ -11,7 +11,7 @@
 * 1. Baseline
 
 cd "D:\Project E"
-use sample_matched_exp,clear
+use samples\sample_matched_exp,clear
 
 * Price
 eststo firm_brw0: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
@@ -19,25 +19,25 @@ eststo firm_brw: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster
 eststo firm_brw_lag: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
 * Quantity
-eststo firm_brw_quant0: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw0_quant: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_quant: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo firm_brw_quant_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
-esttab firm_brw0 firm_brw firm_brw_lag firm_brw_quant0 firm_brw_quant firm_brw_quant_lag using "D:\Project E\tables\table_brw.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag)
+esttab firm_brw0 firm_brw firm_brw_lag firm_brw_quant0 firm_brw_quant firm_brw_quant_lag using tables\table_brw.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag)
 
 binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("US MPS and China's Export Price") savegraph("D:\Project E\figures\US_shock.png") replace
 
 * USD price
-eststo firm_brw_USD: reghdfe dlnprice_USD_tr dlnRER brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_lag_USD: reghdfe dlnprice_USD_tr dlnRER brw_lag dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_fixed_USD: reghdfe dlnprice_USD_tr dlnRER brw dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
+eststo firm_brw0_USD: reghdfe dlnprice_USD_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_USD: reghdfe dlnprice_USD_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_lag_USD: reghdfe dlnprice_USD_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
 *-------------------------------------------------------------------------------
 
 * 2. Alternative shocks
 
 cd "D:\Project E"
-use sample_matched_exp,clear
+use samples\sample_matched_exp,clear
 
 * Large scale asset purchase and forward guidance
 eststo firm_lsap: reghdfe dlnprice_tr lsap fwgd dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
@@ -59,7 +59,7 @@ binscatter dlnprice_tr target_ea, xtitle(EU monetary policy shock) ytitle(China'
 * 3. Firm-level heterogeneity
 
 cd "D:\Project E"
-use sample_matched_exp,clear
+use samples\sample_matched_exp,clear
 
 * Firm size: US shock
 gen brw_rSI=brw*ln(rSI)
@@ -121,7 +121,7 @@ gen eus_exposure_EU=target_ea*exposure_EU
 * 4. Subsamples
 
 cd "D:\Project E"
-use sample_matched_exp,clear
+use samples\sample_matched_exp,clear
 
 * US vs ROW
 eststo firm_brw_US: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="美国", a(group_id) vce(cluster group_id year)
@@ -148,7 +148,7 @@ esttab firm_brw_HK firm_brw_JPN firm_brw_KOR firm_brw_GER firm_brw_NL firm_brw_U
 * 5. Credit constraints
 
 cd "D:\Project E"
-use sample_matched_exp,clear
+use samples\sample_matched_exp,clear
 
 * Construct interaction terms
 local varlist "FPC_US ExtFin_US Tang_US Invent_US TrCredit_US FPC_cic2 ExtFin_cic2 Tang_cic2 Invent_cic2 Arec Arec_cic2"
@@ -179,7 +179,7 @@ esttab firm_brw_FPC_cic2 firm_brw_ExtFin_cic2 firm_brw_Tang_cic2 firm_brw_Invent
 * 6. Markups and marginal costs
 
 cd "D:\Project E"
-use sample_matched_exp,clear
+use samples\sample_matched_exp,clear
 
 gen dMarkup=Markup_DLWTLD-Markup_lag
 winsor2 dMarkup, trim
@@ -225,7 +225,7 @@ esttab firm_brw_MC0_FPC_US firm_brw_Markup0_FPC_US firm_brw_MC0_ExtFin_US firm_b
 * 7. Import prices
 
 cd "D:\Project E"
-use sample_matched_imp,clear
+use samples\sample_matched_imp,clear
 
 * Price
 eststo firm_brw_imp: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
@@ -237,13 +237,12 @@ eststo firm_brw_quant_lag_imp: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(gro
 
 binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's import price change) title("US MPS and China's Import Price") savegraph("D:\Project E\figures\US_shock_imp.png") replace
 
-
 *-------------------------------------------------------------------------------
 
 * 8. Firm-level credits
 
 cd "D:\Project E"
-use cie_credit_brw,clear
+use samples\cie_credit_brw,clear
 
 * Account receivable to sales income
 eststo Arec_brw: reghdfe dArec_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
