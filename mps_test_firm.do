@@ -14,16 +14,16 @@ cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
 * Price
-eststo firm_brw0: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_lag: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_noRER: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_lag: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
 * Quantity
-eststo firm_brw0_quant: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_quant: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_quant_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo quant_brw_noRER: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo quant_brw: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo quant_brw_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
-esttab firm_brw0 firm_brw firm_brw_lag firm_brw0_quant firm_brw_quant firm_brw_quant_lag using tables\table_brw.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag dlnRER)
+esttab price_brw_noRER price_brw price_brw_lag quant_brw_noRER quant_brw quant_brw_lag using tables\table_brw.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag dlnRER)
 
 binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("US MPS and China's Export Price") savegraph("D:\Project E\figures\US_shock.png") replace
 
@@ -179,19 +179,14 @@ esttab firm_eus_MC0 firm_eus_Markup0 firm_eus_MC firm_eus_Markup using "D:\Proje
 
 * Marginal cost and credit constraints
 
-local varlist "FPC_US ExtFin_US Tang_US"
-foreach var of local varlist {
-	gen brw_`var' = `var'*brw
-}
+eststo firm_brw_MC0_FPC_US: reghdfe dlnMC_tr brw c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_Markup0_FPC_US: reghdfe dMarkup brw c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_MC0_ExtFin_US: reghdfe dlnMC_tr brw c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_Markup0_ExtFin_US: reghdfe dMarkup brw c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_MC0_Tang_US: reghdfe dlnMC_tr brw c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo firm_brw_Markup0_Tang_US: reghdfe dMarkup c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
-eststo firm_brw_MC0_FPC_US: reghdfe dlnMC_tr brw brw_FPC_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Markup0_FPC_US: reghdfe dMarkup brw brw_FPC_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_MC0_ExtFin_US: reghdfe dlnMC_tr brw brw_ExtFin_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Markup0_ExtFin_US: reghdfe dMarkup brw brw_ExtFin_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_MC0_Tang_US: reghdfe dlnMC_tr brw brw_Tang_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Markup0_Tang_US: reghdfe dMarkup brw brw_Tang_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-
-esttab firm_brw_MC0_FPC_US firm_brw_Markup0_FPC_US firm_brw_MC0_ExtFin_US firm_brw_Markup0_ExtFin_US firm_brw_MC0_Tang_US firm_brw_Markup0_Tang_US using "D:\Project E\tables\table_brw_markup_credit.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_*)
+esttab firm_brw_MC0_FPC_US firm_brw_Markup0_FPC_US firm_brw_MC0_ExtFin_US firm_brw_Markup0_ExtFin_US firm_brw_MC0_Tang_US firm_brw_Markup0_Tang_US using "D:\Project E\tables\table_brw_markup_credit.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw c.brw*)
 
 *-------------------------------------------------------------------------------
 

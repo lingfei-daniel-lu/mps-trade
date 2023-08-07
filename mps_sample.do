@@ -172,14 +172,14 @@ save wb_exposure_CN,replace
 
 * 3. CIE data with credit constraints
 
-cd "D:\Project C\CIE"
-use cie_98_07,clear
+cd "D:\Project E"
+use "D:\Project C\CIE\cie_98_07",clear
 keep if year>=1999
 drop CFS CFC CFHMT CFF CFL CFI
 tostring cic_adj,replace
 gen cic2=substr(cic_adj,1,2)
 * Calculate firm-level markup from CIE
-merge 1:1 FRDM year using "D:\Project C\markup\cie_99_07_markup", nogen keepus(Markup_DLWTLD Markup_lag tfp_tld tfp_lag) keep(matched master)
+merge 1:1 FRDM year using markup\cie9907markup, nogen keepus(Markup_DLWTLD tfp_tld) keep(matched master)
 winsor2 Markup_*, trim replace by(cic2)
 winsor2 tfp_*, trim replace by(cic2)
 * Calculate firm-level real sales and cost
@@ -234,12 +234,13 @@ rename f1 FPC_cic2
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
 sort FRDM year
-save cie_credit_v2,replace
+save samples\cie_credit_v2,replace
 
-use cie_credit_v2,clear
+cd "D:\Project E"
+use samples\cie_credit_v2,clear
 * calculate import intensity
 merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",nogen keep(master matched) keepus(twoway_trade export_sum import_sum)
-merge n:1 year using "D:\Project E\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 gen exp_int=export_sum*NER_US/(SI*1000)
 gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
 replace exp_int=0 if exp_int==.
@@ -251,10 +252,10 @@ local varlist "rSI rCWP CWPoP"
 foreach var of local varlist{
 gen ln`var'=ln(`var')
 }
-save cie_credit_v3,replace
+save samples\cie_credit_v3,replace
 
 cd "D:\Project E"
-use "D:\Project C\CIE\cie_credit_v3",clear
+use samples\cie_credit_v3,clear
 * lag variables
 sort FRDM year
 local varlist "lnrSI lnrCWP lnCWPoP IEoS"
@@ -264,7 +265,7 @@ by FRDM: gen `var'_lag=ln(`var'[_n-1]) if year==year[_n-1]+1
 save samples\cie_credit_v3_lag,replace
 
 cd "D:\Project E"
-use "D:\Project C\CIE\cie_credit_v3",clear
+use samples\cie_credit_v3,clear
 * diff variables
 sort FRDM year
 local varlist "Arec IEoL lnrCWP lnCWPoP"
@@ -350,7 +351,7 @@ drop process
 * merge with CIE data
 merge n:1 FRDM year using samples\cie_credit_v3_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
 * add exchange rates and other macro variables
-merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
@@ -366,16 +367,16 @@ bys HS6 coun_aim year: egen MS=pc(value_year),prop
 sort FRDM HS6 coun_aim year
 by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
-merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
-merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
-merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
-merge m:1 year using ".\MPS\others\ea_99_19",nogen keep(matched)
-merge m:1 year using ".\MPS\others\uk_98_15",nogen keep(matched)
-merge m:1 year using ".\MPS\others\japan_99_20",nogen keep(matched)
+merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
+merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
+merge m:1 year using MPS\others\ea_99_19,nogen keep(matched)
+merge m:1 year using MPS\others\uk_98_15,nogen keep(matched)
+merge m:1 year using MPS\others\japan_99_20,nogen keep(matched)
 * add other time series controls
-merge m:1 year using ".\control\us\vix",nogen keep(matched) keepus(ave_vixcls)
-merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilprice goilprice)
-merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
+merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
+merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
+merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
 * construct country exposures
 gen value_year_US=value_year if coun_aim=="美国"
 replace value_year_US=0 if value_year_US==.
@@ -404,7 +405,7 @@ drop process
 * merge with CIE data
 merge n:1 FRDM year using samples\cie_credit_v3_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
 * add exchange rates and other macro variables
-merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
@@ -418,16 +419,16 @@ bys HS6 coun_aim year: egen MS=pc(value_year),prop
 sort FRDM HS6 coun_aim year
 by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
-merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
-merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
-merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
-merge m:1 year using ".\MPS\others\ea_99_19",nogen keep(matched)
-merge m:1 year using ".\MPS\others\uk_98_15",nogen keep(matched)
-merge m:1 year using ".\MPS\others\japan_99_20",nogen keep(matched)
+merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
+merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
+merge m:1 year using MPS\others\ea_99_19,nogen keep(matched)
+merge m:1 year using MPS\others\uk_98_15,nogen keep(matched)
+merge m:1 year using MPS\others\japan_99_20,nogen keep(matched)
 * add other time series controls
-merge m:1 year using ".\control\us\vix",nogen keep(matched) keepus(ave_vixcls)
-merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilprice goilprice)
-merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
+merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
+merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
+merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
 * construct country imposures
 gen value_year_US=value_year if coun_aim=="美国"
 replace value_year_US=0 if value_year_US==.
@@ -456,8 +457,8 @@ save samples\sample_matched_imp,replace
 cd "D:\Project E"
 use "D:\Project D\HS6_exp_00-19",clear
 * add exchange rates and other macro variables
-merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
-merge n:1 year coun_aim using ".\ER\RER_99_19.dta",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
+merge n:1 year coun_aim using ER\RER_99_19.dta,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
 drop if dlnRER==.
 * calculate quantity changes
 sort HS6 coun_aim year
@@ -473,10 +474,9 @@ drop if dlnprice==.
 bys HS6 coun_aim year: egen MS=pc(value),prop
 by HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
-cd "D:\Project E"
-merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
-merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
-merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
+merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
+merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
 * construct country exposures
 bys year: egen export_sum=total(value)
 gen value_US=value if coun_aim=="美国"
@@ -502,17 +502,17 @@ egen group_id=group(HS6 coun_aim)
 winsor2 dlnprice, trim
 winsor2 dlnprice_USD, trim
 xtset group_id year
-save sample_HS6,replace
+save samples\sample_HS6,replace
 
 *-------------------------------------------------------------------------------
 
 * 5.3 Customs universal sample, 2000-2015
 
 cd "D:\Project E"
-use ".\customs\customs_0015_exp",clear
+use custom_0015\customs_00_15_exp,clear
 * add exchange rates and other macro variables
-merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
-merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+merge n:1 year using "ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
@@ -526,17 +526,17 @@ sort party_id HS6 coun_aim year
 by party_id HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 drop if dlnRER==. | dlnprice==.
 * add monetary policy shocks
-merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
-merge m:1 year using ".\MPS\mpu\mpu_85_22",nogen keep(matched)
-merge m:1 year using ".\MPS\lsap\lsap_91_19",nogen keep(matched)
-merge m:1 year using ".\MPS\others\ea_99_19",nogen keep(matched)
-merge m:1 year using ".\MPS\others\uk_98_15",nogen keep(matched)
-merge m:1 year using ".\MPS\others\japan_99_20",nogen keep(matched)
+merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
+merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
+merge m:1 year using MPS\others\ea_99_19,nogen keep(matched)
+merge m:1 year using MPS\others\uk_98_15,nogen keep(matched)
+merge m:1 year using \MPS\others\japan_99_20,nogen keep(matched)
 * add other time series controls
 * merge m:1 year using ".\control\china\pwt100_CN",nogen keep(matched)
-merge m:1 year using ".\control\us\vix",nogen keep(matched) keepus(ave_vixcls)
-merge m:1 year using ".\control\us\oil_price",nogen keep(matched) keepus(oilprice goilprice)
-merge m:1 year using ".\control\us\oil_shock_year",nogen keep(matched)
+merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
+merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
+merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
 * construct group id
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 sort party_id HS6 coun_aim year
@@ -544,4 +544,4 @@ egen group_id=group(party_id HS6 coun_aim)
 * drop outliers
 winsor2 dlnprice* dlnquant, trim
 xtset group_id year
-save sample_customs_exp,replace
+save samples\sample_customs_exp,replace
