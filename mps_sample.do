@@ -178,11 +178,11 @@ keep if year>=1999
 drop CFS CFC CFHMT CFF CFL CFI
 tostring cic_adj,replace
 gen cic2=substr(cic_adj,1,2)
-* Add markup and tfp info
+* Calculate firm-level markup from CIE
 merge 1:1 FRDM year using "D:\Project C\markup\cie_99_07_markup", nogen keepus(Markup_DLWTLD Markup_lag tfp_tld tfp_lag) keep(matched master)
 winsor2 Markup_*, trim replace by(cic2)
 winsor2 tfp_*, trim replace by(cic2)
-* Calculate firm-level markup from CIE
+* Calculate firm-level real sales and cost
 sort FRDM year 
 keep if SI>0
 gen rSI=SI/OutputDefl*100
@@ -191,8 +191,6 @@ gen rCWP=CWP/InputDefl*100
 gen rkap=FA/inv_deflator*100
 gen vc=rTOIPT+rCWP
 gen tc=rTOIPT+rCWP+0.15*rkap
-gen SoC=rSI/tc
-winsor2 SoC*, trim replace by(cic2)
 * Calculate firm-level financial constraints from CIE
 gen Tang=FA/TA
 gen Invent=STOCK/SI
@@ -200,14 +198,14 @@ gen RDint=RND/SI
 gen Cash=(TWC-NAR-STOCK)/TA
 gen Liquid=(TWC-CL)/TA
 gen Levg=TA/TL
+drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Levg<0
 gen Arec=NAR/SI
-gen FNoL=FN/TL
 gen IEoL=IE/TL
-gen FNoS=FN/SI
 gen IEoS=IE/SI
 gen CWPoP=rCWP/PERSENG
-sort FRDM year
-drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Levg<0
+gen SoC=rSI/tc
+winsor2 SoC*, trim replace by(cic2)
+* Construct industry-level financial constraints by CIC2
 bys cic2: egen RDint_cic2=mean(RDint)
 local varlist "Tang Invent Cash Liquid Levg Arec"
 foreach var of local varlist {
@@ -235,22 +233,46 @@ rename f1 FPC_cic2
 * Match affiliation info
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
-sort FRDM EN year
-cd "D:\Project C\CIE"
+sort FRDM year
 save cie_credit_v2,replace
 
+use cie_credit_v2,clear
+* calculate import intensity
+merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",nogen keep(master matched) keepus(twoway_trade export_sum import_sum)
+merge n:1 year using "D:\Project E\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
+gen exp_int=export_sum*NER_US/(SI*1000)
+gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
+replace exp_int=0 if exp_int==.
+replace imp_int=0 if imp_int==.
+replace exp_int=1 if exp_int>=1
+replace imp_int=1 if imp_int>=1
+* log sales and costs
+local varlist "rSI rCWP CWPoP"
+foreach var of local varlist{
+gen ln`var'=ln(`var')
+}
+save cie_credit_v3,replace
+
 cd "D:\Project E"
-use "D:\Project C\CIE\cie_credit_v2",clear
-merge m:1 year using ".\MPS\brw\brw_94_21",nogen keep(matched)
-drop if SI<0 |Arec<0 | FN<0 | IE<0 | CWP<0
+use "D:\Project C\CIE\cie_credit_v3",clear
+* lag variables
 sort FRDM year
-by FRDM: gen lnSI_lag=ln(rSI[_n-1]) if year==year[_n-1]+1
-by FRDM: gen dArec=Arec-Arec[_n-1] if year==year[_n-1]+1
-by FRDM: gen dFNoL=FNoL-FNoL[_n-1] if year==year[_n-1]+1
-by FRDM: gen dIEoL=IEoL-IEoL[_n-1] if year==year[_n-1]+1
-by FRDM: gen dlnCWPoP=ln(CWPoP)-ln(CWPoP[_n-1]) if year==year[_n-1]+1
-winsor2 dArec dFNoL dIEoL dlnCWPoP, trim
-save cie_credit_brw,replace
+local varlist "lnrSI lnrCWP lnCWPoP IEoS"
+foreach var of local varlist{
+by FRDM: gen `var'_lag=ln(`var'[_n-1]) if year==year[_n-1]+1
+}
+save samples\cie_credit_v3_lag,replace
+
+cd "D:\Project E"
+use "D:\Project C\CIE\cie_credit_v3",clear
+* diff variables
+sort FRDM year
+local varlist "Arec IEoL lnrCWP lnCWPoP"
+foreach var of local varlist{
+by FRDM: gen d`var'=`var'-`var'[_n-1] if year==year[_n-1]+1
+}
+winsor2 dArec dIEoL dlnrCWP dlnCWPoP, trim
+save samples\cie_credit_v3_dif,replace
 
 ********************************************************************************
 
@@ -268,7 +290,7 @@ gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装�
 replace process=0 if process==.
 collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
 * add other firm-level variables
-merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
+merge n:1 FRDM year using customs_matched_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
 replace dist=dist/1000
@@ -290,7 +312,7 @@ gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装�
 replace process=0 if process==.
 collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
 * add other firm-level variables
-merge n:1 FRDM year using customs_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
+merge n:1 FRDM year using customs_matched_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
 replace dist=dist/1000
@@ -323,15 +345,13 @@ save customs_00_15_exp,replace
 
 cd "D:\Project E"
 use customs\customs_matched_exp,replace
+keep if process==0
+drop process
 * merge with CIE data
-merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec FN* IE* *_cic2 *_US ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_v3_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
 * add exchange rates and other macro variables
-merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
-* calculate import intensity
-gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
-winsor2 imp_int, trim replace
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
 gen price_USD=value_year/quant_year
@@ -370,7 +390,7 @@ drop export_sum_* value_year_*
 drop if dlnprice==.
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-egen group_id=group(FRDM HS6 coun_aim process)
+egen group_id=group(FRDM HS6 coun_aim)
 * drop outliers
 winsor2 dlnprice* dlnquant dlnMC, trim
 xtset group_id year
@@ -379,24 +399,20 @@ save samples\sample_matched_exp,replace
 
 cd "D:\Project E"
 use customs\customs_matched_imp,replace
+keep if process==0
+drop process
 * merge with CIE data
-merge n:1 FRDM year using "D:\Project C\CIE\cie_credit_v2",nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *Defl rSI rTOIPT rCWP rkap tc vc SoC Arec FN* IE* *_cic2 *_US ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_v3_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
 * add exchange rates and other macro variables
-merge n:1 year using ".\ER\US_NER_99_19",nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ".\ER\RER_99_19",nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
-* calculate import intensity
-gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
-winsor2 imp_int, trim replace
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
 gen price_USD=value_year/quant_year
-gen MC_RMB=price_RMB/Markup_DLWTLD
 sort FRDM HS6 coun_aim year
 by FRDM HS6 coun_aim: gen dlnquant=ln(quant_year)-ln(quant_year[_n-1]) if year==year[_n-1]+1
 by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
 by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
-by FRDM HS6 coun_aim: gen dlnMC=ln(MC_RMB)-ln(MC_RMB[_n-1]) if year==year[_n-1]+1
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
 sort FRDM HS6 coun_aim year
@@ -426,9 +442,9 @@ drop import_sum_* value_year_*
 drop if dlnprice==.
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-egen group_id=group(FRDM HS6 coun_aim process)
+egen group_id=group(FRDM HS6 coun_aim)
 * drop outliers
-winsor2 dlnprice* dlnquant dlnMC, trim
+winsor2 dlnprice* dlnquant, trim
 xtset group_id year
 format EN %30s
 save samples\sample_matched_imp,replace
