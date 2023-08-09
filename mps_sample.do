@@ -286,10 +286,10 @@ use customs_matched,clear
 * keep only export records
 keep if exp_imp =="exp"
 drop exp_imp
-* mark processing or assembly trade
-gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
-replace process=0 if process==.
-collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
+/* mark processing or assembly trade
+ gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
+ replace process=0 if process==. */
+collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6)
 * add other firm-level variables
 merge n:1 FRDM year using customs_matched_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
@@ -308,10 +308,10 @@ use customs_matched,clear
 * keep only import records
 keep if exp_imp =="imp"
 drop exp_imp
-* mark processing or assembly trade
-gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
-replace process=0 if process==.
-collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
+/* mark processing or assembly trade
+ gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
+ replace process=0 if process==. */
+collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6)
 * add other firm-level variables
 merge n:1 FRDM year using customs_matched_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
@@ -346,8 +346,6 @@ save customs_00_15_exp,replace
 
 cd "D:\Project E"
 use customs\customs_matched_exp,replace
-keep if process==0
-drop process
 * merge with CIE data
 merge n:1 FRDM year using samples\cie_credit_v3_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
 * add exchange rates and other macro variables
@@ -400,8 +398,6 @@ save samples\sample_matched_exp,replace
 
 cd "D:\Project E"
 use customs\customs_matched_imp,replace
-keep if process==0
-drop process
 * merge with CIE data
 merge n:1 FRDM year using samples\cie_credit_v3_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
 * add exchange rates and other macro variables
