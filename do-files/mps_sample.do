@@ -243,29 +243,12 @@ replace imp_int=0 if imp_int==.
 replace exp_int=1 if exp_int>=1
 replace imp_int=1 if imp_int>=1
 drop *_sum
-save samples\cie_credit_v2,replace
-
-cd "D:\Project E"
-use samples\cie_credit_v2,clear
 * log sales and costs
 local varlist "rSI rCWP CWPoP"
 foreach var of local varlist{
 gen ln`var'=ln(`var')
 }
-* lag variables
-sort FRDM year
-local varlist "lnrSI lnrCWP lnCWPoP IEoS"
-foreach var of local varlist{
-by FRDM: gen `var'_lag=ln(`var'[_n-1]) if year==year[_n-1]+1
-}
-* diff variables
-sort FRDM year
-local varlist "Arec IEoL lnrCWP lnCWPoP"
-foreach var of local varlist{
-by FRDM: gen d`var'=`var'-`var'[_n-1] if year==year[_n-1]+1
-}
-winsor2 dArec dIEoL dlnrCWP dlnCWPoP, trim
-save samples\cie_credit_v2_lag,replace
+save samples\cie_credit_v2,replace
 
 ********************************************************************************
 
@@ -426,7 +409,7 @@ use customs\customs_matched_exp,replace
 keep if process==0
 drop process
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_v3_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_v2_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
@@ -480,7 +463,7 @@ use customs\customs_matched_imp,replace
 keep if process==0
 drop process
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_v3_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_v2_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
