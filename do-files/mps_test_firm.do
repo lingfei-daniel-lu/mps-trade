@@ -14,23 +14,25 @@ cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
 * Price
-eststo price_brw_noRER: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo price_brw: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo price_brw_lag: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_noRER: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_brw: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_brw_lag: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 * Quantity
-eststo quant_brw_noRER: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo quant_brw: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo quant_brw_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo quant_brw_noRER: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id)
+eststo quant_brw: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo quant_brw_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 esttab price_brw_noRER price_brw price_brw_lag quant_brw_noRER quant_brw quant_brw_lag using tables\table_brw.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag dlnRER)
 
-binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("US MPS and China's Export Price") savegraph("D:\Project E\figures\US_shock.png") replace
+binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("US MPS and China's Export Price") savegraph(figures\US_shock.png) replace
 
 * USD price
-eststo firm_brw0_USD: reghdfe dlnprice_USD_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_USD: reghdfe dlnprice_USD_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_lag_USD: reghdfe dlnprice_USD_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_USD_noRER: reghdfe dlnprice_USD_tr brw dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_brw_USD: reghdfe dlnprice_USD_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_brw_USD_lag: reghdfe dlnprice_USD_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+
+esttab price_brw_USD_noRER price_brw_USD price_brw_USD_lag using tables\table_brw_USD.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag dlnRER)
 
 *-------------------------------------------------------------------------------
 
@@ -40,18 +42,18 @@ cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
 * Large scale asset purchase and forward guidance
-eststo firm_lsap0: reghdfe dlnprice_tr lsap fwgd dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_lsap: reghdfe dlnprice_tr lsap fwgd dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_lsap_lag: reghdfe dlnprice_tr lsap_lag fwgd_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_lsap_noRER: reghdfe dlnprice_tr lsap fwgd dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_lsap: reghdfe dlnprice_tr lsap fwgd dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_lsap_lag: reghdfe dlnprice_tr lsap_lag fwgd_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 * EU shock
-eststo firm_eus0: reghdfe dlnprice_tr target_ea path_ea dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_eus: reghdfe dlnprice_tr target_ea path_ea dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_eus_lag: reghdfe dlnprice_tr target_ea_lag path_ea_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_eus_noRER: reghdfe dlnprice_tr target_ea path_ea dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_eus: reghdfe dlnprice_tr target_ea path_ea dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_eus_lag: reghdfe dlnprice_tr target_ea_lag path_ea_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
-esttab firm_eus0 firm_eus firm_eus_lag using "D:\Project E\tables\table_eus.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(target_ea path_ea target_ea_lag path_ea_lag)
+esttab price_eus_noRER price_eus price_eus_lag using tables\table_eus.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(target_ea path_ea target_ea_lag path_ea_lag)
 
-binscatter dlnprice_tr target_ea, xtitle(EU monetary policy shock) ytitle(China's export price change) title(EU MPS and China's Export Price) savegraph("D:\Project E\figures\EU_shock.png") replace
+binscatter dlnprice_tr target_ea, xtitle(EU monetary policy shock) ytitle(China's export price change) title(EU MPS and China's Export Price) savegraph(figures\EU_shock.png) replace
 
 *-------------------------------------------------------------------------------
 
@@ -61,60 +63,49 @@ cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
 * Firm size: US shock
-eststo firm_brw_rSI: reghdfe dlnprice_tr brw c.brw#c.lnrSI_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_rSI: reghdfe dlnprice_tr c.brw#c.L.lnrSI dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
 * Two-way traders: US shock
-eststo firm_brw_twoway: reghdfe dlnprice_tr brw c.brw#c.twoway_trade dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_twoway: reghdfe dlnprice_tr c.brw#c.L.twoway_trade dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
 * Import intensity: US shock
-eststo firm_brw_imp_int: reghdfe dlnprice_tr brw c.brw#c.imp_int dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_imp_int: reghdfe dlnprice_tr c.brw#c.L.imp_int dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
 * Interest burden ratio: US shock
-eststo firm_brw_IEoS: reghdfe dlnprice_tr brw c.brw#c.IEoS_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_IEoS: reghdfe dlnprice_tr c.brw#c.L.IEoS dlnRER dlnrgdp, a(group_id year) vce(cluster group_id year)
 
 * Ownership: US shock
 gen SOE=1 if ownership=="SOE"
 replace SOE=0 if SOE==.
 gen MNE=1 if ownership=="MNE"
 replace MNE=0 if MNE==.
-eststo firm_brw_SOE: reghdfe dlnprice_tr brw c.brw#c.SOE dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_MNE: reghdfe dlnprice_tr brw c.brw#c.MNE dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-
-esttab firm_brw_rSI firm_brw_twoway firm_brw_imp_int firm_brw_IEoS firm_brw_SOE firm_brw_MNE using "D:\Project E\tables\table_brw_hetero.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw* dlnRER dlnrgdp)
+eststo price_brw_SOE: reghdfe dlnprice_tr c.brw#c.SOE dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_MNE: reghdfe dlnprice_tr c.brw#c.MNE dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
 * US and EU exposure
-eststo firm_brw_exp_int: reghdfe dlnprice_tr brw c.brw#c.exp_int dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_expUS: reghdfe dlnprice_tr brw c.brw#c.exposure_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_expEU: reghdfe dlnprice_tr brw c.brw#c.exposure_EU dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_exp_int: reghdfe dlnprice_tr c.brw#c.L.exp_int dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_expUS: reghdfe dlnprice_tr c.brw#c.L.exposure_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_expEU: reghdfe dlnprice_tr c.brw#c.L.exposure_EU dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-esttab firm_brw_exp_int firm_brw_expUS firm_brw_expEU using "D:\Project E\tables\table_brw_exposure.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw* dlnRER dlnrgdp)
+esttab price_brw_rSI price_brw_twoway price_brw_imp_int price_brw_IEoS price_brw_SOE price_brw_MNE price_brw_exp_int price_brw_expUS price_brw_expEU using tables\table_brw_x.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
 
 *-------------------------------------------------------------------------------
 
-* 4. Subsamples
+* 4. Country heterogeneity
 
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
-* US vs ROW
-eststo firm_brw_US: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="美国", a(group_id) vce(cluster group_id year)
-eststo firm_brw_nonUS: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim!="美国", a(group_id) vce(cluster group_id year)
-eststo firm_brw_EU: reghdfe dlnprice_tr brw dlnRER dlnrgdp if EU==1, a(group_id) vce(cluster group_id year)
-eststo firm_brw_OECD: reghdfe dlnprice_tr brw dlnRER dlnrgdp if OECD==1, a(group_id) vce(cluster group_id year)
-eststo firm_brw_EME: reghdfe dlnprice_tr brw dlnRER dlnrgdp if EME==1, a(group_id) vce(cluster group_id year)
+eststo price_brw_USA: reghdfe dlnprice_tr c.brw#c.USA dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_brw_EU: reghdfe dlnprice_tr c.brw#c.EU dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_brw_OECD: reghdfe dlnprice_tr c.brw#c.OECD dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_brw_EME: reghdfe dlnprice_tr c.brw#c.EME dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
-esttab firm_brw_US firm_brw_nonUS firm_brw_EU firm_brw_OECD firm_brw_EME using "D:\Project E\tables\table_brw_country_sub.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw dlnRER dlnrgdp)
+esttab price_brw_USA price_brw_EU price_brw_OECD price_brw_EME using tables\table_brw_country1.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
 
-* Other trading partners
-eststo firm_brw_HK: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="香港", a(group_id) vce(cluster group_id year)
-eststo firm_brw_JPN: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="日本", a(group_id) vce(cluster group_id year)
-eststo firm_brw_KOR: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="韩国", a(group_id) vce(cluster group_id year)
-eststo firm_brw_GER: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="德国", a(group_id) vce(cluster group_id year)
-eststo firm_brw_NL: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="荷兰", a(group_id) vce(cluster group_id year)
-eststo firm_brw_UK: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="英国", a(group_id) vce(cluster group_id year)
-eststo firm_brw_SGP: reghdfe dlnprice_tr brw dlnRER dlnrgdp if coun_aim=="新加坡", a(group_id) vce(cluster group_id year)
-
-esttab firm_brw_HK firm_brw_JPN firm_brw_KOR firm_brw_GER firm_brw_NL firm_brw_UK firm_brw_SGP using "D:\Project E\tables\table_brw_country_major.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw dlnRER dlnrgdp) mtitle(HK JPN KOR GER NL UK SGP)
+use samples\sample_matched_exp,clear
+keep if rank_exp<=54
+statsby _b _se n=(e(N)), by(coun_aim countrycode) saving(tables\table_brw_country2,replace): reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 *-------------------------------------------------------------------------------
 
@@ -123,29 +114,23 @@ esttab firm_brw_HK firm_brw_JPN firm_brw_KOR firm_brw_GER firm_brw_NL firm_brw_U
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
-* Construct interaction terms
-local varlist "FPC_US ExtFin_US Tang_US Invent_US TrCredit_US FPC_cic2 ExtFin_cic2 Tang_cic2 Invent_cic2 Arec Arec_cic2"
-foreach var of local varlist {
-	gen brw_`var' = `var'*brw
-}
-
 * Credit constraint from US measures
-eststo firm_brw_FPC_US: reghdfe dlnprice_tr brw_FPC_US brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_ExtFin_US: reghdfe dlnprice_tr brw_ExtFin_US brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Tang_US: reghdfe dlnprice_tr brw_Tang_US brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Invent_US: reghdfe dlnprice_tr brw_Invent_US brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_TrCredit_US: reghdfe dlnprice_tr brw_TrCredit_US brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_FPC_US: reghdfe dlnprice_tr c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_ExtFin_US: reghdfe dlnprice_tr c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_Tang_US: reghdfe dlnprice_tr c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_Invent_US: reghdfe dlnprice_tr c.brw#c.Invent_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_TrCredit_US: reghdfe dlnprice_tr c.brw#c.TrCredit_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-esttab firm_brw_FPC_US firm_brw_ExtFin_US firm_brw_Tang_US firm_brw_Invent_US firm_brw_TrCredit_US using "D:\Project E\tables\table_brw_credit.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_*)
+esttab price_brw_FPC_US price_brw_ExtFin_US price_brw_Tang_US price_brw_Invent_US price_brw_TrCredit_US using tables\table_brw_credit.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
 * Credit constraint from CN measures
-eststo firm_brw_FPC_cic2: reghdfe dlnprice_tr brw_FPC_cic2 brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_ExtFin_cic2: reghdfe dlnprice_tr brw_ExtFin_cic2 brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Tang_cic2: reghdfe dlnprice_tr brw_Tang_cic2 brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Invent_cic2: reghdfe dlnprice_tr brw_Invent_cic2 brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Arec_cic2: reghdfe dlnprice_tr brw_Arec_cic2 brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_FPC_cic2: reghdfe dlnprice_tr c.brw#c.FPC_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_ExtFin_cic2: reghdfe dlnprice_tr c.brw#c.ExtFin_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_Tang_cic2: reghdfe dlnprice_tr c.brw#c.Tang_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_Invent_cic2: reghdfe dlnprice_tr c.brw#c.Invent_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_Arec_cic2: reghdfe dlnprice_tr c.brw#c.Arec_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-esttab firm_brw_FPC_cic2 firm_brw_ExtFin_cic2 firm_brw_Tang_cic2 firm_brw_Invent_cic2 firm_brw_Arec_cic2 using "D:\Project E\tables\table_brw_credit_cic2.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_*)
+esttab price_brw_FPC_cic2 price_brw_ExtFin_cic2 price_brw_Tang_cic2 price_brw_Invent_cic2 price_brw_Arec_cic2 using tables\table_brw_credit_cic2.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
 *-------------------------------------------------------------------------------
 
@@ -154,39 +139,33 @@ esttab firm_brw_FPC_cic2 firm_brw_ExtFin_cic2 firm_brw_Tang_cic2 firm_brw_Invent
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
-gen dMarkup=Markup_DLWTLD-Markup_lag
+gen dMarkup=Markup_DLWTLD-D.Markup_DLWTLD
 winsor2 dMarkup, trim
 
 * MC and Markup: US shock
-eststo firm_brw_MC0: reghdfe dlnMC_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Markup0: reghdfe dMarkup_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo MC_brw: reghdfe dlnMC_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo Markup_brw: reghdfe dMarkup_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 * Price with MC and Markup controls: US shock
-eststo firm_brw_MC: reghdfe dlnprice_tr brw dlnMC_tr dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Markup: reghdfe dlnprice_tr brw dMarkup_tr dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_Markup: reghdfe dlnprice_tr brw dMarkup_tr dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
-esttab firm_brw_MC0 firm_brw_Markup0 firm_brw_MC firm_brw_Markup using "D:\Project E\tables\table_brw_markup.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw)
+esttab MC_brw Markup_brw price_brw_Markup using tables\table_brw_markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw dlnRER dlnrgdp)
 
 * MC and Markup: EU shock
-eststo firm_eus_MC0: reghdfe dlnMC_tr target_ea path_ea dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_eus_Markup0: reghdfe dMarkup_tr target_ea path_ea dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo MC_eus: reghdfe dlnMC_tr target_ea path_ea dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo Markup_eus: reghdfe dMarkup_tr target_ea path_ea dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 * Price with MC and Markup controls: EU shock
-eststo firm_eus_MC: reghdfe dlnprice_tr target_ea path_ea dlnMC_tr dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_eus_Markup: reghdfe dlnprice_tr target_ea path_ea dMarkup_tr dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_eus_Markup: reghdfe dlnprice_tr target_ea path_ea dMarkup_tr dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
-esttab firm_eus_MC0 firm_eus_Markup0 firm_eus_MC firm_eus_Markup using "D:\Project E\tables\table_eus_markup.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(target_ea path_ea)
+esttab MC_eus Markup_eus price_eus_Markup using tables\table_eus_markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(target_ea path_ea)
 
-* Marginal cost and credit constraints
+* Markup and credit constraints
+eststo Markup_brw_FPC_US: reghdfe dMarkup_tr c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo Markup_brw_ExtFin_US: reghdfe dMarkup_tr c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo Markup_brw_Tang_US: reghdfe dMarkup_tr c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-eststo firm_brw_MC0_FPC_US: reghdfe dlnMC_tr brw c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Markup0_FPC_US: reghdfe dMarkup brw c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_MC0_ExtFin_US: reghdfe dlnMC_tr brw c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Markup0_ExtFin_US: reghdfe dMarkup brw c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_MC0_Tang_US: reghdfe dlnMC_tr brw c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_Markup0_Tang_US: reghdfe dMarkup c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-
-esttab firm_brw_MC0_FPC_US firm_brw_Markup0_FPC_US firm_brw_MC0_ExtFin_US firm_brw_Markup0_ExtFin_US firm_brw_MC0_Tang_US firm_brw_Markup0_Tang_US using "D:\Project E\tables\table_brw_markup_credit.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw c.brw*)
+esttab Markup_brw_FPC_US Markup_brw_ExtFin_US Markup_brw_Tang_US using tables\table_brw_markup_credit.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
 *-------------------------------------------------------------------------------
 
@@ -196,18 +175,18 @@ cd "D:\Project E"
 use samples\sample_matched_imp,clear
 
 * Price
-eststo firm_brw0_imp: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_imp: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_lag_imp: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_noRER_imp: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_imp: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo price_brw_lag_imp: reghdfe dlnprice_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
 * Quantity
-eststo firm_brw0_quant_imp: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_quant_imp: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo firm_brw_quant_lag_imp: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo quant_brw_noRER_imp: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo quant_brw_imp: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo quant_brw_lag_imp: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
 
-esttab firm_brw0_imp firm_brw_imp firm_brw_lag_imp firm_brw0_quant_imp firm_brw_quant_imp firm_brw_quant_lag_imp using tables\table_brw_imp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag dlnRER)
+esttab price_brw_noRER_imp price_brw_imp price_brw_lag_imp quant_brw_noRER_imp quant_brw_imp quant_brw_lag_imp using tables\table_brw_imp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag dlnRER)
 
-binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's import price change) title("US MPS and China's Import Price") savegraph("D:\Project E\figures\US_shock_imp.png") replace
+binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's import price change) title("US MPS and China's Import Price") savegraph(figures\US_shock_imp.png) replace
 
 *-------------------------------------------------------------------------------
 
@@ -216,14 +195,17 @@ binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's impo
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
 
-* Account receivable to sales income
-eststo Arec_brw: reghdfe dArec_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
+* Sales income level
+eststo SI_brw: reghdfe D.lnrSI brw, a(firm_id) vce(cluster firm_id)
 
-* Financial expense and interest expense to total liability
-eststo FNoL_brw: reghdfe dFNoL_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
-eststo IEoL_brw: reghdfe dIEoL_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
+* Account receivable to sales income
+eststo Arec_brw: reghdfe D.Arec brw, a(firm_id) vce(cluster firm_id)
+
+* Interest expense to total liability
+eststo IEoL_brw: reghdfe D.IEoL brw, a(firm_id) vce(cluster firm_id)
 
 * Wage payment per worker
-eststo CWPoP_brw: reghdfe dlnCWPoP_tr brw lnSI_lag, a(FRDM) vce(cluster FRDM)
+eststo CWP_brw: reghdfe D.lnrCWP brw, a(firm_id) vce(cluster firm_id)
+eststo CWPoP_brw: reghdfe D.lnCWPoP brw, a(firm_id) vce(cluster firm_id)
 
-esttab Arec_brw FNoL_brw IEoL_brw CWPoP_brw using "D:\Project E\tables\table_brw_interest.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw)
+esttab SI_brw Arec_brw IEoL_brw CWP_brw CWPoP_brw using tables\table_brw_interest.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw)

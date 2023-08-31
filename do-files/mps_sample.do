@@ -71,6 +71,11 @@ keep if year>=1999 & year<=2019
 keep countrycode country currency_unit year xr pl_c rgdpna
 merge n:1 countrycode country currency_unit using pwt_country_name,nogen
 merge n:1 countrycode year using "D:\Project C\IMF CPI\CPI_99_19_code",nogen
+replace cpi=100 if year==2010 & coun_aim=="台湾省"
+forv i=1999/2019{
+	global cpi_TWN_`i'=pl_c[`i'+1530]/pl_c[3540]*100
+	replace cpi=${cpi_TWN_`i'} if year==`i' & coun_aim=="台湾省"
+}
 drop if xr==.
 save PWT100_99_19,replace
 
@@ -250,6 +255,13 @@ gen ln`var'=ln(`var')
 }
 save samples\cie_credit_v2,replace
 
+cd "D:\Project E"
+use samples\cie_credit_v2,clear
+merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+egen firm_id=group(FRDM)
+xtset firm_id year
+save samples\cie_credit_brw,replace
+
 ********************************************************************************
 
 * 4. Customs data
@@ -405,11 +417,9 @@ save tradedata_2006_monthly.dta,replace
 * 5.1 Firm-level matched sample, 2000-2007
 
 cd "D:\Project E"
-use customs\customs_matched_exp,replace
-keep if process==0
-drop process
+use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_v2_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_v2,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
@@ -424,8 +434,6 @@ by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==
 by FRDM HS6 coun_aim: gen dlnMC=ln(MC_RMB)-ln(MC_RMB[_n-1]) if year==year[_n-1]+1
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
-sort FRDM HS6 coun_aim year
-by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
 merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
@@ -448,7 +456,6 @@ bys FRDM year: egen export_sum_EU=total(value_year_EU)
 gen exposure_EU=export_sum_EU/export_sum
 drop export_sum_* value_year_*
 * construct group id
-drop if dlnprice==.
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 egen group_id=group(FRDM HS6 coun_aim)
@@ -459,11 +466,9 @@ format EN %30s
 save samples\sample_matched_exp,replace
 
 cd "D:\Project E"
-use customs\customs_matched_imp,replace
-keep if process==0
-drop process
+use customs_matched\customs_matched_imp,replace
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_v2_lag,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_lag *_cic2 *_US *_int ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_v2,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
@@ -476,8 +481,6 @@ by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==ye
 by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
-sort FRDM HS6 coun_aim year
-by FRDM HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
 merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
@@ -500,7 +503,6 @@ bys FRDM year: egen import_sum_EU=total(value_year_EU)
 gen imposure_EU=import_sum_EU/import_sum
 drop import_sum_* value_year_*
 * construct group id
-drop if dlnprice==.
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 egen group_id=group(FRDM HS6 coun_aim)
