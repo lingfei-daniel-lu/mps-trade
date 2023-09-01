@@ -11,7 +11,6 @@ cd "D:\Project E\MPS\brw"
 use BRW_mps,replace
 collapse (sum) brw_fomc, by(year)
 rename brw_fomc brw
-gen brw_lag=brw[_n-1]
 save brw_94_21,replace
 
 twoway scatter brw year, ytitle(US monetary policy shock) xtitle(Year) title("Monetary policy shock series by BRW(2021)") saving(BRW.png, replace)
@@ -23,7 +22,6 @@ gen year=substr(Month,1,4) if substr(Month,1,1)!=" "
 replace year=substr(Month,2,4) if substr(Month,1,1)==" "
 destring year,replace
 collapse (sum) USMPU, by(year)
-gen USMPU_lag=USMPU[_n-1]
 save mpu_85_22,replace
 
 * lsap & fwgd: US large scale asset purchasing and forward guidance
@@ -33,31 +31,7 @@ gen year=substr(date,-4,.)
 destring year,replace
 rename (federalfundsratefactor lsapfactor forwardguidancefactor) (ffr lsap fwgd)
 collapse (sum) ffr lsap fwgd, by(year)
-gen ffr_lag=ffr[_n-1]
-gen lsap_lag=lsap[_n-1]
-gen fwgd_lag=fwgd[_n-1]
 save lsap_91_19,replace
-
-* ea shock: EU monetary policy 1999-2021
-cd "D:\Project E\MPS\others"
-use shock_ea,replace
-gen target_ea_lag=target_ea[_n-1]
-gen path_ea_lag=path_ea[_n-1]
-gen lsap_ea_lag=lsap_ea[_n-1]
-save ea_99_19,replace
-
-* uk shock: UK and Japan monetary policy, 1998-2015
-cd "D:\Project E\MPS\others"
-use shock_uk,replace
-gen shock_uk_lag=shock_uk[_n-1]
-save uk_98_15,replace
-
-* japan shock: Japan monetary policy, 1999-2020
-cd "D:\Project E\MPS\others"
-use shock_japan,replace
-gen target_japan_lag=target_japan[_n-1]
-gen path_japan_lag=path_japan[_n-1]
-save japan_99_20,replace
 
 ********************************************************************************
 
@@ -177,10 +151,48 @@ save wb_exposure_CN,replace
 
 * 3. CIE data with credit constraints
 
-cd "D:\Project E"
-use "D:\Project C\CIE\cie_98_07",clear
-keep if year>=1999
+* Construct new CIE data, focus on manufacturing firms
+cd "D:\Project A\CIE"
+use cie1998.dta,clear
+keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL CWP FN IE CFS CFC CFL CFI CPHMT CFF)
+append using cie1999,keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL CWP FN IE TP CFS CFC CFL CFI CPHMT CFF)
+rename CPHMT CFHMT
+forv i = 2000/2004{
+append using cie`i',keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL CWP FN IE TP CFS CFC CFL CFI CFHMT CFF)
+}
+forv i = 2005/2006{
+append using cie`i',keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL F334 CWP FN IE TP CFS CFC CFL CFI CFHMT CFF)
+}
+rename F334 RND
+append using cie2007,keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL RND CWP FN IE TP CFS CFC CFL CFI CFHMT CFF)
+bys FRDM: egen EN_adj=mode(EN),maxmode
+bys FRDM: egen REGTYPE_adj=mode(REGTYPE),maxmode
+drop EN REGTYPE
+rename (EN_adj REGTYPE_adj) (EN REGTYPE)
+gen year_cic=2 if year<=2002
+replace year_cic=3 if year>2002
+merge n:1 INDTYPE year_cic using "D:\Project A\deflator\cic_adj",nogen keep(matched)
+drop year_cic    
+destring cic_adj,replace
+merge n:1 cic_adj year using "D:\Project A\deflator\input_deflator",nogen keep(matched)
+merge n:1 cic_adj year using "D:\Project A\deflator\output_deflator",nogen keep(matched)
+merge n:1 year using "D:\Project A\deflator\inv_deflator.dta",nogen keep(matched) keepus(inv_deflator)
+*add registration type
+gen ownership="SOE" if (REGTYPE=="110" | REGTYPE=="141" | REGTYPE=="143" | REGTYPE=="151" )
+replace ownership="DPE" if (REGTYPE=="120" | REGTYPE=="130" | REGTYPE=="142" | REGTYPE=="149" | REGTYPE=="159" | REGTYPE=="160" | REGTYPE=="170" | REGTYPE=="171" | REGTYPE=="172" | REGTYPE=="173" | REGTYPE=="174" | REGTYPE=="190")
+replace ownership="JV" if (REGTYPE=="210" | REGTYPE=="220" | REGTYPE=="310" | REGTYPE=="320")
+replace ownership="MNE" if (REGTYPE=="230" | REGTYPE=="240" | REGTYPE=="330" | REGTYPE=="340")
+replace ownership="DPE" if ownership=="" & (CFS==0 & CFC==0 & CFHMT==0 & CFF==0)
+replace ownership="SOE" if ownership=="" & (CFHMT==0 & CFF==0)
+replace ownership="MNE" if ownership=="" & (CFHMT!=0 | CFF!=0)
 drop CFS CFC CFHMT CFF CFL CFI
+sort FRDM year
+format EN %30s
+save "D:\Project E\CIE\cie_98_07",replace
+
+cd "D:\Project E"
+use CIE\cie_98_07,clear
+keep if year>=1999
 tostring cic_adj,replace
 gen cic2=substr(cic_adj,1,2)
 * Calculate firm-level markup from CIE
@@ -208,8 +220,8 @@ gen Arec=NAR/SI
 gen IEoL=IE/TL
 gen IEoS=IE/SI
 gen CWPoP=rCWP/PERSENG
-gen SoC=rSI/tc
-winsor2 SoC*, trim replace by(cic2)
+gen CoS=vc/rSI
+gen TPoS=TP/SI
 * Construct industry-level financial constraints by CIC2
 bys cic2: egen RDint_cic2=mean(RDint)
 local varlist "Tang Invent Cash Liquid Levg Arec"
@@ -243,6 +255,7 @@ merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",n
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 gen exp_int=export_sum*NER_US/(SI*1000)
 gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
+gen trade_int=(import_sum+export_sum)*NER_US/(SI*1000)
 replace exp_int=0 if exp_int==.
 replace imp_int=0 if imp_int==.
 replace exp_int=1 if exp_int>=1
@@ -253,10 +266,10 @@ local varlist "rSI rCWP CWPoP"
 foreach var of local varlist{
 gen ln`var'=ln(`var')
 }
-save samples\cie_credit_v2,replace
+save CIE\cie_credit_v2,replace
 
 cd "D:\Project E"
-use samples\cie_credit_v2,clear
+use CIE\cie_credit_v2,clear
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
 egen firm_id=group(FRDM)
 xtset firm_id year
@@ -329,12 +342,13 @@ save customs_00_15_exp,replace
 
 * 4.3 Monthly customs data, 2000-2006
 
+cd "D:\Project E\customs_raw"
+
 * 2000-2001
 forv j=0/1{
-cd "D:\Project E\customs_raw\200`j'"
-use tradedata_200`j'_1,clear
+use 200`j'\tradedata_200`j'_1,clear
 forv i=2/12{
-append using tradedata_200`j'_`i'
+append using 200`j'\tradedata_200`j'_`i'
 }
 gen year=substr(shipment_date,1,4)
 gen month=substr(shipment_date,5,2)
@@ -343,14 +357,14 @@ rename (hs_id company country) (HS8 EN coun_aim)
 collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
 replace exp_imp="imp" if exp_imp=="1"
 replace exp_imp="exp" if exp_imp=="0"
+drop if party_id==""
 save tradedata_200`j'_monthly.dta,replace
 }
 
 * 2002
-cd "D:\Project E\customs_raw\2002"
-use tradedata_2002_1,clear
+use 2002\tradedata_2002_1,clear
 forv i=2/12{
-append using tradedata_2002_`i'
+append using 2002\tradedata_2002_`i'
 }
 gen year=substr(shipment_date,1,4)
 gen month=substr(shipment_date,5,2)
@@ -359,14 +373,14 @@ rename (hs_id pname 国家名称_C 进出口_C companytype) (HS8 EN coun_aim exp
 collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
 replace exp_imp="imp" if exp_imp=="进口"
 replace exp_imp="exp" if exp_imp=="出口"
+drop if party_id==""
 save tradedata_2002_monthly.dta,replace
 
 * 2003-2004
 forv j=3/4{
-cd "D:\Project E\customs_raw\200`j'"
-use tradedata_200`j'_1,clear
+use 200`j'\tradedata_200`j'_1,clear
 forv i=2/12{
-append using tradedata_200`j'_`i'
+append using 200`j'\tradedata_200`j'_`i'
 }
 gen year=substr(日期,1,4)
 gen month=substr(日期,5,2)
@@ -375,14 +389,14 @@ rename (进口或出口 企业编码 经营单位 企业性质 税号编码 起�
 collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
 replace exp_imp="imp" if exp_imp=="进口"
 replace exp_imp="exp" if exp_imp=="出口"
+drop if party_id==""
 save tradedata_200`j'_monthly.dta,replace
 }
 
 * 2005
-cd "D:\Project E\customs_raw\2005"
-use tradedata_2005_1,clear
+use 2005\tradedata_2005_1,clear
 forv i=2/12{
-append using tradedata_2005_`i'
+append using 2005\tradedata_2005_`i'
 }
 gen year=substr(shipment_date,1,4)
 gen month=substr(shipment_date,5,2)
@@ -392,13 +406,13 @@ rename (exp_or_imp company hs_id country) (exp_imp EN HS8 coun_aim)
 collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
 replace exp_imp="imp" if exp_imp=="进口"
 replace exp_imp="exp" if exp_imp=="出口"
+drop if party_id==""
 save tradedata_2005_monthly.dta,replace
 
 * 2006
-cd "D:\Project E\customs_raw\2006"
-use tradedata_2006_1,clear
+use 2006\tradedata_2006_1,clear
 forv i=2/12{
-append using tradedata_2006_`i'
+append using 2006\tradedata_2006_`i'
 }
 gen year=substr(月度,1,4)
 gen month=substr(月度,5,2)
@@ -408,7 +422,30 @@ destring value quantity,replace
 collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
 replace exp_imp="imp" if exp_imp=="进口"
 replace exp_imp="exp" if exp_imp=="出口"
+drop if party_id==""
+format EN %30s
 save tradedata_2006_monthly.dta,replace
+
+* Append 2000-2006
+cd "D:\Project E\customs_raw"
+local direction "exp imp"
+foreach var of local direction {
+use tradedata_2000_monthly,clear
+forv j=2/6{
+append using tradedata_200`j'_monthly
+}
+keep if exp_imp=="`var'"
+drop exp_imp
+gen HS6=substr(HS8,1,6)
+gen HS2=substr(HS8,1,2)
+collapse (sum) value quantity, by(party_id EN HS6 HS2 coun_aim year month CompanyType)
+format EN %30s
+format coun_aim %20s
+save tradedata_monthly_`var',replace
+}
+forv j=0/6{
+erase tradedata_200`j'_monthly.dta
+}
 
 ********************************************************************************
 
@@ -419,7 +456,7 @@ save tradedata_2006_monthly.dta,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_v2,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 SI Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
@@ -438,18 +475,21 @@ bys HS6 coun_aim year: egen MS=pc(value_year),prop
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
 merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
 merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
-merge m:1 year using MPS\others\ea_99_19,nogen keep(matched)
-merge m:1 year using MPS\others\uk_98_15,nogen keep(matched)
-merge m:1 year using MPS\others\japan_99_20,nogen keep(matched)
+merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
+merge m:1 year using MPS\others\shock_uk,nogen keep(matched)
+merge m:1 year using MPS\others\shock_japan,nogen keep(matched)
 * add other time series controls
 merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
 merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
 merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
 * construct country exposures
+** exposure to US
 gen value_year_US=value_year if coun_aim=="美国"
 replace value_year_US=0 if value_year_US==.
 bys FRDM year: egen export_sum_US=total(value_year_US) 
 gen exposure_US=export_sum_US/export_sum
+gen exposure_US_SI=export_sum_US*NER_US/(SI*1000)
+** exposure to EU
 gen value_year_EU=value_year if EU==1
 replace value_year_EU=0 if value_year_EU==.
 bys FRDM year: egen export_sum_EU=total(value_year_EU) 
@@ -468,7 +508,7 @@ save samples\sample_matched_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_imp,replace
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_v2,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
@@ -485,18 +525,20 @@ bys HS6 coun_aim year: egen MS=pc(value_year),prop
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
 merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
 merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
-merge m:1 year using MPS\others\ea_99_19,nogen keep(matched)
-merge m:1 year using MPS\others\uk_98_15,nogen keep(matched)
-merge m:1 year using MPS\others\japan_99_20,nogen keep(matched)
+merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
+merge m:1 year using MPS\others\shock_uk,nogen keep(matched)
+merge m:1 year using MPS\others\shock_japan,nogen keep(matched)
 * add other time series controls
 merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
 merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
 merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
 * construct country imposures
+** exposure to US
 gen value_year_US=value_year if coun_aim=="美国"
 replace value_year_US=0 if value_year_US==.
 bys FRDM year: egen import_sum_US=total(value_year_US) 
 gen imposure_US=import_sum_US/import_sum
+** exposure to EU
 gen value_year_EU=value_year if EU==1
 replace value_year_EU=0 if value_year_EU==.
 bys FRDM year: egen import_sum_EU=total(value_year_EU) 
@@ -520,49 +562,41 @@ cd "D:\Project E"
 use "D:\Project D\HS6_exp_00-19",clear
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
-merge n:1 year coun_aim using ER\RER_99_19.dta,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU)
+merge n:1 year coun_aim using ER\RER_99_19.dta,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
-* calculate quantity changes
-sort HS6 coun_aim year
-by HS6 coun_aim: gen dlnquantity=ln(quantity)-ln(quantity[_n-1]) if year==year[_n-1]+1
-* calculate price changes 
-sort HS6 coun_aim year
+* calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
+sort HS6 coun_aim year
+by HS6 coun_aim: gen dlnquant=ln(quant)-ln(quant[_n-1]) if year==year[_n-1]+1
 by HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
 by HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
-drop if dlnprice==.
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value),prop
-by HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
 merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
 merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
+merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
+merge m:1 year using MPS\others\shock_uk,nogen keep(matched)
+merge m:1 year using MPS\others\shock_japan,nogen keep(matched)
 * construct country exposures
-bys year: egen export_sum=total(value)
+bys HS6 year: egen export_sum=total(value) 
 gen value_US=value if coun_aim=="美国"
 replace value_US=0 if value_US==.
-bys year: egen export_sum_US=total(value_US) 
+bys HS6 year: egen export_sum_US=total(value_US) 
 gen exposure_US=export_sum_US/export_sum
 gen value_EU=value if EU==1
-replace value_EU=0 if value_US==.
-bys year: egen export_sum_EU=total(value_EU) 
+replace value_EU=0 if value_EU==.
+bys HS6 year: egen export_sum_EU=total(value_EU) 
 gen exposure_EU=export_sum_EU/export_sum
-* construct different periods
-gen prezlb=1 if year<2008
-replace prezlb =0 if prezlb==.
-gen zlb=1 if year>=2008 & year<2016
-replace zlb=0 if zlb==.
-gen postzlb=1 if year>=2016
-replace postzlb=0 if postzlb==.
+drop export_sum_* value_*
 * construct group id
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 egen group_id=group(HS6 coun_aim)
 * drop outliers
-winsor2 dlnprice, trim
-winsor2 dlnprice_USD, trim
+winsor2 dlnprice* dlnquant, trim
 xtset group_id year
 save samples\sample_HS6,replace
 
@@ -573,7 +607,7 @@ save samples\sample_HS6,replace
 cd "D:\Project E"
 use custom_0015\customs_00_15_exp,clear
 * add exchange rates and other macro variables
-merge n:1 year using "ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
@@ -584,18 +618,15 @@ by party_id HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year
 by party_id HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value),prop
-sort party_id HS6 coun_aim year
-by party_id HS6 coun_aim: gen MS_lag=MS[_n-1] if year==year[_n-1]+1
 drop if dlnRER==. | dlnprice==.
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
 merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
 merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
-merge m:1 year using MPS\others\ea_99_19,nogen keep(matched)
-merge m:1 year using MPS\others\uk_98_15,nogen keep(matched)
-merge m:1 year using \MPS\others\japan_99_20,nogen keep(matched)
+merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
+merge m:1 year using MPS\others\shock_uk,nogen keep(matched)
+merge m:1 year using MPS\others\shock_japan,nogen keep(matched)
 * add other time series controls
-* merge m:1 year using ".\control\china\pwt100_CN",nogen keep(matched)
 merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
 merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
 merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
@@ -607,3 +638,10 @@ egen group_id=group(party_id HS6 coun_aim)
 winsor2 dlnprice* dlnquant, trim
 xtset group_id year
 save samples\sample_customs_exp,replace
+
+*-------------------------------------------------------------------------------
+
+* 5.4 Customs monthly sample, 2000-2006
+
+cd "D:\Project E"
+use customs_raw\tradedata_monthly_exp,clear
