@@ -214,8 +214,8 @@ gen Invent=STOCK/SI
 gen RDint=RND/SI
 gen Cash=(TWC-NAR-STOCK)/TA
 gen Liquid=(TWC-CL)/TA
-gen Levg=TA/TL
-drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Levg<0
+gen Debt=TL/TA
+drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Debt<0
 gen Arec=NAR/SI
 gen IEoL=IE/TL
 gen IEoS=IE/SI
@@ -224,7 +224,7 @@ gen CoS=vc/rSI
 gen TPoS=TP/SI
 * Construct industry-level financial constraints by CIC2
 bys cic2: egen RDint_cic2=mean(RDint)
-local varlist "Tang Invent Cash Liquid Levg Arec"
+local varlist "Tang Invent Cash Liquid Debt"
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys cic2: egen `var'_cic2 = median(`var')
@@ -250,7 +250,16 @@ rename f1 FPC_cic2
 * Match affiliation info
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
-* calculate import intensity
+* log sales and costs
+local varlist "rSI rCWP CWPoP"
+foreach var of local varlist{
+gen ln`var'=ln(`var')
+}
+save CIE\cie_credit_v2,replace
+
+cd "D:\Project E"
+use CIE\cie_credit_v2,clear
+* calculate trade intensity
 merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",nogen keep(master matched) keepus(export_sum import_sum)
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 gen exp_int=export_sum*NER_US/(SI*1000)
@@ -261,15 +270,7 @@ replace imp_int=0 if imp_int==.
 replace exp_int=1 if exp_int>=1
 replace imp_int=1 if imp_int>=1
 drop *_sum
-* log sales and costs
-local varlist "rSI rCWP CWPoP"
-foreach var of local varlist{
-gen ln`var'=ln(`var')
-}
-save CIE\cie_credit_v2,replace
-
-cd "D:\Project E"
-use CIE\cie_credit_v2,clear
+* merge with monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
 egen firm_id=group(FRDM)
 xtset firm_id year
@@ -456,7 +457,7 @@ erase tradedata_200`j'_monthly.dta
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 SI Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_brw,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 SI Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
@@ -504,55 +505,6 @@ winsor2 dlnprice* dlnquant dlnMC, trim
 xtset group_id year
 format EN %30s
 save samples\sample_matched_exp,replace
-
-cd "D:\Project E"
-use customs_matched\customs_matched_imp,replace
-* merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
-* add exchange rates and other macro variables
-merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
-drop if dlnRER==.
-* calculate changes of price, quantity and marginal cost
-gen price_RMB=value_year*NER_US/quant_year
-gen price_USD=value_year/quant_year
-sort FRDM HS6 coun_aim year
-by FRDM HS6 coun_aim: gen dlnquant=ln(quant_year)-ln(quant_year[_n-1]) if year==year[_n-1]+1
-by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
-by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
-* calculate market shares
-bys HS6 coun_aim year: egen MS=pc(value_year),prop
-* add monetary policy shocks
-merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
-merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
-merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
-merge m:1 year using MPS\others\shock_uk,nogen keep(matched)
-merge m:1 year using MPS\others\shock_japan,nogen keep(matched)
-* add other time series controls
-merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
-merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
-merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
-* construct country imposures
-** exposure to US
-gen value_year_US=value_year if coun_aim=="美国"
-replace value_year_US=0 if value_year_US==.
-bys FRDM year: egen import_sum_US=total(value_year_US) 
-gen imposure_US=import_sum_US/import_sum
-** exposure to EU
-gen value_year_EU=value_year if EU==1
-replace value_year_EU=0 if value_year_EU==.
-bys FRDM year: egen import_sum_EU=total(value_year_EU) 
-gen imposure_EU=import_sum_EU/import_sum
-drop import_sum_* value_year_*
-* construct group id
-gen HS2=substr(HS6,1,2)
-drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-egen group_id=group(FRDM HS6 coun_aim)
-* drop outliers
-winsor2 dlnprice* dlnquant, trim
-xtset group_id year
-format EN %30s
-save samples\sample_matched_imp,replace
 
 *-------------------------------------------------------------------------------
 

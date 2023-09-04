@@ -68,19 +68,20 @@ binscatter dlnprice_tr target_ea, xtitle(EU monetary policy shock) ytitle(China'
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
-* Firm size: US shock
+* Firm size
 eststo price_brw_rSI: reghdfe dlnprice_tr c.brw#c.L.lnrSI dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-* Two-way traders: US shock
+* Two-way traders
 eststo price_brw_twoway: reghdfe dlnprice_tr c.brw#c.L.twoway_trade dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-* Import intensity: US shock
+* Import intensity
 eststo price_brw_imp_int: reghdfe dlnprice_tr c.brw#c.L.imp_int dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-* Interest burden ratio: US shock
+* Interest expense ratio
 eststo price_brw_IEoS: reghdfe dlnprice_tr c.brw#c.L.IEoS dlnRER dlnrgdp, a(group_id year) vce(cluster group_id year)
+eststo price_brw_IEoL: reghdfe dlnprice_tr c.brw#c.L.IEoS dlnRER dlnrgdp, a(group_id year) vce(cluster group_id year)
 
-* Ownership: US shock
+* Ownership
 gen SOE=1 if ownership=="SOE"
 replace SOE=0 if SOE==.
 gen MNE=1 if ownership=="MNE"
@@ -142,6 +143,11 @@ eststo price_brw_Arec_cic2: reghdfe dlnprice_tr c.brw#c.Arec_cic2 dlnRER dlnrgdp
 
 esttab price_brw_FPC_cic2 price_brw_ExtFin_cic2 price_brw_Tang_cic2 price_brw_Invent_cic2 price_brw_Arec_cic2 using tables\table_brw_credit_cic2.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
+* Debt, Cash and Liquidity
+eststo price_brw_FPC_Debt: reghdfe dlnprice_tr c.brw#c.L.Debt dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_FPC_Cash: reghdfe dlnprice_tr c.brw#c.L.Cash dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_FPC_Liquid: reghdfe dlnprice_tr c.brw#c.L.Liquid dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+
 *-------------------------------------------------------------------------------
 
 * 6. Markups and marginal costs
@@ -183,28 +189,7 @@ eststo price_brw_Markup_US: reghdfe dlnprice_tr brw dMarkup dlnRER dlnrgdp if co
 
 *-------------------------------------------------------------------------------
 
-* 7. Import prices
-
-cd "D:\Project E"
-use samples\sample_matched_imp,clear
-
-* Price
-eststo price_brw_noRER_imp: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id)
-eststo price_brw_imp: reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
-eststo price_brw_lag_imp: reghdfe dlnprice_tr L.brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
-
-* Quantity
-eststo quant_brw_noRER_imp: reghdfe dlnquant_tr brw dlnrgdp, a(group_id) vce(cluster group_id)
-eststo quant_brw_imp: reghdfe dlnquant_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
-eststo quant_brw_lag_imp: reghdfe dlnquant_tr L.brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
-
-esttab price_brw_noRER_imp price_brw_imp price_brw_lag_imp quant_brw_noRER_imp quant_brw_imp quant_brw_lag_imp using tables\table_brw_imp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw brw_lag dlnRER)
-
-binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's import price change) title("US MPS and China's Import Price") savegraph(figures\US_shock_imp.png) replace
-
-*-------------------------------------------------------------------------------
-
-* 8. Firm-level credits
+* 7. Firm-level credits
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
