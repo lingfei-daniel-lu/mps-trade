@@ -489,7 +489,6 @@ gen value_year_US=value_year if coun_aim=="美国"
 replace value_year_US=0 if value_year_US==.
 bys FRDM year: egen export_sum_US=total(value_year_US) 
 gen exposure_US=export_sum_US/export_sum
-gen exposure_US_SI=export_sum_US*NER_US/(SI*1000)
 ** exposure to EU
 gen value_year_EU=value_year if EU==1
 replace value_year_EU=0 if value_year_EU==.

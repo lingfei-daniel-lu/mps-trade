@@ -120,7 +120,28 @@ graph export figures\brw_country.png, as(png) name("Graph") replace
 
 *-------------------------------------------------------------------------------
 
-* 5. Credit constraints
+* 5. Industry and product heterogeneity
+
+cd "D:\Project E"
+use samples\sample_matched_exp,clear
+statsby _b _se n=(e(N)), by(cic2) saving(tables\table_brw_cic2,replace): reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+
+use tables\table_brw_cic2,clear
+graph hbar (asis) _b_brw, over(cic2, label(labsize(*0.45)) sort(cic2)) ytitle("Export price responses to US monetary policy shocks")
+graph export figures\brw_cic2.png, as(png) name("Graph") replace
+
+cd "D:\Project E"
+use samples\sample_matched_exp,clear
+statsby _b _se n=(e(N)), by(HS2) saving(tables\table_brw_HS2,replace): reghdfe dlnprice_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+
+use tables\table_brw_HS2,clear
+drop if HS2=="01"
+graph hbar (asis) _b_brw, over(HS2, label(labsize(*0.3)) sort(HS2)) ytitle("Export price responses to US monetary policy shocks")
+graph export figures\brw_HS2.png, as(png) name("Graph") replace
+
+*-------------------------------------------------------------------------------
+
+* 6. Credit constraints
 
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
@@ -150,7 +171,7 @@ eststo price_brw_FPC_Liquid: reghdfe dlnprice_tr c.brw#c.L.Liquid dlnRER dlnrgdp
 
 *-------------------------------------------------------------------------------
 
-* 6. Markups and marginal costs
+* 7. Markups and marginal costs
 
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
@@ -189,7 +210,7 @@ eststo price_brw_Markup_US: reghdfe dlnprice_tr brw dMarkup dlnRER dlnrgdp if co
 
 *-------------------------------------------------------------------------------
 
-* 7. Firm-level credits
+* 8. Firm-level credits
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
