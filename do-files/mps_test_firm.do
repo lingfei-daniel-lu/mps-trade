@@ -77,10 +77,6 @@ eststo price_brw_twoway: reghdfe dlnprice_tr c.brw#c.L.twoway_trade dlnRER dlnrg
 * Import intensity
 eststo price_brw_imp_int: reghdfe dlnprice_tr c.brw#c.L.imp_int dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-* Interest expense ratio
-eststo price_brw_IEoS: reghdfe dlnprice_tr c.brw#c.L.IEoS dlnRER dlnrgdp, a(group_id year) vce(cluster group_id year)
-eststo price_brw_IEoL: reghdfe dlnprice_tr c.brw#c.L.IEoS dlnRER dlnrgdp, a(group_id year) vce(cluster group_id year)
-
 * Ownership
 gen SOE=1 if ownership=="SOE"
 replace SOE=0 if SOE==.
@@ -94,7 +90,7 @@ eststo price_brw_exp_int: reghdfe dlnprice_tr c.brw#c.L.exp_int dlnRER dlnrgdp, 
 eststo price_brw_expUS: reghdfe dlnprice_tr c.brw#c.L.exposure_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 eststo price_brw_expEU: reghdfe dlnprice_tr c.brw#c.L.exposure_EU dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-esttab price_brw_rSI price_brw_twoway price_brw_imp_int price_brw_IEoS price_brw_SOE price_brw_MNE price_brw_exp_int price_brw_expUS price_brw_expEU using tables\table_brw_x.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
+esttab price_brw_rSI price_brw_twoway price_brw_imp_int price_brw_SOE price_brw_MNE price_brw_exp_int price_brw_expUS price_brw_expEU using tables\table_brw_x.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
 
 *-------------------------------------------------------------------------------
 
@@ -143,6 +139,8 @@ graph export figures\brw_HS2.png, as(png) name("Graph") replace
 
 * 6. Credit constraints
 
+* 6.1 Manova's credit constraint measure
+
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
@@ -164,10 +162,28 @@ eststo price_brw_Arec_cic2: reghdfe dlnprice_tr c.brw#c.Arec_cic2 dlnRER dlnrgdp
 
 esttab price_brw_FPC_cic2 price_brw_ExtFin_cic2 price_brw_Tang_cic2 price_brw_Invent_cic2 price_brw_Arec_cic2 using tables\table_brw_credit_cic2.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
-* Debt, Cash and Liquidity
+* 6.2 Other financial indicators
+
+cd "D:\Project E"
+use samples\sample_matched_exp,clear
+
+* Firm-level Debt, Cash, Liquidity and Interest expense
 eststo price_brw_FPC_Debt: reghdfe dlnprice_tr c.brw#c.L.Debt dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 eststo price_brw_FPC_Cash: reghdfe dlnprice_tr c.brw#c.L.Cash dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 eststo price_brw_FPC_Liquid: reghdfe dlnprice_tr c.brw#c.L.Liquid dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_IEoS: reghdfe dlnprice_tr c.brw#c.L.IEoS dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_IEoL: reghdfe dlnprice_tr c.brw#c.L.IEoL dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+
+esttab price_brw_FPC_Debt price_brw_FPC_Cash price_brw_FPC_Liquid price_brw_IEoS price_brw_IEoL using tables\table_brw_fina_firm.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
+
+* Industry-level Debt, Cash, Liquidity and Interest expense
+eststo price_brw_FPC_Debt_cic2: reghdfe dlnprice_tr c.brw#c.Debt_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_FPC_Cash_cic2: reghdfe dlnprice_tr c.brw#c.Cash_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_FPC_Liquid_cic2: reghdfe dlnprice_tr c.brw#c.Liquid_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_IEoS_cic2: reghdfe dlnprice_tr c.brw#c.IEoS_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_IEoL_cic2: reghdfe dlnprice_tr c.brw#c.IEoL_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+
+esttab price_brw_FPC_Debt_cic2 price_brw_FPC_Cash_cic2 price_brw_FPC_Liquid_cic2 price_brw_IEoS_cic2 price_brw_IEoL_cic2 using tables\table_brw_fina_cic2.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
 *-------------------------------------------------------------------------------
 

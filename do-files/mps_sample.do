@@ -224,7 +224,7 @@ gen CoS=vc/rSI
 gen TPoS=TP/SI
 * Construct industry-level financial constraints by CIC2
 bys cic2: egen RDint_cic2=mean(RDint)
-local varlist "Tang Invent Cash Liquid Debt"
+local varlist "Tang Invent Arec Debt Cash Liquid IEoL IEoS"
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys cic2: egen `var'_cic2 = median(`var')
@@ -457,7 +457,7 @@ erase tradedata_200`j'_monthly.dta
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_brw,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 SI Markup_* tfp_* *_cic2 *_US *_int IEo* ln* ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_brw,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* Arec Debt Cash Liquid *_cic2 *_US *_int IEo* ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
 drop if dlnRER==.
