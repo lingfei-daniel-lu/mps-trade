@@ -23,10 +23,21 @@ eststo product_brw_fixed: reghdfe dlnprice_tr dlnRER brw dlnrgdp if year<=2005, 
 eststo product_brw_USD: reghdfe dlnprice_USD_tr dlnRER brw dlnrgdp, a(group_id) vce(cluster group_id year)
 eststo product_brw_USD_fixed: reghdfe dlnprice_USD_tr dlnRER brw dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
 
-* US exposure
-gen brw_exposure_US=brw*exposure_US
-eststo product_brw_expo_US: reghdfe dlnprice_tr brw brw_exposure_US dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo product_brw_nozlb_expo_US: reghdfe dlnprice_tr brw brw_exposure_US dlnRER dlnrgdp if zlb==0, a(group_id) vce(cluster group_id year)
+* US and EU exposure
+** exposure to US
+gen value_year_US=value_year if coun_aim=="美国"
+replace value_year_US=0 if value_year_US==.
+bys FRDM year: egen export_sum_US=total(value_year_US) 
+gen exposure_US=export_sum_US/export_sum
+** exposure to EU
+gen value_year_EU=value_year if EU==1
+replace value_year_EU=0 if value_year_EU==.
+bys FRDM year: egen export_sum_EU=total(value_year_EU) 
+gen exposure_EU=export_sum_EU/export_sum
+drop export_sum_* value_year_*
+
+eststo product_brw_expo_US: reghdfe dlnprice_tr brw c.brw#c.exposure_US dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo product_brw_nozlb_expo_US: reghdfe dlnprice_tr brw c.brw#c.exposure_US dlnRER dlnrgdp if zlb==0, a(group_id) vce(cluster group_id year)
 
 *-------------------------------------------------------------------------------
 

@@ -432,7 +432,7 @@ cd "D:\Project E\customs_raw"
 local direction "exp imp"
 foreach var of local direction {
 use tradedata_2000_monthly,clear
-forv j=2/6{
+forv j=1/6{
 append using tradedata_200`j'_monthly
 }
 keep if exp_imp=="`var'"
@@ -440,6 +440,7 @@ drop exp_imp
 gen HS6=substr(HS8,1,6)
 gen HS2=substr(HS8,1,2)
 collapse (sum) value quantity, by(party_id EN HS6 HS2 coun_aim year month CompanyType)
+destring year month,replace
 format EN %30s
 format coun_aim %20s
 save tradedata_monthly_`var',replace
@@ -447,6 +448,30 @@ save tradedata_monthly_`var',replace
 forv j=0/6{
 erase tradedata_200`j'_monthly.dta
 }
+
+cd "D:\Project E"
+use customs_matched\customs_matched_partyid,clear
+keep if exp_imp=="exp"
+drop exp_imp
+save customs_matched\customs_matched_exp_partyid,replace
+
+cd "D:\Project E"
+use customs_raw\tradedata_monthly_exp,clear
+destring year month, replace
+merge n:1 party_id year using customs_matched\customs_matched_exp_partyid,nogen keep(matched)
+merge n:1 coun_aim using "D:\Project C\customs data\customs_country_name",nogen keep(matched)
+drop coun_aim
+rename country_adj coun_aim
+drop if coun_aim==""|coun_aim=="中华人民共和国"
+gen HS2002=HS6 if year<2007 & year>=2002
+merge n:1 HS2002 using "D:\Project C\HS Conversion\HS2002to1996.dta",nogen update replace
+replace HS1996=HS6 if year<2002
+drop HS6 HS2002
+rename HS1996 HS6
+drop if HS6=="" | FRDM=="" | quant==0 | value==0
+collapse (sum) value quant, by (FRDM EN HS6 coun_aim year month)
+sort FRDM EN HS6 coun_aim year month
+save customs_matched\customs_matched_monthly_exp,replace
 
 ********************************************************************************
 
@@ -460,7 +485,6 @@ use customs_matched\customs_matched_exp,replace
 merge n:1 FRDM year using samples\cie_credit_brw,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* Arec Debt Cash Liquid *_cic2 *_US *_int IEo* ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
-drop if dlnRER==.
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
 gen price_USD=value_year/quant_year
@@ -474,27 +498,6 @@ by FRDM HS6 coun_aim: gen dlnMC=ln(MC_RMB)-ln(MC_RMB[_n-1]) if year==year[_n-1]+
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
-merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
-merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
-merge m:1 year using MPS\others\shock_uk,nogen keep(matched)
-merge m:1 year using MPS\others\shock_japan,nogen keep(matched)
-* add other time series controls
-merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
-merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
-merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
-* construct country exposures
-** exposure to US
-gen value_year_US=value_year if coun_aim=="美国"
-replace value_year_US=0 if value_year_US==.
-bys FRDM year: egen export_sum_US=total(value_year_US) 
-gen exposure_US=export_sum_US/export_sum
-** exposure to EU
-gen value_year_EU=value_year if EU==1
-replace value_year_EU=0 if value_year_EU==.
-bys FRDM year: egen export_sum_EU=total(value_year_EU) 
-gen exposure_EU=export_sum_EU/export_sum
-drop export_sum_* value_year_*
 * construct group id
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
@@ -514,7 +517,6 @@ use "D:\Project D\HS6_exp_00-19",clear
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19.dta,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
-drop if dlnRER==.
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
@@ -526,22 +528,6 @@ by HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[
 bys HS6 coun_aim year: egen MS=pc(value),prop
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
-merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
-merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
-merge m:1 year using MPS\others\shock_uk,nogen keep(matched)
-merge m:1 year using MPS\others\shock_japan,nogen keep(matched)
-* construct country exposures
-bys HS6 year: egen export_sum=total(value) 
-gen value_US=value if coun_aim=="美国"
-replace value_US=0 if value_US==.
-bys HS6 year: egen export_sum_US=total(value_US) 
-gen exposure_US=export_sum_US/export_sum
-gen value_EU=value if EU==1
-replace value_EU=0 if value_EU==.
-bys HS6 year: egen export_sum_EU=total(value_EU) 
-gen exposure_EU=export_sum_EU/export_sum
-drop export_sum_* value_*
 * construct group id
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
@@ -569,25 +555,12 @@ by party_id HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year
 by party_id HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value),prop
-drop if dlnRER==. | dlnprice==.
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-merge m:1 year using MPS\mpu\mpu_85_22,nogen keep(matched)
-merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
-merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
-merge m:1 year using MPS\others\shock_uk,nogen keep(matched)
-merge m:1 year using MPS\others\shock_japan,nogen keep(matched)
-* add other time series controls
-merge m:1 year using control\us\vix,nogen keep(matched) keepus(ave_vixcls)
-merge m:1 year using control\us\oil_price,nogen keep(matched) keepus(oilprice goilprice)
-merge m:1 year using control\us\oil_shock_year,nogen keep(matched)
 * construct group id
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-sort party_id HS6 coun_aim year
-egen group_id=group(party_id HS6 coun_aim)
 * drop outliers
 winsor2 dlnprice* dlnquant, trim
-xtset group_id year
 save samples\sample_customs_exp,replace
 
 *-------------------------------------------------------------------------------
@@ -595,4 +568,24 @@ save samples\sample_customs_exp,replace
 * 5.4 Customs monthly sample, 2000-2006
 
 cd "D:\Project E"
-use customs_raw\tradedata_monthly_exp,clear
+use customs_matched\customs_matched_monthly_exp,clear
+* add exchange rates and other macro variables
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+* calculate changes of price, quantity and marginal cost
+gen price_RMB=value*NER_US/quant
+gen price_USD=value/quant
+sort FRDM HS6 coun_aim year
+by FRDM HS6 coun_aim: gen dlnquant=ln(quant)-ln(quant[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
+* calculate market shares
+bys HS6 coun_aim year: egen MS=pc(value),prop
+* add monetary policy shocks
+merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
+egen group_id=group(FRDM HS6 coun_aim)
+* drop outliers
+winsor2 dlnprice* dlnquant, trim
+xtset group_id year
+save samples\sample_monthly_exp,replace

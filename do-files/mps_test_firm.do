@@ -64,7 +64,6 @@ binscatter dlnprice_tr target_ea, xtitle(EU monetary policy shock) ytitle(China'
 
 * 3. Firm-level heterogeneity
 
-* Price
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
 
@@ -74,7 +73,7 @@ eststo price_brw_rSI: reghdfe dlnprice_tr c.brw#c.L.lnrSI dlnRER dlnrgdp, a(grou
 * Two-way traders
 eststo price_brw_twoway: reghdfe dlnprice_tr c.brw#c.L.twoway_trade dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-* Import intensity
+* Import and export intensity
 eststo price_brw_imp_int: reghdfe dlnprice_tr c.brw#c.L.imp_int dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
 * Ownership
@@ -85,16 +84,44 @@ replace MNE=0 if MNE==.
 eststo price_brw_SOE: reghdfe dlnprice_tr c.brw#c.SOE dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 eststo price_brw_MNE: reghdfe dlnprice_tr c.brw#c.MNE dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
-* US and EU exposure
-eststo price_brw_exp_int: reghdfe dlnprice_tr c.brw#c.L.exp_int dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
-eststo price_brw_expUS: reghdfe dlnprice_tr c.brw#c.L.exposure_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
-eststo price_brw_expEU: reghdfe dlnprice_tr c.brw#c.L.exposure_EU dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
-
-esttab price_brw_rSI price_brw_twoway price_brw_imp_int price_brw_SOE price_brw_MNE price_brw_exp_int price_brw_expUS price_brw_expEU using tables\table_brw_x.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
+esttab price_brw_rSI price_brw_twoway price_brw_imp_int price_brw_exp_int price_brw_SOE price_brw_MNE using tables\table_brw_x.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
 
 *-------------------------------------------------------------------------------
 
-* 4. Country heterogeneity
+* 4. Trade exposure to certain markets
+
+cd "D:\Project E"
+use samples\sample_matched_exp,clear
+
+gen value_year_US=value_year if coun_aim=="美国"
+replace value_year_US=0 if value_year_US==.
+gen value_year_EU=value_year if EU==1
+replace value_year_EU=0 if value_year_EU==.
+
+* Firm-level export exposure
+bys FRDM year: egen export_sum_US=total(value_year_US) 
+gen exposure_US=export_sum_US/export_sum
+bys FRDM year: egen export_sum_EU=total(value_year_EU) 
+gen exposure_EU=export_sum_EU/export_sum
+
+* Firm-product-level export exposure
+bys FRDM HS6 year: egen export_sum_US_HS6=total(value_year_US) 
+gen exposure_US_HS6=export_sum_US_HS6/export_sum
+bys FRDM HS6 year: egen export_sum_EU_HS6=total(value_year_EU) 
+gen exposure_EU_HS6=export_sum_EU_HS6/export_sum
+
+sort group_id year
+
+eststo price_brw_expUS: reghdfe dlnprice_tr c.brw#c.L.exposure_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_expEU: reghdfe dlnprice_tr c.brw#c.L.exposure_EU dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_expUS_HS6: reghdfe dlnprice_tr c.brw#c.L.exposure_US_HS6 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo price_brw_expEU_HS6: reghdfe dlnprice_tr c.brw#c.L.exposure_EU_HS6 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+
+esttab price_brw_expUS price_brw_expEU price_brw_expUS_HS6 price_brw_expEU_HS6 using tables\table_brw_exposure.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
+
+*-------------------------------------------------------------------------------
+
+* 5. Country heterogeneity
 
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
@@ -116,7 +143,7 @@ graph export figures\brw_country.png, as(png) name("Graph") replace
 
 *-------------------------------------------------------------------------------
 
-* 5. Industry and product heterogeneity
+* 6. Industry and product heterogeneity
 
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
@@ -137,7 +164,7 @@ graph export figures\brw_HS2.png, as(png) name("Graph") replace
 
 *-------------------------------------------------------------------------------
 
-* 6. Credit constraints
+* 7. Credit constraints
 
 * 6.1 Manova's credit constraint measure
 
@@ -152,6 +179,14 @@ eststo price_brw_Invent_US: reghdfe dlnprice_tr c.brw#c.Invent_US dlnRER dlnrgdp
 eststo price_brw_TrCredit_US: reghdfe dlnprice_tr c.brw#c.TrCredit_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
 esttab price_brw_FPC_US price_brw_ExtFin_US price_brw_Tang_US price_brw_Invent_US price_brw_TrCredit_US using tables\table_brw_credit.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
+
+eststo quant_brw_FPC_US: reghdfe dlnquant_tr c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo quant_brw_ExtFin_US: reghdfe dlnquant_tr c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo quant_brw_Tang_US: reghdfe dlnquant_tr c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo quant_brw_Invent_US: reghdfe dlnquant_tr c.brw#c.Invent_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo quant_brw_TrCredit_US: reghdfe dlnquant_tr c.brw#c.TrCredit_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+
+esttab quant_brw_FPC_US quant_brw_ExtFin_US quant_brw_Tang_US quant_brw_Invent_US quant_brw_TrCredit_US using tables\table_brw_credit_quant.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
 * Credit constraint from CN measures
 eststo price_brw_FPC_cic2: reghdfe dlnprice_tr c.brw#c.FPC_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
@@ -187,7 +222,7 @@ esttab price_brw_FPC_Debt_cic2 price_brw_FPC_Cash_cic2 price_brw_FPC_Liquid_cic2
 
 *-------------------------------------------------------------------------------
 
-* 7. Markups and marginal costs
+* 8. Markups and marginal costs
 
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
@@ -226,7 +261,7 @@ eststo price_brw_Markup_US: reghdfe dlnprice_tr brw dMarkup dlnRER dlnrgdp if co
 
 *-------------------------------------------------------------------------------
 
-* 8. Firm-level credits
+* 9. Firm-level credits as dependent variables
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
