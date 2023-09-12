@@ -189,7 +189,6 @@ eststo quant_brw_TrCredit_US: reghdfe dlnquant_tr c.brw#c.TrCredit_US dlnRER dln
 esttab quant_brw_FPC_US quant_brw_ExtFin_US quant_brw_Tang_US quant_brw_Invent_US quant_brw_TrCredit_US using tables\table_brw_credit_quant.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
 * Credit constraint from CN measures
-eststo price_brw_FPC_cic2: reghdfe dlnprice_tr c.brw#c.FPC_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 eststo price_brw_ExtFin_cic2: reghdfe dlnprice_tr c.brw#c.ExtFin_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 eststo price_brw_Tang_cic2: reghdfe dlnprice_tr c.brw#c.Tang_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 eststo price_brw_Invent_cic2: reghdfe dlnprice_tr c.brw#c.Invent_cic2 dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)

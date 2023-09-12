@@ -241,12 +241,6 @@ factortest Tang_US ExtFin_US
 rotate, promax(3) factors(1)
 predict f1
 rename f1 FPC_US
-pca Tang_cic2 ExtFin_cic2
-factor Tang_cic2 ExtFin_cic2,pcf
-factortest Tang_cic2 ExtFin_cic2
-rotate, promax(3) factors(1)
-predict f1
-rename f1 FPC_cic2
 * Match affiliation info
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
