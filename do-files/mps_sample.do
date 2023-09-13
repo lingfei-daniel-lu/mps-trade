@@ -492,9 +492,10 @@ by FRDM HS6 coun_aim: gen dlnMC=ln(MC_RMB)-ln(MC_RMB[_n-1]) if year==year[_n-1]+
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-* construct group id
+* drop special products
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
+* construct group id
 egen group_id=group(FRDM HS6 coun_aim)
 * drop outliers
 winsor2 dlnprice* dlnquant dlnMC, trim
@@ -522,9 +523,10 @@ by HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[
 bys HS6 coun_aim year: egen MS=pc(value),prop
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-* construct group id
+* drop special products
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
+* construct group id
 egen group_id=group(HS6 coun_aim)
 * drop outliers
 winsor2 dlnprice* dlnquant, trim
@@ -551,7 +553,7 @@ by party_id HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if ye
 bys HS6 coun_aim year: egen MS=pc(value),prop
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-* construct group id
+* drop special products
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * drop outliers
 winsor2 dlnprice* dlnquant, trim
@@ -569,17 +571,10 @@ merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dl
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
-sort FRDM HS6 coun_aim year
-by FRDM HS6 coun_aim: gen dlnquant=ln(quant)-ln(quant[_n-1]) if year==year[_n-1]+1
-by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
-by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
-* calculate market shares
-bys HS6 coun_aim year: egen MS=pc(value),prop
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+* drop special products
+gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-egen group_id=group(FRDM HS6 coun_aim)
-* drop outliers
-winsor2 dlnprice* dlnquant, trim
-xtset group_id year
+sort FRDM HS6 coun_aim year month
 save samples\sample_monthly_exp,replace
