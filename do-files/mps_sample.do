@@ -53,6 +53,7 @@ forv i=1999/2019{
 drop if xr==.
 save PWT100_99_19,replace
 
+cd "D:\Project C\PWT10.0"
 use PWT100_99_19,clear
 * Bilateral nominal exchange rate relative to RMB at the same year
 gen NER=8.27825/xr if year==1999
@@ -73,29 +74,6 @@ by coun_aim: gen dlnNER= ln(NER)-ln(NER[_n-1]) if year==year[_n-1]+1
 by coun_aim: gen dlnRER= ln(RER)-ln(RER[_n-1]) if year==year[_n-1]+1
 by coun_aim: gen dlnrgdp=ln(rgdpna)-ln(rgdpna[_n-1]) if year==year[_n-1]+1
 by coun_aim: gen inflation=ln(cpi)-ln(cpi[_n-1]) if year==year[_n-1]+1
-* Flag countries pegged to the US dollar
-gen peg_USD=0
-local peg_code "ABW BHS PAN BHR BRB BLZ BMU DJI HKG JOR LBN MAC MDV OMN PAN QAT SAU ARE"
-foreach code of local peg_code{
-	replace peg_USD=1 if countrycode=="`code'"
-}
-replace peg_USD=1 if currency_unit =="East Caribbean Dollar" | currency_unit =="Netherlands Antillian Guilder"| currency_unit =="US Dollar" | xr==1
-* Other country groups
-gen OECD=0
-local OECD_code "AUT BEL CAN DEU DNK FRA GRC ISL IRL ITA LUX NLD NOR PRT ESP SWE CHE TUR USA GBR JPN FIN AUS NZL MEX CZE HUN KOR POL SVK CHL SVN EST ISR LVA LTU"
-foreach code of local OECD_code{
-	replace OECD=1 if countrycode=="`code'"
-}
-gen EU=0
-local EU_code "BEL FRA DEU ITA LUX NLD DNK IRL GRC PRT ESP AUT FIN SWE"
-foreach code of local EU_code{
-	replace EU=1 if countrycode=="`code'"
-}
-gen EME=0
-local EME_code "TWN BRA CHL COL CZE HUN IND IDN MYS MEX MAR PER PHL POL RUS ZAF KOR THA TUR"
-foreach code of local EME_code{
-	replace EME=1 if countrycode=="`code'"
-}
 cd "D:\Project E\ER"
 save RER_99_19.dta,replace
 
@@ -146,6 +124,38 @@ merge 1:1 countrycode year using wb_imp_60_22,nogen keep(matched)
 gen exposure_CN_imp=value/imp_country
 replace exposure_CN=1 if exposure_CN>=1
 save wb_exposure_CN,replace
+
+* 2.4 Country characteristics
+
+cd "D:\Project C\PWT10.0"
+use PWT100_99_19,clear
+keep countrycode country coun_aim currency_unit
+duplicates drop
+* Flag countries pegged to the US dollar
+gen peg_USD=0
+local peg_code "ABW BHS PAN BHR BRB BLZ BMU DJI HKG JOR LBN MAC MDV OMN PAN QAT SAU ARE"
+foreach code of local peg_code{
+	replace peg_USD=1 if countrycode=="`code'"
+}
+replace peg_USD=1 if currency_unit =="East Caribbean Dollar" | currency_unit =="Netherlands Antillian Guilder"| currency_unit =="US Dollar"
+* Other country groups
+gen OECD=0
+local OECD_code "AUT BEL CAN DEU DNK FRA GRC ISL IRL ITA LUX NLD NOR PRT ESP SWE CHE TUR USA GBR JPN FIN AUS NZL MEX CZE HUN KOR POL SVK CHL SVN EST ISR LVA LTU"
+foreach code of local OECD_code{
+	replace OECD=1 if countrycode=="`code'"
+}
+gen EU=0
+local EU_code "BEL FRA DEU ITA LUX NLD DNK IRL GRC PRT ESP AUT FIN SWE"
+foreach code of local EU_code{
+	replace EU=1 if countrycode=="`code'"
+}
+gen EME=0
+local EME_code "TWN BRA CHL COL CZE HUN IND IDN MYS MEX MAR PER PHL POL RUS ZAF KOR THA TUR"
+foreach code of local EME_code{
+	replace EME=1 if countrycode=="`code'"
+}
+cd "D:\Project E\country_X"
+save country_tag,replace
 
 ********************************************************************************
 
@@ -478,7 +488,8 @@ use customs_matched\customs_matched_exp,replace
 * merge with CIE data
 merge n:1 FRDM year using samples\cie_credit_brw,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* Arec Debt Cash Liquid *_cic2 *_US *_int IEo* ln* ownership affiliate)
 * add exchange rates and other macro variables
-merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
+merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
 gen price_USD=value_year/quant_year
@@ -511,7 +522,8 @@ cd "D:\Project E"
 use "D:\Project D\HS6_exp_00-19",clear
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
-merge n:1 year coun_aim using ER\RER_99_19.dta,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
+merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
@@ -541,7 +553,8 @@ cd "D:\Project E"
 use custom_0015\customs_00_15_exp,clear
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
-merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
+merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
@@ -567,7 +580,8 @@ cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp,clear
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
-merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation peg_USD OECD EU EME)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
+merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
