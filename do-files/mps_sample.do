@@ -477,9 +477,12 @@ collapse (sum) value quant, by (FRDM EN HS6 coun_aim year month)
 sort FRDM EN HS6 coun_aim year month
 save customs_matched\customs_matched_monthly_exp,replace
 
+cd "D:\Project E"
+use customs_matched\customs_matched_monthly_exp,clear
+
 ********************************************************************************
 
-* 5. Sample Construction
+* 5. Sample Construction (unit price)
 
 * 5.1 Firm-level matched sample, 2000-2007
 
@@ -572,23 +575,11 @@ drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 winsor2 dlnprice* dlnquant, trim
 save samples\sample_customs_exp,replace
 
-*-------------------------------------------------------------------------------
+********************************************************************************
+
+* 5. Sample Construction (firm price index)
 
 * 5.4 Customs monthly sample, 2000-2006
 
 cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp,clear
-* add exchange rates and other macro variables
-merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
-merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
-merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
-* calculate changes of price, quantity and marginal cost
-gen price_RMB=value*NER_US/quant
-gen price_USD=value/quant
-* add monetary policy shocks
-merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-* drop special products
-gen HS2=substr(HS6,1,2)
-drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-sort FRDM HS6 coun_aim year month
-save samples\sample_monthly_exp,replace
