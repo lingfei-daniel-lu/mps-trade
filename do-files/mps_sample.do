@@ -2,6 +2,7 @@
 
 * Note: brw is monetary policy surprise; mpu is monetary policy uncertainty; lsap is large scale asset purchasing; fwgd is forward guidance.
 
+set processor 8
 ********************************************************************************
 
 * 1. Monetary policy shocks
@@ -454,15 +455,15 @@ erase tradedata_200`j'_monthly.dta
 }
 
 cd "D:\Project E"
-use customs_matched\customs_matched_partyid,clear
+use customs_matched\party_id\customs_matched_partyid,clear
 keep if exp_imp=="exp"
 drop exp_imp
-save customs_matched\customs_matched_exp_partyid,replace
+save customs_matched\party_id\customs_matched_exp_partyid,replace
 
 cd "D:\Project E"
 use customs_raw\tradedata_monthly_exp,clear
 destring year month, replace
-merge n:1 party_id year using customs_matched\customs_matched_exp_partyid,nogen keep(matched)
+merge n:1 party_id year using customs_matched\party_id\customs_matched_exp_partyid,nogen keep(matched)
 merge n:1 coun_aim using "D:\Project C\customs data\customs_country_name",nogen keep(matched)
 drop coun_aim
 rename country_adj coun_aim
@@ -477,9 +478,41 @@ collapse (sum) value quant, by (FRDM EN HS6 coun_aim year month)
 sort FRDM EN HS6 coun_aim year month
 save customs_matched\customs_matched_monthly_exp,replace
 
+cd "D:\Project E"
+use customs_matched\customs_matched_monthly_exp,clear
+merge n:1 year month using "D:\Project E\ER\NER_US_month",nogen keep(matched)
+gen value_RMB=value*NER_US
+gen price_RMB=value_RMB/quantity
+collapse (sum) value_RMB quantity (mean) price_hit=price_RMB [aweight=value], by(FRDM year month HS6)
+gen time=monthly(string(year)+"-"+string(month),"YM")
+format time %tm
+save customs_matched\customs_matched_monthly_exp_HS6,replace
+
+cd "D:\Project E"
+use customs_matched\customs_matched_monthly_exp_HS6,clear
+bys FRDM time: egen share_it=pc(value),prop
+sort FRDM HS6 time
+gen share_bar=share_it
+by FRDM HS6: replace share_bar=0.5*(share_it+share_it[_n-1]) if time==time[_n-1]+1
+by FRDM HS6: gen dlnprice_hit=ln(price_hit)-ln(price_hit[_n-1])
+gen share_bar_YoY=share_it
+gen dlnprice_hit_YoY=.
+forv i=1/12{
+by FRDM HS6: replace share_bar_YoY=0.5*(share_it+share_it[_n-`i']) if year==year[_n-`i']+1 & month==month[_n-`i']
+by FRDM HS6: replace dlnprice_hit_YoY=ln(price_hit)-ln(price_hit[_n-`i']) if year==year[_n-`i']+1 & month==month[_n-`i']
+}
+sort FRDM time
+by FRDM time: egen dlnprice=sum(dlnprice_hit*share_bar)
+by FRDM time: egen dlnprice_YoY=sum(dlnprice_hit_YoY*share_bar_YoY)
+collapse (sum) value_RMB (mean) dlnprice dlnprice_YoY, by(FRDM time year month)
+label var value_RMB "Total export value in RMB"
+label var dlnprice "Month-on-month price growth rate"
+label var dlnprice_YoY "Year-on-year price growth rate"
+save customs_matched\customs_matched_monthly_exp_firm,replace
+
 ********************************************************************************
 
-* 5. Sample Construction
+* 5. Sample Construction (unit value)
 
 * 5.1 Firm-level matched sample, 2000-2007
 
@@ -592,3 +625,10 @@ gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 sort FRDM HS6 coun_aim year month
 save samples\sample_monthly_exp,replace
+
+********************************************************************************
+
+* 6. Sample Construction (firm-level price index)
+
+cd "D:\Project E"
+use customs_matched\customs_matched_monthly_exp,clear
