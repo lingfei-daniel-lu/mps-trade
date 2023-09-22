@@ -16,6 +16,12 @@ save brw_94_21,replace
 
 twoway scatter brw year, ytitle(US monetary policy shock) xtitle(Year) title("Monetary policy shock series by BRW(2021)") saving(BRW.png, replace)
 
+cd "D:\Project E\MPS\brw"
+use BRW_mps,replace
+collapse (sum) brw_fomc, by(year month)
+rename brw_fomc brw
+save brw_94_21_monthly,replace
+
 * mpu: US monetary policy uncertainty. 1985-2022
 cd "D:\Project E\MPS\mpu"
 import excel HRS_MPU_monthly.xlsx, sheet("Sheet1") firstrow clear
@@ -480,7 +486,7 @@ save customs_matched\customs_matched_monthly_exp,replace
 
 cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp,clear
-merge n:1 year month using "D:\Project E\ER\NER_US_month",nogen keep(matched)
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 gen value_RMB=value*NER_US
 gen price_RMB=value_RMB/quantity
 collapse (sum) value_RMB quantity (mean) price_hit=price_RMB [aweight=value], by(FRDM year month HS6)
@@ -491,21 +497,19 @@ save customs_matched\customs_matched_monthly_exp_HS6,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp_HS6,clear
 bys FRDM time: egen share_it=pc(value),prop
-sort FRDM HS6 time
-gen share_bar=share_it
-by FRDM HS6: replace share_bar=0.5*(share_it+share_it[_n-1]) if time==time[_n-1]+1
-by FRDM HS6: gen dlnprice_hit=ln(price_hit)-ln(price_hit[_n-1])
-gen share_bar_YoY=share_it
-gen dlnprice_hit_YoY=.
-forv i=1/12{
-by FRDM HS6: replace share_bar_YoY=0.5*(share_it+share_it[_n-`i']) if year==year[_n-`i']+1 & month==month[_n-`i']
-by FRDM HS6: replace dlnprice_hit_YoY=ln(price_hit)-ln(price_hit[_n-`i']) if year==year[_n-`i']+1 & month==month[_n-`i']
-}
+egen group_id=group(FRDM HS6)
+xtset group_id time
+by group_id: gen share_bar=0.5*(share_it+L.share_it)
+by group_id: gen dlnprice_hit=ln(price_hit)-ln(L.price_hit)
+by group_id: gen share_bar_YoY=0.5*(share_it+L12.share_it)
+by group_id: gen dlnprice_hit_YoY=ln(price_hit)-ln(L12.price_hit)
 sort FRDM time
-by FRDM time: egen dlnprice=sum(dlnprice_hit*share_bar)
-by FRDM time: egen dlnprice_YoY=sum(dlnprice_hit_YoY*share_bar_YoY)
-collapse (sum) value_RMB (mean) dlnprice dlnprice_YoY, by(FRDM time year month)
-label var value_RMB "Total export value in RMB"
+by FRDM time: egen dlnprice=sum(dlnprice_hit*share_bar), missing
+by FRDM time: egen dlnprice_YoY=sum(dlnprice_hit_YoY*share_bar_YoY), missing
+by FRDM time: egen value_firm=sum(value_RMB),missing
+keep FRDM time year month value_firm dlnprice dlnprice_YoY
+duplicates drop
+label var value_firm "Total export value in RMB"
 label var dlnprice "Month-on-month price growth rate"
 label var dlnprice_YoY "Year-on-year price growth rate"
 save customs_matched\customs_matched_monthly_exp_firm,replace
@@ -519,7 +523,7 @@ save customs_matched\customs_matched_monthly_exp_firm,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_brw,nogen keep(matched) keepus(FRDM year EN cic_adj cic2 Markup_* tfp_* Arec Debt Cash Liquid *_cic2 *_US *_int IEo* ln* ownership affiliate)
+merge n:1 FRDM year using samples\cie_credit_brw,nogen keep(matched) keepus(cic2 Markup_* tfp_* Arec Debt Cash Liquid IEoL IEoS *_cic2 *_US *_int ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
 merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
@@ -631,4 +635,12 @@ save samples\sample_monthly_exp,replace
 * 6. Sample Construction (firm-level price index)
 
 cd "D:\Project E"
-use customs_matched\customs_matched_monthly_exp,clear
+use customs_matched\customs_matched_monthly_exp_firm,clear
+* merge with CIE data
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* Arec Debt Cash Liquid IEoL IEoS *_cic2 *_US ln* ownership affiliate)
+* add exchange rates and other macro variables
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+* add monetary policy shocks
+merge m:1 year month using MPS\brw\brw_94_21_monthly,nogen keep(matched master)
+sort FRDM time
+save samples\sample_monthly_exp_firm,replace
