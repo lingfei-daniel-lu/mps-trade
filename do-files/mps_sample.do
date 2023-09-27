@@ -501,17 +501,25 @@ egen group_id=group(FRDM HS6)
 xtset group_id time
 by group_id: gen share_bar=0.5*(share_it+L.share_it)
 by group_id: gen dlnprice_hit=ln(price_hit)-ln(L.price_hit)
+replace share_bar=share_it if share_bar==.
 by group_id: gen share_bar_YoY=0.5*(share_it+L12.share_it)
 by group_id: gen dlnprice_hit_YoY=ln(price_hit)-ln(L12.price_hit)
+replace share_bar_YoY=share_it if share_bar_YoY==.
+by group_id: gen share_bar_next=0.5*(share_it+share_it[_n-1])
+by group_id: gen dlnprice_hit_next=ln(price_hit)-ln(price_hit[_n-1])
+replace share_bar_next=share_it if share_bar_next==.
 sort FRDM time
 by FRDM time: egen dlnprice=sum(dlnprice_hit*share_bar), missing
 by FRDM time: egen dlnprice_YoY=sum(dlnprice_hit_YoY*share_bar_YoY), missing
+by FRDM time: egen dlnprice_next=sum(dlnprice_hit_next*share_bar_next), missing
 by FRDM time: egen value_firm=sum(value_RMB),missing
-keep FRDM time year month value_firm dlnprice dlnprice_YoY
+keep FRDM time year month value_firm dlnprice dlnprice_YoY dlnprice_next
 duplicates drop
+by FRDM: drop if _N==1
 label var value_firm "Total export value in RMB"
 label var dlnprice "Month-on-month price growth rate"
 label var dlnprice_YoY "Year-on-year price growth rate"
+label var dlnprice_next "Adjacent-recorded-month price growth rate"
 save customs_matched\customs_matched_monthly_exp_firm,replace
 
 ********************************************************************************
@@ -636,11 +644,18 @@ save samples\sample_monthly_exp,replace
 
 cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp_firm,clear
+winsor2 dlnprice_next, replace
+winsor2 dlnprice, trim replace
+winsor2 dlnprice_YoY, trim replace
+by FRDM: gen price_index=1 if dlnprice_next==.
+by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. & price_index[_n-1]!=.
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* Arec Debt Cash Liquid IEoL IEoS *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_94_21_monthly,nogen keep(matched master)
-sort FRDM time
+replace brw=0 if brw==.
+egen firm_id=group(FRDM)
+xtset firm_id time
 save samples\sample_monthly_exp_firm,replace
