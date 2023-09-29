@@ -18,8 +18,8 @@
 {\begin{shaded}\begin{prop}}
 		{\end{prop}\end{shaded}}
 
-\title[Monetary Policy Spillover through Trade Channel]{Global Monetary Policy Spillover through Trade Channel}
-\author[Lu\&Yao (2023)]{\large Lingfei LU, Jingbo YAO \\ \vspace{0.5cm} Department of Economics, HKUST \\ \vspace{0.5cm} HKUST-Jinan Macro Student Symposium 2023}
+\title[Monetary Policy Spillover Through Trade Channel]{Global Monetary Policy Spillover Through Trade Channel}
+\author[Yao\&Lu (2023)]{\large Lingfei LU, Jingbo YAO \\ \vspace{0.5cm} Department of Economics, HKUST \\ \vspace{0.5cm} HKUST-Jinan Macro Student Symposium 2023}
 \date{\today}
 \logo{\includegraphics[scale=0.15]{UST4C_L3.eps}}
 
@@ -33,70 +33,10 @@
 
 \section{Introduction}
 
-\begin{frame}{Motivation}
-
-
-
-\begin{itemize}
-\item In a globalized era, how international \textcolor{blue}{monetary policies} transmit globally is a crucial question.
-\item However, the channels are underexplored: the bank channel is well-studied, while the \textcolor{blue}{real channels} draw less attention. 
-\item Now, a growing literature shows that most of the total impact is due to the network effect of \textcolor{blue}{global production linkages}.
-\item \textbf{Our question}: How the \textcolor{blue}{behavior of exporters} response to global monetary shocks? Also, What's the implication for \textcolor{blue}{monetary policy spillover}?
-\item We will consider these questions using \textcolor{blue}{China}, the biggest exporter in the world, as an example. 
-\end{itemize}
-
-\end{frame}
-
-
-
-\begin{frame}{This paper}
-\begin{itemize}
-\item \textbf{Data}: China's customs data;  China's industry firm data; high-frequency global monetary shock data 
-\item \textbf{Main results}: \textcolor{blue}{tightening} US monetary shock significantly \textcolor{blue}{increases} China's export prices. For European shock: \textcolor{blue}{decreases}. UK and Japan's effects: insignificant. 
-\item \textbf{Channels}: 
-\begin{itemize}
-    \item Supply side dominates: US shock (+) \textcolor{blue}{marginal cost (interest expenditure)} (+) China's export prices(+); Heterogeneity across firms (YES)
-    \item Demand side dominates: EU shock (+) import demand (-) China's export prices(-); Heterogeneity across firms (No)
-\end{itemize} 
-\item \textbf{Model}: Two-country model to justify the pricing behavior of China's export firms and illustrate that this additional channel \textcolor{blue}{exacerbates the recession} of China's export countries following a US contractionary shock.
-\item \textbf{Contribution}: The first paper to empirically investigate the relationship between global monetary shock and export prices and its implication for global monetary shock transmission. 
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Literature}
-
-\begin{itemize}
-\item \textbf{Monetary transmission through bank channel}: 
-    \begin{itemize}
-        \item Cetorelli and Goldberg (2012, JF), Bruno and Shin (2015, RES).
-        \item We study \textcolor{blue}{trade channel}
-    \end{itemize} 
-\item \textbf{Monetary transmission through real channel}: 
-    \begin{itemize}
-        \item Bräuning and Sheremirov (2019); Wei and Xie (2020, JIE); Di Giovanni and Hale (2022, JF); Chang, et al (2021, JFE)
-        \item We focus on \textcolor{blue}{export price}
-    \end{itemize}
-\item \textbf{Real shock transmission through IO linkage}: 
-    \begin{itemize}
-        \item Eaton et al. (2016, AER); Auer, Levchenko, and Sauré (2019, RESta)
-        \item We investigate \textcolor{blue}{monetary shocks}
-    \end{itemize}
-
-\item \textbf{Exchange rate pass-through}:
+\begin{frame}{Introduction}
 	\begin{itemize}
-		\item Gopinath and Itskhoki (2010, QJE); Amiti,Itskhoki, and Konings (2014, AER)
-            \item We consider the responses of export prices to \textcolor{blue}{monetary shocks}
+		\item 
 	\end{itemize}
-\item \textbf{China Shock}:
-	\begin{itemize}
-		\item Asquith, et al. (2019, JIE); Bombardini, Li, and Francesco Trebbi (2023, AER)
-            \item We test China export-related \textcolor{blue}{cost shock}
-	\end{itemize}
-\end{itemize}
-    
-
- 
 \end{frame}
 
 
@@ -124,7 +64,7 @@
 			\item This dataset provides universal information on Chinese trade transactions, including import and export values, quantities, units, product names and codes, source and destination countries, and types of enterprises.
                 \item The firm-level transaction records range from 2000-2011, while product-level aggregates are available until 2019.
                 \item The categories of products are coded by the Harmonized Coding and Description System (HS) from the World Customs Organization (WCO).
-                \item We drop unwanted observations, including products with missing information of unit or quantity, special product categories such as arms and antiques, and transactions existing for only one year.
+                \item We drop unwanted observations referring to \cite{lmx2015}: products with missing information of unit or quantity; special product categories such as arms and antiques; and transactions existing for only one year.
 		\end{itemize}		
 	\end{itemize}
 \end{frame}
@@ -138,7 +78,7 @@
 		\end{itemize}
 		\item To merge the firm data with customs records, we match the identification codes based on firms' contact information as in \cite{fan-li-yeaple2015}.
             \begin{itemize}
-                \item The matched sample ranges from 2000 to 2007, with more than 1 million firm-product-country-year observations.
+                \item The matched period of the two datasets is from 2000 to 2007.
             \end{itemize}
 	\end{itemize}
 \end{frame}
@@ -176,7 +116,7 @@
 
 \begin{frame}{Baseline Empirical Strategy}
     \begin{itemize}
-        \item We first estimate the unconditional impact of U.S. monetary policy shocks on Chinese exporters' annual price change (\cite{lmx2015}).
+        \item We first estimate the unconditional impact of U.S. monetary policy shocks on Chinese exporters' annual price change following \cite{di}
         \begin{equation}
 	   \Delta \ln P_{i j c t}=\beta^P_1 M P_{t} + \beta^P_2 M P_{t-1}+ \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
 	\label{eq.baseline}
@@ -186,7 +126,7 @@
 	   \Delta \ln Q_{i j c t}=\beta^Q_1 M P_{t} + \beta^Q_2 M P_{t-1}+ \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
 	\label{eq.quantity}
         \end{equation}
-        \item The baseline US monetary policy shocks $MP^{US}_t$ are from \cite{brw2021}. We also include monetary shocks from three other major central banks, the European Central Bank, the Bank of England, and the Bank of Japan.
+        \item The baseline US Fed monetary policy shocks $MP^US_t$ are from \cite{brw2021}. We also include monetary shocks from three other major central banks, the European Central Bank, the Bank of England, and the Bank of Japan.
     \end{itemize}
 \end{frame}
 
@@ -197,8 +137,7 @@
     		P_{ijct}=\frac{V_{ijct}\cdot NER^US_{t}}{Q_{ijct}}
     		$$
             where value (in US dollar) $V_{ijct}$ and quantities $Q_{ijct}$ are known for each HS6 product $i$, by firm $j$, from country $c$, in year $t$.
-        \item If an unexpected foreign (e.g., US) monetary policy tightening, $MP_t > 0$, raises the average export price of Chinese firms, we would expect that $\beta_1 > 0$.
-        \item The coefficients $\beta_2$ of lagged terms $MP_{t-1}$ is used to isolate the impact of the previous year's monetary policy shock on the current year.
+        \item If an unexpected foreign (e.g., US) monetary policy tightening, $MP > 0$, raises the average export price of Chinese firms, we would expect that $ \beta^P > 0$. Conversely, if the export price is suppressed, there should be $ \beta^P < 0$.
     \end{itemize}
 \end{frame}
 
@@ -223,161 +162,37 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Baseline Results: US Shocks}
+\begin{frame}{Baseline Results}
     \begin{itemize}
-        \item A one-unit tightening shock (2Y US treasury yield increases by 100 basis points) implies that the average export price increases by 0.13 percentage points in the same year while the average export quantity decreases by 1.6 percentage points in the next year.
+        \item A one-percentage point annual tightening shock implies that the average export price increases by 0.13 percentage points in the same year.
     \end{itemize}
     \begin{table}[htbp]
         \centering  
-        \vspace{-5mm}
-        \caption{Effect of U.S. monetary policy shocks on Chinese export prices and quantities}
-        \resizebox{0.75\columnwidth}{!}{
+        \vspace{-3mm}
+        \caption{Effect of U.S. monetary policy shocks on Chinese export prices}
+        \resizebox{0.65\columnwidth}{!}{
         \begin{threeparttable}
             \begin{tabular}{lccccc}
                 \toprule
-                      & (1)   & (2)   & (3)   & (4)   & (5) \\
-                \midrule
-                    Dependent variable:  & \multicolumn{3}{c}{ $\Delta ln(price)_{ijct}$} & \multicolumn{2}{c}{ $\Delta ln(quantity)_{ijct}$}\\
-                \midrule
-                $brw_{t}$   & 0.133*** & 0.131*** &       & -0.892 &  \\
-                      & (0.025) & (0.025) &       & (0.600) &  \\
-                $brw_{t-1}$ & &       & 0.059 &       & -1.601** \\
-                      &  &  & (0.033) &       & (0.447) \\
-                $\Delta ln(RER)_{ct}$ &  & 0.050** & 0.100** & -0.022 & -1.081* \\
-                      & (0.020) & (0.035) & (0.665) & (0.543) \\
-                $\Delta ln(RGDP)_{ct}$ & 0.271** & 0.282** & 0.468*** & -1.860 & -2.918* \\
-                & (0.104) & (0.103) & (0.088) & (1.714) & (1.341) \\
-                Fixed effects   &  \multicolumn{5}{c}{Firm-product–country fixed effects} \\   
-                Observations    & 1080269 & 1080269 & 1080269 & 1076863 & 1076863 \\
-                \bottomrule
-            \end{tabular}
-            \begin{tablenotes}
-                \footnotesize
-                \item Notes: Robust standard errors clustered at firm-product-country level and year level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels; All regressions include a constant term and firm-product-country level fixed effects.
-            \end{tablenotes}
-        \end{threeparttable}
-        }
-	\label{tab.baseline}
-    \end{table}
-\end{frame}
-
-\begin{frame}{Compared with EU Shocks}
-    \begin{table}[htbp]
-        \centering  
-        \vspace{-5mm}
-        \caption{Effect of EU monetary policy shocks on Chinese export prices and quantities}
-        \resizebox{0.75\columnwidth}{!}{
-        \begin{threeparttable}
-            \begin{tabular}{lccccc}
-                \toprule
-                      & (1)   & (2)   & (3)   & (4)   & (5) \\
-                \midrule
-                    Dependent variable:  & \multicolumn{3}{c}{ $\Delta ln(price)_{ijct}$} & \multicolumn{2}{c}{ $\Delta ln(quantity)_{ijct}$}\\
-                \midrule
-                $target_t$ & -0.003** & -0.003** &       & 0.051** &  \\
-                & (0.001) & (0.001) &       & (0.017) &  \\
-                $path_t$ & -0.001 & -0.000 &       & -0.009 &  \\
-                & (0.002) & (0.003) &       & (0.032) &  \\
-                $target_{t-1}$ &       &       & -0.001 &       & 0.008 \\
-                &       &       & (0.001) &       & (0.013) \\
-                $path_{t-1}$ &       &       & -0.004 &       & 0.054 \\
-                &       &       & (0.003) &       & (0.036) \\
-                $\Delta ln(RER)_{ct}$ &       & 0.071 & 0.069 & -0.349 & 0.062 \\
-                &       & (0.037) & (0.040) & (0.681) & (0.404) \\
-                $\Delta ln(RGDP)_{ct}$ & 0.325** & 0.323** & 0.290** & 0.106 & -0.524 \\
-                & (0.128) & (0.131) & (0.109) & (1.150) & (1.644) \\
-                Fixed effects   &  \multicolumn{5}{c}{Firm-product–country fixed effects} \\   
-                Observations    & 1080269 & 1080269 & 1080269 & 1076863 & 1076863 \\
-                \bottomrule
-            \end{tabular}
-            \begin{tablenotes}
-                \footnotesize
-                \item Notes: Robust standard errors clustered at firm-product-country level and year level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels; All regressions include a constant term and firm-product-country level fixed effects.
-            \end{tablenotes}
-        \end{threeparttable}
-        }
-	\label{tab.baseline}
-    \end{table}
-\end{frame}
-
-\begin{frame}{Firm Heterogeneity}
-    \begin{itemize}
-        \item Next, we introduce interaction terms $EXP_{jt}$ to test whether heterogeneity in firms' exposure to monetary policy shocks affects the degree of markups.
-        \begin{equation}
-    	\Delta \ln P_{i j c t}=\beta_1 M P_{t}^{US} + \beta_2 (M P_{t}^{US} \times EXP_{jt})+ \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
-    	\label{eq.exposure}
-        \end{equation}
-        \item Firm-level heterogeneous exposure to financial shocks $EXP_{jt}$ includes firm size, import status, import intensity, interest expense to sales ratio, etc.
-        \item The import intensity of a firm is defined as the ratio of total import value over its total variable costs (as in \cite{aik2014}):
-        $$\varphi_{jt} \equiv \frac{\text{Total import value}_{jt}}{\text{Intermediate input}_{jt}+\text{Wage payment}_{jt}}$$
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{Firm Heterogeneity}
-    \begin{table}[htbp]
-        \centering  
-        \vspace{-5mm}
-        \caption{Firm Heterogeneity in firm size and import intensity}
-        \resizebox{0.7\columnwidth}{!}{
-        \begin{threeparttable}
-            \begin{tabular}{lcccc}
-                \toprule
-                      & (1)   & (2)   & (3)   & (4) \\
-                \midrule
-                      & \multicolumn{4}{c}{Dependent variable: $\Delta ln(price)_{ijct}$} \\
-                \midrule
-                $brw_t$   & -0.045 & 0.174*** & 0.134*** & 0.116*** \\
-                      & (0.071) & (0.027) & (0.027) & (0.021) \\
-                $brw_t\times Sales_{jt}$ & 0.015** &       &       &  \\
-                      & (0.006) &       &       &  \\
-                $brw_t\times Twoway_{jt}$ &       & -0.055** &       &  \\
-                      &      & (0.022) &       &  \\
-                $brw_t\times \mathbf{1}\{\varphi_{jt}\geq\varphi_{jt}^{Q3}\}$ &     &       & -0.016 &  \\
-                      &      &       & (0.018) &  \\
-                $brw_t\times \mathbf{1}\{(I/S)_{jt}\geq (I/S)_{jt}^{Q3}\}$ &       &       & & 0.057** \\
-                      &       &       & & (0.017) \\
-                $\Delta ln(RER)_{ct}$ & 0.055* & 0.055* & 0.055* & 0.055* \\
-                      & (0.024) & (0.024) & (0.024) & (0.024) \\
-                $\Delta ln(RGDP)_{ct}$ & 0.289** & 0.294** & 0.287** & 0.289** \\
-                      & (0.108) & (0.107) & (0.105) & (0.106) \\
-            Observations    & 1080193 & 1080193 & 1080193 & 1080193 \\
-                \bottomrule
-            \end{tabular}
-            \begin{tablenotes}
-                \footnotesize
-                \item Notes: Robust standard errors clustered at firm-product-country level and year level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels; All regressions include a constant term and firm-product-country level fixed effects.
-            \end{tablenotes}
-        \end{threeparttable}
-        }
-	\label{tab.baseline}
-    \end{table}
-\end{frame}
-
-\begin{frame}{Country Heterogeneity}
-    \begin{itemize}
-        \item We find the price response to US monetary policy shocks is not significant for the export to the US, but it is significant for exports to other country groups.
-    \end{itemize}
-    \begin{table}[htbp]
-        \centering  
-        \vspace{-5mm}
-        \caption{Export price to different destination countries}
-        \resizebox{0.75\columnwidth}{!}{
-        \begin{threeparttable}
-            \begin{tabular}{lccccc}
-                \toprule
-                      &  US & Non-US & EU & OECD & Emerging\\
+                      & \multicolumn{2}{c}{2000-2007}   & \multicolumn{1}{c}{2000-2005}  & \multicolumn{2}{c}{2000-2007} \\
                       & (1)   & (2)   & (3)   & (4)   & (5) \\
                 \midrule
                       & \multicolumn{5}{c}{Dependent variable: $\Delta ln(price)_{ijct}$} \\
                 \midrule
-                $brw_{t}$   & 0.026 & 0.142*** & 0.151*** & 0.136*** & 0.160*** \\
-                      & (0.044) & (0.024) & (0.022) & (0.023) & (0.029) \\ \\
-                $\Delta ln(RER)_{ct}$ & -0.202* & 0.057** & 0.086* & 0.063* & 0.025 \\
-                      & (0.101) & (0.022) & (0.041) & (0.031) & (0.025) \\
-                $\Delta ln(RGDP)_{ct}$ & 0.950 & 0.285** & 0.921*** & 0.497*** & 0.070 \\
-                & (0.504) & (0.111) & (0.181) & (0.102) & (0.157) \\
-                Fixed effects   &  \multicolumn{5}{c}{Firm-product–country fixed effects} \\   
-                Observations    & 114489 & 965280 & 209584 & 705928 & 182154 \\
+                $brw_{t}$   & 0.136*** & 0.134*** & 0.196*** &       & 0.126*** \\
+                      & (0.025) & (0.025) & (0.022) &       & (0.028) \\
+                      &       &       &       &       &  \\
+                $brw_{t-1}$ &       &       &       & 0.063 & 0.038 \\
+                      &       &       &       & (0.033) & (0.029) \\
+                      &       &       &       &       &  \\
+                $\Delta ln(RER_t)$ &       & 0.056* & 0.113*** & 0.109** & 0.080** \\
+                      &       & (0.025) & (0.013) & (0.039) & (0.022) \\
+                      &       &       &       &       &  \\
+                $\Delta ln(rGDP_t)$ & 0.263** & 0.275** & 0.023 & 0.465*** & 0.280** \\
+                      & (0.105) & (0.104) & (0.060) & (0.083) & (0.083) \\
+                      &       &       &       &       &  \\
+                Fixed effects   &  \multicolumn{5}{c}{Firm-product–country fixed effects}\\   
+                Observations    & 1079974 & 1079974 & 579972 & 1079974 & 1079974 \\
                 \bottomrule
             \end{tabular}
             \begin{tablenotes}
@@ -386,7 +201,7 @@
             \end{tablenotes}
         \end{threeparttable}
         }
-	\label{tab.country}
+	\label{tab.baseline}
     \end{table}
 \end{frame}
 
@@ -396,126 +211,40 @@
         \item Therefore, the marginal cost of production is estimated as the unit value over the firm-level markup: $MC_{ijct}=P_{ijct}/\mu_{jt}$.
         \item We conduct firm-level and transaction-level regressions of markups and marginal costs on monetary policy shocks.
         \begin{equation}
+            \Delta \ln \mu_{j t}=\beta^{\mu} M P_{t} + \varepsilon_{jt}
+    	\label{eq.markup}
+        \end{equation}
+        \begin{equation}
             \Delta \ln MC_{ijct}=\beta^{mc} M P_{t} + \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
     	\label{eq.mc}
         \end{equation}
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Decomposition of Price: Markup vs. Marginal Cost}
+\begin{frame}{Firm Heterogeneity}
     \begin{itemize}
-        \item By decomposition of price, most price responses are from changes in production cost rather than firm-level markup.
-    \end{itemize}
-    \begin{table}[htbp]
-        \centering  
-        \vspace{-5mm}
-        \caption{Decomposition of Price: Markup vs. Marginal Cost}
-        \resizebox{0.65\columnwidth}{!}{
-        \begin{threeparttable}
-            \begin{tabular}{lcccc}
-                \toprule
-                      & (1)   & (2)   & (3)   & (4)  \\
-                \midrule
-                    Dependent variable:  & $\Delta ln(MC)_{ijct}$ &\multicolumn{3}{c}{ $\Delta ln(price)_{ijct}$} \\
-                \cmidrule{2-2} \cmidrule{3-5}
-                $brw_{t}$ & 0.166*** & -0.013 & 0.138*** & 0.138*** \\
-                    & (0.029) & (0.013) & (0.030) & (0.030) \\
-                & (0.150) & (0.059) & (0.121) & (0.121) \\
-                $\Delta ln(MC)_{ijct}$ &       & 0.902*** &       &  \\
-                &       & (0.006) &       &  \\
-                $\Delta Markup_{jt}$ &       &       & 0.011** & 0.005 \\
-                &       &       & (0.003) & (0.004) \\
-                $Markup_{jt-1}$ &       &       &       & -0.011* \\
-                &       &       &       & (0.005) \\
-                $\Delta ln(RER)_{ct}$ & 0.040 & 0.017 & 0.050* & 0.050* \\
-                & (0.027) & (0.021) & (0.025) & (0.026) \\
-                $\Delta ln(RGDP)_{ct}$ & 0.278 & 0.042 & 0.314** & 0.316** \\
-                Fixed effects   &  \multicolumn{4}{c}{Firm-product–country fixed effects} \\   
-                Observations    & 773784 & 772230 & 770114 & 770114\\
-                \bottomrule
-            \end{tabular}
-            \begin{tablenotes}
-                \footnotesize
-                \item Notes: Robust standard errors clustered at firm-product-country level and year level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels; All regressions include a constant term and firm-product-country level fixed effects.
-            \end{tablenotes}
-        \end{threeparttable}
-        }
-	\label{tab.markup}
-    \end{table}
-\end{frame}
-
-\begin{frame}{Further Decomposition of Production Cost}
-    \begin{itemize}
-        \item A tightening monetary policy shock will reduce firms' trade credit provision, increase financial and interest expenses, and reduce the average wages.
+        \item Next, we introduce interaction terms $EXP \in \mathbf{Z}$ to test whether heterogeneity in firms' exposure to monetary policy shocks affects the degree of markups.
         \begin{equation}
-            \Delta \ln Cost_{jt}=\beta^{cost} M P_{t} + \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime} +\xi_{j} + \varepsilon_{jt}
-    	\label{eq.mc}
+    	\Delta \ln P_{i j c t}=\beta_1 M P_{t}^{US} + \beta_2 (M P_{t}^{US} \times EXP_{jt})+ \mathbf{Z}_{jt} \boldsymbol{\gamma}^{\prime}+\mathbf{X}_{ct} \boldsymbol{\delta}^{\prime} +\xi_{i j c} + \varepsilon_{ijct}
+    	\label{eq.exposure}
         \end{equation}
+        \item $EXP_{jt}$ includes export intensity, import intensity, 
     \end{itemize}
-        \begin{table}[htbp]
-        \centering  
-        \vspace{-5mm}
-        \caption{Effect of US monetary policy shocks on firm-level cost variables}
-        \resizebox{0.85\columnwidth}{!}{
-        \begin{threeparttable}
-            \begin{tabular}{lcccc}
-                \toprule
-                      & (1)   & (2)   & (3)   & (4)  \\
-                \midrule
-                    Dependent variable:  & $\Delta (Arec/Sales)_{jt}$ & $\Delta (FE/ L)_{jt}$ & $\Delta (IE/L)_{jt}$ & $\Delta ln(Wage)_{jt}$\\
-                \midrule
-                $brw_{t}$ & -0.010*** & 0.002*** & 0.002*** & -0.079*** \\
-                    & (0.001) & (0.001) & (0.000) & (0.005) \\
-                $ln(Sales)_{jt-1}$ & 0.033*** & -0.002*** & -0.001*** & -0.035*** \\
-                & (0.000) & (0.000) & (0.000) & (0.001) \\
-                Fixed effects   &  \multicolumn{4}{c}{Firm fixed effects} \\   
-                Observations    & 885626 & 877233 & 877088 & 882351 \\
-                \bottomrule
-            \end{tabular}
-            \begin{tablenotes}
-                \footnotesize
-                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels; All regressions include a constant term and firm-level fixed effects.
-            \end{tablenotes}
-        \end{threeparttable}
-        }
-	\label{tab.interest}
-    \end{table}
 \end{frame}
 
-\begin{frame}{Robustness Check}
-    \begin{enumerate}
-        \item use alternative measures of monetary policy shocks; 
-        \item use alternative measures of price changes: product-level and firm-level price index;
-        \item use alternative denominated currencies: local currency pricing (LCP) vs dominant currency pricing (DCP) vs vehicle currency pricing (VCP);
-        \item use alternative periods: pegged exchange rate regime vs floating exchange rate regime, zero-lower-bound (ZLB) VS non-zero-lower-bound (non-ZLB);
-        \item control other cost-push shocks (e.g. oil news shock);
-        \item construct time-invariant firm-level interaction terms $EXP_j$ to deal with the contemporaneous endogeneity
-    \end{enumerate}
-\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Model}
 
 \begin{frame}{Conceptual framework}
-\begin{itemize}
-    \item Imagine a three-country world: US, China, South Korea; 
-    \item Now there is a contractionary monetary shock from the US, how South Korea is affected? 
-    \item Demand side (directly from US): R (+), Y (-), P(-).
-    \item Supply side (indirectly from China): Cost (+), Y (-), P(+).
-    \item \textbf{Summary}: China aggravates the impact of US shock on South Korea  
-\end{itemize}
-        \begin{figure}[htbp]
-		\centering 
-        \includegraphics[width=0.8\columnwidth]{latex/DS_curve.png}
-		\label{DS_curve}
-	\end{figure}  
+    
 \end{frame}
 
 \begin{frame}{Households}
 \fontsize{8}{8}\selectfont
 
 \begin{itemize}
-    \item A home country (China) consumer receives utility from consumption, $C_{t}$, and disutility from labor, $L_{t}$. Its lifetime utility is
+    \item A consumer receives utility from consumption, $C_{t}$, and disutility from labor, $L_{t}$. Its lifetime utility is
 \end{itemize}
 
 
@@ -637,7 +366,7 @@ Y_{t}(f)=A_{t} L_{t}(f)
 $$
 
 \begin{itemize}
-    \item where $A_{t}$ is an exogenous country-specific productivity disturbance obeying a known stochastic process. Following Ravenna and Walsh (2006, JME). We assume The firm must borrow an amount $W_tL_t(f)$ from intermediaries at the gross nominal interest rate $R_t$, so the nominal cost of labor is $R_tW_t$. The real marginal cost is the same for all firms. This implies the minimized nominal marginal cost of production is
+    \item where $A_{t}$ is an exogenous country-specific productivity disturbance obeying a known stochastic process. The firm must borrow an amount $W_tL_t(f)$ from intermediaries at the gross nominal interest rate $R_t$, so the nominal cost of labor is $R_tW_t$. The real marginal cost is the same for all firm. This implies the minimized nominal marginal cost of production is
 \end{itemize}
 
 $$
@@ -732,8 +461,8 @@ $$
     \item The Taylor rule of the central bank's policy rate follows the following process:
 \end{itemize}
 \begin{gather*}
-\ln R_{t}=\left(1-\rho_{r}\right) \ln R +\rho_{r}\ln R_{t-1} + \left(1-\rho_{r}\right) [ \phi_{\pi}\left(\ln \Pi_{t}-\ln \Pi\right)+ \\ 
-\phi_{x}\ln Y_{t}-\ln Y_{t}^{N} ] +s_{r}\varepsilon_{r,t}+s_{g}^{H}\varepsilon_{g, t}
+\ln R_{t}=\left(1-\rho_{r}\right) \ln R +\rho_{r}\ln R_{t-1} + \left(1-\rho_{r}\right)\left[\phi_{\pi}\left(\ln \Pi_{t}-\ln \Pi\right)+ \\ 
+\phi_{x}\left(\ln Y_{t}-\ln Y_{t}^{N}\right)\right] +s_{r}\varepsilon_{r,t}+s_{g}^{H}\varepsilon_{g, t}
 \end{gather*}
 
 \begin{itemize}
@@ -744,9 +473,10 @@ $$
     \item For the foreign central bank:
 \end{itemize}
 \begin{gather*}
-\ln R_{t}^{*}=\left(1-\rho_{r}^{*}\right) \ln R^{*}+ \rho_{r}^{*}\ln R_{t-1}^{*} + \left(1-\rho_{r}^{*}\right)[\phi_{\pi}^{*}\left(\ln \Pi_{t}^{*}-\ln \Pi^{*}\right)+ \\ \phi_{x}^{*}\ln Y_{t}^{*}-\ln Y_{t}^{N*}] 
+\ln R_{t}^{*}=\left(1-\rho_{r}^{*}\right) \ln R^{*}+ \rho_{r}^{*}\ln R_{t-1}^{*} + \left(1-\rho_{r}^{*}\right)\left[\phi_{\pi}^{*}\left(\ln \Pi_{t}^{*}-\ln \Pi^{*}\right)+ \\ \phi_{x}^{*}\left(\ln Y_{t}^{*}-\ln Y_{t}^{N*}\right)\right] 
  +s_{r}^{*}\varepsilon_{r, t}+s_{g}^{F}\varepsilon_{g, t}
 \end{gather*}
+
 
 \end{frame}
 
@@ -795,7 +525,7 @@ C_{t}=C_{t}^{*}
 $$
 
 \begin{itemize}
-    \item We can also get
+    \item we can also get
 \end{itemize}
 
 
@@ -848,13 +578,13 @@ $$
 
 
 $$
-x_{t}= \mathbb{E}_{t} x_{t+1}-\frac{1}{\sigma_{0}}\left(r_{t}-\mathbb{E}_{t} \pi_{t+1}-r_t^N\right)
+x_{t}= & \mathbb{E}_{t} x_{t+1}-\frac{1}{\sigma_{0}}\left(r_{t}-\mathbb{E}_{t} \pi_{t+1}-r_t^N\right)
 $$
 $$
 r_{t}^{N}=\sigma_{0} \mathbb{E}_{t} \Delta y_{t+1}^{N}+\kappa_{0} y_{t+1}^{*}
 $$
 \begin{itemize}
-    \item The Phillips curve for home-produced goods is
+    \item The Phillips curve for home produced goods is
 \end{itemize}
 
 $$
@@ -866,7 +596,7 @@ $$
 \end{itemize}
 
 $$
-\pi_{H, t} =\nu \varkappa\left(y_{t}-y_{t}^{N}\right)+\textcolor{blue}{\nu(r_t-r_t^N)}+\beta \mathbb{E}_{t} \pi_{H, t+1}
+\pi_{H, t} & =\nu \varkappa\left(y_{t}-y_{t}^{N}\right)+\textcolor{blue}{\nu(r_t-r_t^N)}+\beta \mathbb{E}_{t} \pi_{H, t+1}
 $$
 
 \begin{itemize}
@@ -883,8 +613,8 @@ $$
 
 $$
 \begin{gathered}
-y_{t}^{N}=\varkappa^{-1}\left[(1+\chi) a_{t}-\kappa_{0} y_{t}^{*}\right], \\
-y_{t}^{N *}=\varkappa^{*-1}\left[(1+\chi) a_{t}^{*}-\kappa_{0}^{*} y_{t}\right] .
+y_{t}^{N}=\varkappa^{-1}\left[(1+\chi) a_{t}-\kappa_{0} y_{t}^{*}+r_t^N\right], \\
+y_{t}^{N *}=\varkappa^{*-1}\left[(1+\chi) a_{t}^{*}-\kappa_{0}^{*} y_{t}+r_t^{N*}\right] .
 \end{gathered}
 $$
 
@@ -903,33 +633,17 @@ $$
 \tau_{t}=y_{t}-y_{t}^{*}
 $$
 \begin{itemize}
-    \item The model is closed by monetary policy.
+    \item The model is closed by policy rules for conventional and unconventional monetary policy.
 \end{itemize}
 
+
+$$
+\begin{gathered}
+r_{t}^{s}=\rho_{r} r_{t-1}^{s}+\left(1-\rho_{r}\right)\left[\phi_{\pi} \pi_{t}+\phi_{x} x_{t}\right]+s_{r} \varepsilon_{r, t} \\
+q e_{t}=\rho_{q} q e_{t-1}+s_{q} \varepsilon_{q, t} .
+\end{gathered}
+$$
 \end{frame}
-
-
-\begin{frame}{Spillover effect and optimal policy}
-
-\begin{itemize}
-    \item To be added: derive $y_t$, $y_t^*$ and $\pi_t$, $\pi_t^*$ as functions of shocks
-    \item Under the existence of the trade channel, what's the optimal monetary policy in response to global monetary shock: coordination VS non-coordination
-\end{itemize}
-
-\end{frame}
-
-\section*{Reference}
-
-\begin{frame}[allowframebreaks]
-	\frametitle{References}
-	\bibliographystyle{apalike}
-	\footnotesize
-	\bibliography{ref.bib}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 \section*{Reference}
 
