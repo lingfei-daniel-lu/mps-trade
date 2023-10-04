@@ -1,0 +1,376 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amsthm,booktabs,subfigure,anysize,hyperref,graphicx,float,bbm,epstopdf}
+\usepackage[margin=1in]{geometry}
+\bibliographystyle{aea}
+
+\usepackage{threeparttable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{bm}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+\definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+\definecolor{medium-blue}{rgb}{0,0,0.5}
+\definecolor{ChadBlue}{rgb}{.1,.1,.5}
+\definecolor{ChadDarkBlue}{rgb}{.1,0,.1}
+\definecolor{ChadBlue}{rgb}{.1,.1,.5}
+\definecolor{ChadRoyal}{rgb}{.2,.2,.8}
+\definecolor{ChadGreen}{rgb}{0,.4,0}
+\definecolor{ChadRed}{rgb}{.5,0,.5}
+\hypersetup{
+    colorlinks, linkcolor=ChadRed,
+    citecolor=ChadBlue, urlcolor=ChadBlue
+}
+\newcommand\posscite[1]{\citeauthor{#1}'s (\citeyear{#1})}
+\setlength{\parskip}{0.15cm}
+\newtheorem{proposition}{\color{ChadGreen} Proposition}
+\newtheorem{finding}{\color{ChadGreen} Finding}
+\newtheorem{SF}{\color{ChadGreen} Stylized fact}
+\newtheorem{hyp}{Hypothesis}
+\newtheorem{fact}{Fact}
+\newtheorem{prop}{Proposition}
+\usepackage{caption}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{accents}
+\usepackage{color,soul}
+\usepackage{smartdiagram}
+\usepackage[figuresright]{rotating} % Rotating table
+\usepackage{lscape} % Rotating table
+\usepackage{diagbox}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{comment}
+\usepackage{float}
+\usepackage{natbib}
+
+\newcommand{\ubar}[1]{\underaccent{\bar}{#1}}
+\usepackage[all]{hypcap}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{cor}[theorem]{Corollary}
+\renewcommand{\proof}{\noindent \textbf{Proof.\ }}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{example}{Example}
+\newtheorem{defn}{Definition}
+\renewcommand{\qed}{\hfill\rule{2.1mm}{2.1mm}}
+\newcommand\fnote[1]{\captionsetup{font=small}\caption*{#1}}
+
+\let\LaTeXtitle\title
+\renewcommand{\arraystretch}{1.1} % space between rows
+\usepackage{sectsty}
+\usepackage{lscape}
+\graphicspath{{figure/}}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+\linespread{1.2}
+\geometry{a4paper,scale=0.75}
+\setlength{\parskip}{0.5em}
+
+
+%---------------------------------------------------------------------------------------
+
+\begin{document}
+
+\title{\Large \textbf{International Monetary Policy Shocks and Export Prices}}
+
+
+\author{Yao Amber Li\thanks{Economics Department, Hong Kong University of Science and Technology. E-mail: yaoli@ust.hk}
+\medskip
+\and Lingfei Lu\thanks{Economics Department, Hong Kong University of Science and Technology. E-mail: lingfei.lu@connect.ust.hk}
+\medskip
+\and Jingbo Yao\thanks{Economics Department, Hong Kong University of Science and Technology. E-mail: jyaoam@connect.ust.hk}
+}
+
+
+\date{\today}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+
+
+
+
+1. Benchmark regression
+(1) Benchmark: use firm aggregate price, monthly data
+(2) Robustness 1: use firm-product-country level price, monthly data, no year fixed effect
+(3) Robustness 2: use firm-product-country level price, annually data
+(4) Robustness 3: use Nakamura and Steinsson shock and FFR shock
+(5) Robustness 4: Invoicing currency concern
+(6) Robustness 5: Is the average export price increase driven by some specific countries?
+(7) Robustness 6: single-product firms
+
+2. Decomposition
+(1) Decomposition: mark up VS marginal cost 
+(2) Further decomposition of cost
+
+3. Mechanism
+(1) Borrowing cost and liquidity response
+(2) Interact brw with interest rate and liquidity ratio
+(3) Further check 1: exposure heterogeneity to US shock across ownership
+(4) Further check 2: exposure heterogeneity to US shock across industries
+(5) Further check 3: exposure heterogeneity to US shock across regimes: Fixed VS floating
+
+4. Alternative explanations
+(1) Demand side expansion?
+(2) Chinese exports are Giffen good?
+(3) Import price increase?
+(4) Exchange rate depreciation induced price increase?
+
+5. Model
+
+
+
+\section{Introduction}
+
+\subsection{background and motivation}
+
+How export price responds to international shocks is a classical question in international economics. People usually focus on exchange rate shocks, productivity shocks, and other real demand and cost shocks, less attention is drawn to international monetary policy shocks. To our knowledge, this is the first paper to investigate how international monetary policy shocks affect export prices with detailed firm-product level data. 
+
+\subsection{This paper}
+
+By integrating Chinese custom data with CIE data, our investigation reveals substantial heterogeneity in the responses of firm export prices to international monetary policy shocks, gauged through high-frequency asset price fluctuations. In particular, our analysis delves into the influence of major global central banks, uncovering noteworthy patterns. Notably, a tightening monetary policy shock in the United States substantially elevates China's export prices, whereas European stocks exert a contrasting effect by diminishing export prices. Conversely, shocks emanating from the United Kingdom and Japan exhibit negligible impacts.
+
+The responses of export prices to European shocks are not surprising.
+
+\subsection{Literature and contribution}
+
+This paper contributes to three strands of literature: 
+
+
+1. International shock and firm pricing behaviors
+
+\cite{manova-zhang2012}, \cite{fan-lai-li2015},\cite{fan-li-yeaple2015}, \cite{harrigan2015export}
+
+
+
+
+
+2. Global monetary policy spillover\\
+Many papers investigate the spillover effect of international monetary policy shocks either on the real economy (see \cite{kim2001international}, \cite{faust2003monetary}, \cite{faust2003identifying}, \cite{mackowiak2007external}, \cite{di2008impact}, \cite{bluedorn2011open}) or on asset prices (like \cite{craine2008international}, \cite{wongswan2009response}, \cite{hausman2011global}, \cite{rogers2014evaluating}, \cite{miranda2020us}). Our paper focuses on the impact on export prices.
+
+3. The role of financial friction in international trade.\\
+Existing literature reveals how financial friction affects exports, like \cite{manova2013}, Compared with these papers, we study, given the existence of financial friction, how monetary policy affects export prices through the change of credit conditions. Our paper most resembles \cite{lin2018international}, which investigates how monetary policy affects trade volume using country-sector data. However, we explored the impact of monetary policy shocks on export prices using firm-product level data.
+
+
+
+
+
+
+
+\section{Benchmark regression}
+
+reg dlnprice on brw
+(1) Benchmark: use firm aggregate price, monthly data
+Positive and significant, add year FE also hold
+ 
+Note: Column (1)(2): firm FE, cluster on firm; Column (3)(4): firm FE, cluster on firm and year-month; Column (5)(6): firm and Year FE, cluster on firm.
+
+Comments: our benchmark level regression should not add year fixed effect. There are several reasons: (i)add year effect will absorb the variation of brw. we only have 7 year monthly data, this is a big loss of variation; (ii)control year effect is to alleviate the concern of omitted variable, which can affect brw and price simultaneously. However, our brw is very exogenous and can’t be affected by other variables; (iii)add year effect has very few benefits because it can only control the annually varying factors, but keep silent on other quarterly and monthly level changes; (iv)in the monetary policy shock literature, people don’t control time fixed effect. Chari(2021, RFS) reg monthly capital flow on mps, without control year fixed effect. Lin (2018, JDE) reg annually trade value on mps, doesn’t control decade fixed effect; (v)control year fixed effect, will make the firm-product level regression insignificant, will make firm level regression insignificant in both fixed and floating regime, will make NS_shock has positive effect on dlnprice but negative impact on f.dlnprice. So, to guarantee the consistency of results, I suggest not to control it in our benchmark regression.
+
+(2) Robustness 1: use firm-product-country level price, monthly data, no year fixed effect
+Positive and significant, but effect with some lags, insignificant with year effect
+
+ 
+
+Comments: use product level price has 2 shortcomings: (i) many dimensions in the dependent variables, but explanatory variable only has one dimension, so there are many noises. To alleviate it, we can control past price level and price change; (ii) Sometimes the product may not be the same.
+
+(3) Robustness 2: use firm-product-country level price, annually data
+Positive and significant
+ 
+
+(4) Robustness 3: use Nakamura and Steinsson shock and FFR shock
+ 
+
+(5) Robustness 4: Invoicing currency concern
+Some people may argue that the invoicing currency is unknown, so price increases in RMB may not mean the price also increases in the true invoicing currency. Actually, although we don’t know the detailed invoicing currency for each product, most of these products are denominated in USD or RMB. Before 2005m7, because of fixed exchange rate, invoicing by RMB is equivalent to by USD, so price change calculated using which currency doesn’t matter. 
+
+(6) Robustness 5: Is the average export price increase driven some specific countries?
+Not the case, because nearly all the main countries experienced price increase. 
+ 
+
+(6) Robustness 6: single-product firms
+
+Aggregate firm-product-country level price into firm level prices may cancel out some price changes. Also, it would be possible that an exporting firm may switch their export product mix when facing credit constraints. A more thorough analysis calls for further investigation of resource reallocation across core versus non-core product products within firm but this would be out of the scope of the current paper. So, we repeat the regressions using single-product firms.
+
+
+\section{Decomposition}
+
+reg markup/marginal_cost/financial_cost/labor_cost/cash_ratio/interest_rate on brw
+(1) Decomposition: mark up VS marginal cost 
+Markup doesn’t respond, marginal cost significantly positive, control change of marginal cost, price response is insignificant
+
+ 
+
+(2) Further decomposition of cost
+Cross-validation cost/sales
+unit of borrowing cost significantly positive, unit labor cost (wage) decrease
+ 
+
+\section{Mechanism}
+
+
+“U.S. monetary policy shocks induce comovements in the international financial variables that characterize the “Global Financial Cycle.” A single global factor that explains an important share of the variation of risky asset prices around the world decreases significantly after a U.S. monetary tightening. Monetary contractions in the US lead to significant deleveraging of global financial intermediaries, a decline in the provision of domestic credit globally, strong retrenchments of international credit flows, and tightening of foreign financial conditions. Countries with floating exchange rate regimes are subject to similar financial spillovers.” -- Miranda-Agrippino, Silvia, and Hélene Rey. "US monetary policy and the global financial cycle." The Review of Economic Studies 87.6 (2020): 2754-2776.
+
+“The magnitude of spillovers depends on the receiving country's trade and financial integration, de jure financial openness, exchange rate regime, financial market development, labour market rigidities, industry structure, and participation in global value chains. The role of these country characteristics for the spillovers often differs across advanced and non-advanced economies and also involves non-linearities. The results of this paper suggest that policymakers could mitigate their economies' vulnerability to US monetary policy by fostering trade integration as well as domestic financial market development, increasing the flexibility of exchange rates, and reducing frictions in labour markets.”-- Georgiadis, Georgios. "Determinants of global spillovers from US monetary policy." Journal of international Money and Finance 67 (2016): 41-61.
+
+First, several papers investigate the global output spillovers from conventional US monetary policy (see, for example, Kim, 2001; Faust and Rogers, 2003; Faust et al., 2003; Mackowiak, 2007; Di Giovanni and Shambaugh, 2008; Bluedorn and Bowdler, 2011). The results of this literature suggest that US monetary policy has substantial global spillovers across both advanced and emerging market economies, and that these arise mainly through spillovers in interest rates.
+
+
+“A large body of this literature has shown that in the post-Bretton Woods period interest rates are more closely linked in countries that peg and in countries with open capital markets compared with countries that do not peg or impose capital restrictions. (See e.g., Klein and Shambaugh (2010).)”--Dedola, Luca, Giulia Rivolta, and Livio Stracca. "If the Fed sneezes, who catches a cold?." Journal of International Economics 108 (2017): S23-S41.
+
+Rey (2013) has shown that capital flows and stock prices in most countries, regardless of their exchange rate regime against the dollar, display strong comovements with the global cycle.
+
+Although China is found to be restrictive to portfolio flows, it is quite open to FDI inflows. Lin and Ye (2018, RFS) reveal that there exists a trade credit channel through which FDI firms can propagate global liquidity shocks to the host economy despite its tight controls on non-FDI financial flows.
+
+Actually, although China has capital control, Prasad and Wei (2005) report that there have been huge capital inflows into China since 2003 that cannot be explained by trade surplus or foreign direct investments. Such international capital is referred as “hot money.” Investors attempt to earn short-term profits by observing interest rate differences or through anticipated currency revaluations or expected returns from holding securities (Kim and Singal, 2000). Although China has adopted various measures to restrict volatile international short-term capital flows that are speculative in nature, speculators continue to circumvent Chinese laws and regulations. Martin and Morrison (2008) indicate that more than half of the hot money flown into China takes the form of over-reported or forged FDI. China is not fully isolated from hot money inflows because capital controls are not applied to all capital accounts transaction categories and several of these categories are loosely managed (Xie, 2004). So, we can treat China as a partially capital-free country, and the channels discussed in Miranda-Agrippino and Rey still applies to China. 
+
+
+To sum up, no matter through financial intermediaries, global asset prices, or trade provision, all the previous literature implies that US tightening may increase firms borrowing cost and decrease their liquidity.
+
+US monetary transmission:
+1. Real economic channel
+(1) interest rate: risk-free rate, term spread and risk premium
+(2) exchange rate: expenditure expanding, expenditure switching
+(2) expectation: future interest rate, inflation expectation
+2. Financial channel
+(1) Financial intermediary: bank deleveraging
+(2) Asset price: collateral value (firm side), wealth effect (household side)
+(3) Liquidity ?
+
+Based on the literature, we provide two hypotheses: 
+1. Global borrowing cost channel. positive brw shock increases the global interest rate, so the borrowing cost of firms increase and firms increase prices. 
+2. Global liquidity channel. positive brw shock decreases global liquidity, so firm try to increase prices to alleviate liquidity constrain.
+
+(1) Borrowing cost and liquidity response
+The average interest rate of liabilities increases (see Column 1-2). Liquidity ratio decreases (see Column 3-4). The conclusion of Lin and Ye (2020, RFS) is also verified by us (see Column 5-6) that trade provision decreases after a positive brw shock.
+
+ 
+
+(2) Interact brw with interest rate and liquidity ratio
+Firms with higher interest rate and lower cash ratio increase prices more, verify our conjecture. 
+ 
+
+
+(3) Further check 1: exposure heterogeneity to US shock across ownership
+The financial condition of State-owned enterprises (SOE) usually are less likely to be affected by financial distress compared with domestic private enterprises (DPE), see Boyreau-Debray and Wei (2005), Dollar and Wei (2007) and Riedel et al. (2007), Song et al. (2011). So, we expect their borrowing cost and price increase less.  The two tables below verified our conjectures.
+
+ 
+Note: the dependent variable is d.IEoL. The borrowing cost of SOE even decreases, this is reasonable because under financial distress, bank tends to shift loans to SOE.
+
+ 
+Note: the dependent variable is dlnprice_YoY. The prices of SOE are unaffected.
+
+
+(4) Further check 2: exposure heterogeneity to US shock across industries
+Some industries are more exposed to international financial market, such as the commodities prices, which has very mature. From this picture, we can see that 25(oil), 26/28(chemistry), 32/33(metal) have much bigger responses compared with other industries.
+
+ 
+
+(5) Further check 3: exposure heterogeneity to US shock across regimes: Fixed VS floating
+
+If the global borrowing cost channel and global liquidity channel hold, then under fixed regime Chinese financial conditions are more exposed to US shock, so we expect that the export prices responses should be larger. 
+
+ 
+Note: Column (1)(2): fixed regime; Column (3)(4): floating regime
+
+\section{Alternative explanations}
+
+(1) Demand side expansion?
+This argument is that global demand increases after shock so that China’s export prices increase. However, positive brw shock should predict demand shrink and price decrease instead of price increase. So, demand side story doesn’t hold.
+
+(2) Chinese exports are Giffen good?
+Brw shock make the Chinese export more competitive because Chinses product is cheaper compared with similar products from other countries. So, Chinese export are like Giffen goods whose prices increase when people’s incomes decrease. This is unlikely to happen because nearly all the product prices increase, especially oil, metal related ones, which are not Giffen good.
+
+(3) Import price increase?
+This story is that China’s export price increases is because the import price increases. To rule out it, we do two tasks:
+i. Using the annually firm-product-country level import price data, we replace import price change with export price change in the benchmark level regression and find that results are insignificant
+(Update)
+ii. Using the annually firm-product-country level export price data, we include brw*import_intensity or brw*I(import_intensity>pct75). If this story holds, prices should increase more with higher import intensity. But the results are insignificant.
+
+ 
+(Update)
+
+(4) Exchange rate depreciation induced price increase?
+This story is that export price denominated in RMB increase is just because RMB depreciates against other currencies, so to keep purchasing power of export income unchanged, the firms should increase price. This explanation can be refuted based on two reasons:
+
+i. Our results are also significant before 2005m7, when China’s exchange rate is almost fixed, which means that positive brw shock should appreciate RMB against other currencies 
+ii. Using the annually firm-product-country level export price data, we have controlled the bilateral real exchange rate, and results are robust.
+(update)
+
+
+\section{Model}
+
+“the notion that exporters depend more on external financing than domestic producers because of additional costs related to trade, greater transaction risks, and higher working capital needs due to longer shipping times.”—Manova (2013)
+
+Here we construct a partial equilibrium micro-founded model to rationalize why firms increase export prices in response to a US monetary contraction and capture how this is related to borrowing cost increase and liquidity constrain.
+
+The sketch of model setting:
+(1) Firm
+there is a firm with financial constrains: (i) collateral constrain: the borrowing of a firm can’t exceed the value of collateral assets; (ii) liquidity constrains: the firm can only pay wage and interest by cash. We assume the firm price with RMB. Then we may derive that the export price is a function of mark up and marginal cost, where the marginal cost is positively related with the borrowing rate. 
+
+
+(2) Bank
+The bank chooses lending rate to optimize its expected profits. The optimal lending rate is expected to be positively determined by US monetary shock.
+
+So, the big picture is that a positive US shock will induce the increase of borrowing rate and thus the marginal cost, and finally the export price. What’s more, liquidity condition is augmenter of this transmission: the firm will increase more when liquidity is worse.
+
+We summarize the properties for the full model (i.e., when both fixed and variable costs are subject to external finance) in the following proposition (see Appendix B for the proof of Proposition 3): 
+Proposition 3. Under quality sorting, tighter credit constraints (i.e., a higher d or a lower h) lower the optimal product quality chosen by a firm and thus reduce the optimal price. In this case, prices increase with productivity, ceteris paribus. However, when there is no quality choice (i.e., under efficiency sorting), given firm productivity, tighter credit constraints (i.e., a higher d or a lower theta) increase the optimal price set by a firm. In this efficiency sorting case, export prices decrease with productivity, ceteris paribus
+
+
+ 
+
+Cash ratio is like “1/d”, which means the lower the cash ratio, the more credit is needed.
+Borrowing cost is like “1/θ”, which means the lower the cost, the easier credit is accessed.
+
+
+In our setting, monetary policy is a temporal shock, firms are less likely to adjust the quality. It is hard to imagine, the Fed increase 10bp one-year treasury rate will induce a toy firm to produce low-quality toy cars. So, here we can model in the way of “efficiency sorting”.
+
+Following the macroeconomic literature, we can assume financial friction, by which it can be proved that tightening monetary shock will worsen firm’s credit conditions. So, “1/d” and  “1/θ” is a function of brw shock. Specifically, brw will decrease cash ratio (this can be achieved through 2 ways: 1. Positive brw shrink the demand thus decreases the sales income; 2. Positive tightening the credit provision either from banks or trade partners), which causes firms needs more credit; also, brw will increase borrowing cost, which makes external credit less accessible.  These financial frictions can be:
+
+1.	Firms need to pay the principal and interest of loan by cash;
+2.	Pay the inventory fees and wage by loan;
+
+Following Fernandez-Corugedo, Emilio, et al. (2011), we can capture trade credit in the model.
+
+
+At the first stage, we can directly set the reaction of banks to US monetary shocks as given, and the firms take it as exogenous. Constant mark-up is enough. We then assume flexible price first. The model is static.
+
+ 
+
+Later, we can relax our assumptions through three lines: (1) endogenize the behavior of bank, or even household; (2) allow mark-up to be variable; (3) assume sticky price, like Calvo type.
+
+Hope our model can explain cross-country, cross-industry differences
+
+
+
+
+
+
+Literature
+Di Giovanni, Julian, and Jay C. Shambaugh. "The impact of foreign interest rates on the economy: The role of the exchange rate regime." Journal of International economics 74.2 (2008): 341-361.
+
+
+\section{Other issues}
+Questions
+1.Trade exposure VS international financial market exposure
+2.How to model liquidity effect
+3.How to explain why firms increase prices more under tighter constrains?
+Our measure of FPC doesn’t change across time, so it can’t tell us how firms’ FPC change in response to brw shock. The data reveals that tighter constrain firms usually have higher prices, which is consistent with Fan, Lai, and Li (2015). But this doesn’t mean that when there is a contractional brw shock, firms with tighter constrains increase prices more because we don’t how the FPC changes.
+ 
+ 
+
+Firms with tighter constrains experienced a smaller increase in borrowing cost. This is reasonable, because tighter constrains firms borrowing cost has already been very high which is difficult to be higher in response to a positive brw shock.
+
+\newpage
+{\textbf{Reference}} 
+\bibliography{my.bib}
+
+\end{document}
