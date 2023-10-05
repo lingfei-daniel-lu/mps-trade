@@ -238,21 +238,19 @@ use samples\sample_matched_exp,clear
 
 * 8.1 Decomposition into markups and marginal costs
 
-gen dMarkup=Markup_DLWTLD-D.Markup_DLWTLD
-
 * How MC and Markup change?
 eststo dMC_brw: reghdfe dlnMC_tr brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
-eststo dMarkup_brw: reghdfe dMarkup brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo dMarkup_brw: reghdfe d.Markup brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 * Price with Markup controls
-eststo price_brw_dMarkup: reghdfe dlnprice_tr brw dMarkup dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
+eststo price_brw_dMarkup: reghdfe dlnprice_tr brw d.Markup dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 esttab dMC_brw dMarkup_brw price_brw_dMarkup using tables\table_brw_dmarkup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw dlnRER dlnrgdp)
 
 * Markup and credit constraints
-eststo dMarkup_brw_FPC_US: reghdfe dMarkup c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
-eststo dMarkup_brw_ExtFin_US: reghdfe dMarkup c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
-eststo dMarkup_brw_Tang_US: reghdfe dMarkup c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo dMarkup_brw_FPC_US: reghdfe d.Markup c.brw#c.FPC_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo dMarkup_brw_ExtFin_US: reghdfe d.Markup c.brw#c.ExtFin_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
+eststo dMarkup_brw_Tang_US: reghdfe d.Markup c.brw#c.Tang_US dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
 esttab dMarkup_brw_FPC_US dMarkup_brw_ExtFin_US dMarkup_brw_Tang_US using tables\table_brw_dmarkup_credit.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 

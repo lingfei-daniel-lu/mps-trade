@@ -492,21 +492,22 @@ gen price_RMB=value_RMB/quantity
 collapse (sum) value_RMB quantity (mean) price_hit=price_RMB [aweight=value], by(FRDM year month HS6)
 gen time=monthly(string(year)+"-"+string(month),"YM")
 format time %tm
+egen group_id=group(FRDM HS6)
+xtset group_id time
+by group_id: gen dlnprice_hit=ln(price_hit)-ln(L.price_hit)
+by group_id: gen dlnprice_hit_YoY=ln(price_hit)-ln(L12.price_hit)
+by group_id: gen dlnprice_hit_next=ln(price_hit)-ln(price_hit[_n-1])
 save customs_matched\customs_matched_monthly_exp_HS6,replace
 
 cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp_HS6,clear
 bys FRDM time: egen share_it=pc(value),prop
-egen group_id=group(FRDM HS6)
-xtset group_id time
+sort group_id time
 by group_id: gen share_bar=0.5*(share_it+L.share_it)
-by group_id: gen dlnprice_hit=ln(price_hit)-ln(L.price_hit)
 replace share_bar=share_it if share_bar==.
 by group_id: gen share_bar_YoY=0.5*(share_it+L12.share_it)
-by group_id: gen dlnprice_hit_YoY=ln(price_hit)-ln(L12.price_hit)
 replace share_bar_YoY=share_it if share_bar_YoY==.
 by group_id: gen share_bar_next=0.5*(share_it+share_it[_n-1])
-by group_id: gen dlnprice_hit_next=ln(price_hit)-ln(price_hit[_n-1])
 replace share_bar_next=share_it if share_bar_next==.
 sort FRDM time
 by FRDM time: egen dlnprice=sum(dlnprice_hit*share_bar), missing
@@ -517,9 +518,9 @@ keep FRDM time year month value_firm dlnprice dlnprice_YoY dlnprice_next
 duplicates drop
 by FRDM: drop if _N==1
 label var value_firm "Total export value in RMB"
-label var dlnprice "Month-on-month price growth rate"
-label var dlnprice_YoY "Year-on-year price growth rate"
-label var dlnprice_next "Adjacent-recorded-month price growth rate"
+label var dlnprice "Month-on-month price growth"
+label var dlnprice_YoY "Year-on-year price growth"
+label var dlnprice_next "Adjacent-recorded-month price growth"
 save customs_matched\customs_matched_monthly_exp_firm,replace
 
 ********************************************************************************
@@ -640,7 +641,9 @@ save samples\sample_monthly_exp,replace
 
 ********************************************************************************
 
-* 6. Sample Construction (firm-level price index)
+* 6. Sample Construction (firm price index)
+
+* 6.1 Firm-level price
 
 cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp_firm,clear
@@ -655,7 +658,28 @@ merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Mark
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_94_21_monthly,nogen keep(matched master)
+merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
 replace brw=0 if brw==.
+replace NS_shock=0 if NS_shock==.
+replace ffr_shock=0 if ffr_shock==.
 egen firm_id=group(FRDM)
 xtset firm_id time
 save samples\sample_monthly_exp_firm,replace
+
+cd "D:\Project E"
+use customs_matched\customs_matched_monthly_exp_HS6,clear
+winsor2 dlnprice_hit_next, replace
+winsor2 dlnprice_hit, trim replace
+winsor2 dlnprice_hit_YoY, trim replace
+* merge with CIE data
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
+* add exchange rates and other macro variables
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+* add monetary policy shocks
+merge m:1 year month using MPS\brw\brw_94_21_monthly,nogen keep(matched master)
+merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
+replace brw=0 if brw==.
+replace NS_shock=0 if NS_shock==.
+replace ffr_shock=0 if ffr_shock==.
+xtset group_id time
+save samples\sample_monthly_exp_firm_HS6,replace
