@@ -273,14 +273,27 @@ esttab price_brw_Markup price_brw_tfp quant_brw_Markup quant_brw_tfp using table
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
 
-* Sales income level
-eststo SI_brw: reghdfe D.lnrSI brw lnrSI, a(firm_id) vce(cluster firm_id)
-
-* Account receivable to sales income
-eststo Arec_brw: reghdfe D.Arec brw lnrSI, a(firm_id) vce(cluster firm_id)
+* 9.1 Borrowing cost and liquidity
 
 * Interest expense to total liability
-eststo IEoL_brw: reghdfe D.IEoL brw lnrSI, a(firm_id) vce(cluster firm_id)
+eststo IEoL_brw1: reghdfe D.IEoL brw, a(firm_id) vce(cluster firm_id)
+eststo IEoL_brw2: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+* Cash to total asset
+eststo Cash_brw1: reghdfe D.Cash brw, a(firm_id) vce(cluster firm_id)
+eststo Cash_brw2: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+* Account receivable to sales income
+eststo Arec_brw1: reghdfe D.Arec brw, a(firm_id) vce(cluster firm_id)
+eststo Arec_brw2: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe IEoL_* Cash_* Arec_*, labels(firm_id "Firm FE")
+esttab IEoL_* Cash_* Arec_* using "tables\brw_firm_liquid", replace booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)')
+
+* 9.2 Other firm performance
+
+* Sales income level
+eststo SI_brw: reghdfe D.lnrSI brw lnrSI, a(firm_id) vce(cluster firm_id)
 
 * Wage payment per worker
 eststo CWP_brw: reghdfe D.lnrCWP brw lnrSI, a(firm_id) vce(cluster firm_id)
@@ -291,5 +304,3 @@ eststo CoS_brw: reghdfe D.CoS brw lnrSI, a(firm_id) vce(cluster firm_id)
 
 * Total profit to sales income
 eststo TPoS_brw: reghdfe D.TPoS brw lnrSI, a(firm_id) vce(cluster firm_id)
-
-esttab SI_brw Arec_brw IEoL_brw CWP_brw CWPoP_brw CoS_brw TPoS_brw using tables\table_brw_firm.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw)

@@ -82,6 +82,7 @@ esttab month_brw_NS_* month_brw_FFR_* using "tables\brw_month_altshock", replace
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 gen brw_lag12=l.brw+l2.brw+l3.brw+l4.brw+l5.brw+l6.brw+l7.brw+l8.brw+l9.brw+l10.brw+l11.brw+l12.brw
+
 eststo month_Markup_brw_1: reghdfe S12.Markup brw, a(firm_id) vce(cluster firm_id)
 eststo month_Markup_brw_2: reghdfe S12.Markup brw_lag12, a(firm_id) vce(cluster firm_id)
 eststo month_brw_Markup_1: reghdfe dlnprice_YoY brw S12.Markup, a(firm_id) vce(cluster firm_id)
@@ -89,3 +90,18 @@ eststo month_brw_Markup_2: reghdfe dlnprice_YoY brw_lag12 S12.Markup, a(firm_id)
 
 estfe month_Markup_brw_* month_brw_Markup_*, labels(firm_id "Firm FE")
 esttab month_Markup_brw_* month_brw_Markup_* using "tables\brw_month_markup", replace booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)')
+
+*-------------------------------------------------------------------------------
+
+* 6. Interaction with liquidity
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_IEoL: reghdfe dlnprice_YoY brw c.brw#c.IEoL_cic2 IEoL_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_IEoS: reghdfe dlnprice_YoY brw c.brw#c.IEoS_cic2 IEoS_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Cash: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2 Cash_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Arec: reghdfe dlnprice_YoY brw c.brw#c.Arec_cic2 Arec_cic2, a(firm_id) vce(cluster firm_id)
+
+estfe month_brw_IEo* month_brw_Cash month_brw_Arec, labels(firm_id "Firm FE")
+esttab month_brw_IEo* month_brw_Cash month_brw_Arec using "tables\brw_month_liquid", replace nomtitles booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)')
