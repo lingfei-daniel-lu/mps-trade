@@ -16,30 +16,36 @@ use samples\sample_monthly_exp_firm,clear
 
 eststo month_brw_firm_1: reghdfe dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_2: reghdfe dlnprice_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
-eststo month_brw_firm_3: reghdfe dlnprice_YoY brw, a(firm_id year) vce(cluster firm_id)
-eststo month_brw_firm_4: reghdfe dlnprice_YoY l.dlnprice_YoY brw, a(firm_id year) vce(cluster firm_id)
+eststo month_brw_firm_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_firm_4: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id year)
+eststo month_brw_firm_5: reghdfe f.dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_firm_6: reghdfe f2.dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
-estfe month_brw_firm_*, labels(firm_id "Firm FE" year "Year FE")
-esttab month_brw_firm_* using "tables\brw_month_baseline", replace nomtitles booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)')
+estfe month_brw_firm_*, labels(firm_id "Firm FE")
+esttab month_brw_firm_* using tables\month_baseline.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
-* 2. Lag values of brw
+* 2. Long-term effect
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-gen brw_lag3=l.brw+l2.brw+l3.brw
-gen brw_lag6=l.brw+l2.brw+l3.brw+l4.brw+l5.brw+l6.brw
-gen brw_lag12=l.brw+l2.brw+l3.brw+l4.brw+l5.brw+l6.brw+l7.brw+l8.brw+l9.brw+l10.brw+l11.brw+l12.brw
-
-eststo month_brw_lag_1: reghdfe dlnprice_YoY l.brw, a(firm_id) vce(cluster firm_id)
-eststo month_brw_lag_2: reghdfe dlnprice_YoY brw_lag3, a(firm_id) vce(cluster firm_id)
-eststo month_brw_lag_3: reghdfe dlnprice_YoY brw_lag6, a(firm_id) vce(cluster firm_id)
-eststo month_brw_lag_4: reghdfe dlnprice_YoY brw_lag12, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_1: reghdfe dlnprice_YoY brw l.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_2: reghdfe dlnprice_YoY brw l.brw l2.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_3: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_4: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_5: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_6: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_7: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_8: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_9: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l9.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_10: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l9.brw l10.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_11: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l9.brw l10.brw l11.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_lag_12: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l9.brw l10.brw l11.brw l12.brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
 estfe month_brw_lag_*, labels(firm_id "Firm FE")
-esttab month_brw_lag_* using "tables\brw_month_lag", replace nomtitles booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)')
+esttab month_brw_lag_* using tables\month_lag.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
@@ -50,13 +56,14 @@ use samples\sample_monthly_exp_firm_HS6,clear
 
 eststo month_brw_HS6_1: reghdfe dlnprice_hit_YoY brw, a(group_id) vce(cluster group_id)
 eststo month_brw_HS6_2: reghdfe dlnprice_hit_YoY l.dlnprice_hit_YoY brw, a(group_id) vce(cluster group_id)
-eststo month_brw_HS6_3: reghdfe dlnprice_hit_YoY brw, a(group_id year) vce(cluster group_id)
-eststo month_brw_HS6_4: reghdfe dlnprice_hit_YoY l.dlnprice_hit_YoY brw, a(group_id year) vce(cluster group_id)
-eststo month_brw_HS6_5: reghdfe dlnprice_hit_YoY brw, a(FRDM HS6) vce(cluster FRDM HS6)
-eststo month_brw_HS6_6: reghdfe dlnprice_hit_YoY l.dlnprice_hit_YoY brw, a(FRDM HS6) vce(cluster FRDM HS6)
+eststo month_brw_HS6_3: reghdfe dlnprice_hit_YoY brw l.dlnprice_hit_YoY l12.lnrSI, a(group_id) vce(cluster group_id)
+eststo month_brw_HS6_4: reghdfe dlnprice_hit_YoY brw l.dlnprice_hit_YoY l12.lnrSI, a(FRDM HS6) vce(cluster FRDM HS6)
+eststo month_brw_HS6_5: reghdfe f.dlnprice_hit_YoY brw l.dlnprice_hit_YoY l12.lnrSI, a(group_id) vce(cluster group_id)
+eststo month_brw_HS6_6: reghdfe f2.dlnprice_hit_YoY brw l.dlnprice_hit_YoY l12.lnrSI, a(group_id) vce(cluster group_id)
 
-estfe month_brw_HS6_*, labels(group_id "Firm-product FE" FRDM "Firm FE" HS6 "Product FE" year "Year FE" )
-esttab month_brw_HS6_* using "tables\brw_month_HS6", replace nomtitles booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)')
+
+estfe month_brw_HS6_*, labels(group_id "Firm-Product FE" FRDM "Firm FE" HS6 "Product FE")
+esttab month_brw_HS6_* using tables\month_HS6.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
@@ -66,13 +73,13 @@ cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
 eststo month_brw_NS_1: reghdfe dlnprice_YoY NS_shock, a(firm_id) vce(cluster firm_id)
-eststo month_brw_NS_2: reghdfe dlnprice_YoY NS_shock l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_brw_NS_2: reghdfe dlnprice_YoY NS_shock l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
 eststo month_brw_FFR_1: reghdfe dlnprice_YoY ffr_shock, a(firm_id) vce(cluster firm_id)
-eststo month_brw_FFR_2: reghdfe dlnprice_YoY ffr_shock l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_brw_FFR_2: reghdfe dlnprice_YoY ffr_shock l.dlnprice_YoY l12.lnrSI , a(firm_id) vce(cluster firm_id)
 
 estfe month_brw_NS_* month_brw_FFR_*, labels(firm_id "Firm FE")
-esttab month_brw_NS_* month_brw_FFR_* using "tables\brw_month_altshock", replace nomtitles booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') order(NS_shock ffr_shock)
+esttab month_brw_NS_* month_brw_FFR_* using tables\month_alt_measure.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 
 *-------------------------------------------------------------------------------

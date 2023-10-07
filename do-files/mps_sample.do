@@ -480,8 +480,10 @@ replace HS1996=HS6 if year<2002
 drop HS6 HS2002
 rename HS1996 HS6
 drop if HS6=="" | FRDM=="" | quant==0 | value==0
-collapse (sum) value quant, by (FRDM EN HS6 coun_aim year month)
-sort FRDM EN HS6 coun_aim year month
+collapse (sum) value quant, by (FRDM HS6 coun_aim year month)
+gen time=monthly(string(year)+"-"+string(month),"YM")
+format time %tm
+sort FRDM HS6 coun_aim time
 save customs_matched\customs_matched_monthly_exp,replace
 
 cd "D:\Project E"
@@ -490,8 +492,6 @@ merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 gen value_RMB=value*NER_US
 gen price_RMB=value_RMB/quantity
 collapse (sum) value_RMB quantity (mean) price_hit=price_RMB [aweight=value], by(FRDM year month HS6)
-gen time=monthly(string(year)+"-"+string(month),"YM")
-format time %tm
 egen group_id=group(FRDM HS6)
 xtset group_id time
 by group_id: gen dlnprice_hit=ln(price_hit)-ln(L.price_hit)
@@ -632,11 +632,17 @@ merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_U
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
 * add monetary policy shocks
-merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+merge m:1 year month using MPS\brw\brw_94_21_monthly,nogen keep(matched master)
+merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
+replace brw=0 if brw==.
+replace NS_shock=0 if NS_shock==.
+replace ffr_shock=0 if ffr_shock==.
 * drop special products
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
-sort FRDM HS6 coun_aim year month
+* construct group id
+egen group_id=group(FRDM HS6 coun_aim)
+xtset group_id time
 save samples\sample_monthly_exp,replace
 
 ********************************************************************************
