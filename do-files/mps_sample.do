@@ -632,7 +632,7 @@ merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_U
 gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
 * add monetary policy shocks
-merge m:1 year month using MPS\brw\brw_94_21_monthly,nogen keep(matched master)
+merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master)
 merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
 replace brw=0 if brw==.
 replace NS_shock=0 if NS_shock==.
@@ -643,6 +643,8 @@ drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * construct group id
 egen group_id=group(FRDM HS6 coun_aim)
 xtset group_id time
+by group_id: gen dlnprice_YoY=ln(price_RMB)-ln(L12.price_RMB)
+winsor2 dlnprice_YoY, trim replace
 save samples\sample_monthly_exp,replace
 
 ********************************************************************************
@@ -663,7 +665,7 @@ merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Mark
 * add exchange rates and other macro variables
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 * add monetary policy shocks
-merge m:1 year month using MPS\brw\brw_94_21_monthly,nogen keep(matched master)
+merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master)
 merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
 replace brw=0 if brw==.
 replace NS_shock=0 if NS_shock==.
@@ -682,7 +684,7 @@ merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Mark
 * add exchange rates and other macro variables
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 * add monetary policy shocks
-merge m:1 year month using MPS\brw\brw_94_21_monthly,nogen keep(matched master)
+merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master)
 merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
 replace brw=0 if brw==.
 replace NS_shock=0 if NS_shock==.
