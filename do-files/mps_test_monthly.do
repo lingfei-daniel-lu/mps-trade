@@ -4,7 +4,7 @@
 
 ********************************************************************************
 
-* E. Regressions for month data (2000-2006)
+* E. Regressions for monthly data (2000-2006)
 
 set processor 8
 *-------------------------------------------------------------------------------
@@ -106,6 +106,7 @@ use samples\sample_monthly_exp_firm,clear
 eststo month_brw_IEoL: reghdfe dlnprice_YoY brw c.brw#c.IEoL_cic2, a(firm_id) vce(cluster firm_id)
 eststo month_brw_IEoS: reghdfe dlnprice_YoY brw c.brw#c.IEoS_cic2, a(firm_id) vce(cluster firm_id)
 eststo month_brw_Cash: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Liquid: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2, a(firm_id) vce(cluster firm_id)
 eststo month_brw_Arec: reghdfe dlnprice_YoY brw c.brw#c.Arec_cic2, a(firm_id) vce(cluster firm_id)
 
 estfe month_brw_IEo* month_brw_Cash month_brw_Arec, labels(firm_id "Firm FE")

@@ -237,6 +237,7 @@ gen Tang=FA/TA
 gen Invent=STOCK/SI
 gen RDint=RND/SI
 gen Cash=(TWC-NAR-STOCK)/TA
+gen WC=TWC/TA
 gen Liquid=(TWC-CL)/TA
 gen Debt=TL/TA
 drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Debt<0
