@@ -80,7 +80,6 @@ eststo month_brw_FFR_2: reghdfe dlnprice_YoY ffr_shock l.dlnprice_YoY l12.lnrSI 
 estfe month_brw_NS_* month_brw_FFR_*, labels(firm_id "Firm FE")
 esttab month_brw_NS_* month_brw_FFR_* using tables\month_alt_measure.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
-
 *-------------------------------------------------------------------------------
 
 * 5. Decomposition into markup and marginal cost
@@ -95,7 +94,7 @@ eststo month_brw_Markup_1: reghdfe dlnprice_YoY brw S12.Markup, a(firm_id) vce(c
 eststo month_brw_Markup_2: reghdfe dlnprice_YoY brw_lag12 S12.Markup, a(firm_id) vce(cluster firm_id)
 
 estfe month_Markup_brw_* month_brw_Markup_*, labels(firm_id "Firm FE")
-esttab month_Markup_brw_* month_brw_Markup_* using "tables\brw_month_markup", replace booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)')
+esttab month_Markup_brw_* month_brw_Markup_* using tables\month_markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
@@ -104,10 +103,45 @@ esttab month_Markup_brw_* month_brw_Markup_* using "tables\brw_month_markup", re
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo month_brw_IEoL: reghdfe dlnprice_YoY brw c.brw#c.IEoL_cic2 IEoL_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_IEoS: reghdfe dlnprice_YoY brw c.brw#c.IEoS_cic2 IEoS_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_Cash: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2 Cash_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_Arec: reghdfe dlnprice_YoY brw c.brw#c.Arec_cic2 Arec_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_IEoL: reghdfe dlnprice_YoY brw c.brw#c.IEoL_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_IEoS: reghdfe dlnprice_YoY brw c.brw#c.IEoS_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Cash: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Arec: reghdfe dlnprice_YoY brw c.brw#c.Arec_cic2, a(firm_id) vce(cluster firm_id)
 
 estfe month_brw_IEo* month_brw_Cash month_brw_Arec, labels(firm_id "Firm FE")
-esttab month_brw_IEo* month_brw_Cash month_brw_Arec using "tables\brw_month_liquid", replace nomtitles booktabs b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)')
+esttab month_brw_IEo* month_brw_Cash month_brw_Arec using tables\month_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+
+*-------------------------------------------------------------------------------
+
+* 7. Interaction with industry-level credit constraints
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_FPC_US: reghdfe dlnprice_YoY brw c.brw#c.FPC_US, a(firm_id) vce(cluster firm_id)
+eststo month_brw_ExtFin_US: reghdfe dlnprice_YoY brw c.brw#c.ExtFin_US, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Tang_US: reghdfe dlnprice_YoY brw c.brw#c.Tang_US, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Invent_US: reghdfe dlnprice_YoY brw c.brw#c.Invent_US, a(firm_id) vce(cluster firm_id)
+eststo month_brw_TrCredit_US: reghdfe dlnprice_YoY brw c.brw#c.TrCredit_US, a(firm_id) vce(cluster firm_id)
+
+estfe month_brw_*_US, labels(firm_id "Firm FE")
+esttab month_brw_*_US using tables\month_credit.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+
+*-------------------------------------------------------------------------------
+
+* 7. Ownership type
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_SOE_1: reghdfe dlnprice_YoY brw if ownership=="SOE", a(firm_id) vce(cluster firm_id)
+eststo month_brw_SOE_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if ownership=="SOE", a(firm_id) vce(cluster firm_id)
+eststo month_brw_MNE_1: reghdfe dlnprice_YoY brw if ownership=="MNE", a(firm_id) vce(cluster firm_id)
+eststo month_brw_MNE_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if ownership=="MNE", a(firm_id) vce(cluster firm_id)
+eststo month_brw_DPE_1: reghdfe dlnprice_YoY brw if ownership=="DPE", a(firm_id) vce(cluster firm_id)
+eststo month_brw_DPE_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if ownership=="DPE", a(firm_id) vce(cluster firm_id)
+eststo month_brw_JV_1: reghdfe dlnprice_YoY brw if ownership=="JV", a(firm_id) vce(cluster firm_id)
+eststo month_brw_JV_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if ownership=="JV", a(firm_id) vce(cluster firm_id)
+
+estfe month_brw_SOE_* month_brw_MNE_* month_brw_DPE_* month_brw_JV_*, labels(firm_id "Firm FE")
+esttab month_brw_SOE_* month_brw_MNE_* month_brw_DPE_* month_brw_JV_* using tables\month_ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress mtitle("SOE" "SOE" "MNE" "MNE" "DPE" "DPE" "JV" "JV")

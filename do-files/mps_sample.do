@@ -22,6 +22,13 @@ collapse (sum) brw_fomc, by(year month)
 rename brw_fomc brw
 save brw_94_21_monthly,replace
 
+cd "D:\Project E\MPS\brw"
+use brw_month,replace
+collapse (sum) brw, by(year)
+save brw_94_22,replace
+
+twoway scatter brw year, ytitle(US monetary policy shock) xtitle(Year) title("Monetary policy shock series by BRW(2021)") saving(BRW_94_22.png, replace)
+
 * mpu: US monetary policy uncertainty. 1985-2022
 cd "D:\Project E\MPS\mpu"
 import excel HRS_MPU_monthly.xlsx, sheet("Sheet1") firstrow clear
@@ -278,14 +285,12 @@ gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
 gen trade_int=(import_sum+export_sum)*NER_US/(SI*1000)
 replace exp_int=0 if exp_int==.
 replace imp_int=0 if imp_int==.
+replace trade_int=0 if trade_int==.
 replace exp_int=1 if exp_int>=1
 replace imp_int=1 if imp_int>=1
-drop *_sum
-* merge with monetary policy shocks
-merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
-egen firm_id=group(FRDM)
-xtset firm_id year
-save samples\cie_credit_brw,replace
+keep FRDM year *_int
+duplicates drop
+save CIE\cie_int,replace
 
 ********************************************************************************
 
@@ -532,8 +537,10 @@ save customs_matched\customs_matched_monthly_exp_firm,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using samples\cie_credit_brw,nogen keep(matched) keepus(cic2 Markup_* tfp_* Arec Debt Cash Liquid IEoL IEoS *_cic2 *_US *_int ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* Arec Debt Cash Liquid IEoL IEoS *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 * add exchange rates and other macro variables
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
 merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
 * calculate changes of price, quantity and marginal cost
@@ -548,7 +555,7 @@ by FRDM HS6 coun_aim: gen dlnMC=ln(MC_RMB)-ln(MC_RMB[_n-1]) if year==year[_n-1]+
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
 * add monetary policy shocks
-merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 * drop special products
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
@@ -580,7 +587,7 @@ by HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value),prop
 * add monetary policy shocks
-merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 * drop special products
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
@@ -611,16 +618,18 @@ by party_id HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if ye
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value),prop
 * add monetary policy shocks
-merge m:1 year using MPS\brw\brw_94_21,nogen keep(matched)
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 * drop special products
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * drop outliers
 winsor2 dlnprice* dlnquant, trim
 save samples\sample_customs_exp,replace
 
-*-------------------------------------------------------------------------------
+********************************************************************************
 
-* 5.4 Customs monthly sample, 2000-2006
+* 6. Sample Construction (monthly)
+
+* 6.1 Firm-product-country level price
 
 cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp,clear
@@ -647,12 +656,27 @@ by group_id: gen dlnprice_YoY=ln(price_RMB)-ln(L12.price_RMB)
 winsor2 dlnprice_YoY, trim replace
 save samples\sample_monthly_exp,replace
 
-********************************************************************************
+* 6.2 Firm-product level price
 
-* 6. Sample Construction (firm price index)
+cd "D:\Project E"
+use customs_matched\customs_matched_monthly_exp_HS6,clear
+winsor2 dlnprice_hit_next, replace
+winsor2 dlnprice_hit, trim replace
+winsor2 dlnprice_hit_YoY, trim replace
+* merge with CIE data
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
+* add exchange rates and other macro variables
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+* add monetary policy shocks
+merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master)
+merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
+replace brw=0 if brw==.
+replace NS_shock=0 if NS_shock==.
+replace ffr_shock=0 if ffr_shock==.
+xtset group_id time
+save samples\sample_monthly_exp_firm_HS6, replace
 
-* 6.1 Firm-level price
-
+* 6.3 Firm-level price index
 cd "D:\Project E"
 use customs_matched\customs_matched_monthly_exp_firm,clear
 winsor2 dlnprice_next, replace
@@ -673,21 +697,3 @@ replace ffr_shock=0 if ffr_shock==.
 egen firm_id=group(FRDM)
 xtset firm_id time
 save samples\sample_monthly_exp_firm,replace
-
-cd "D:\Project E"
-use customs_matched\customs_matched_monthly_exp_HS6,clear
-winsor2 dlnprice_hit_next, replace
-winsor2 dlnprice_hit, trim replace
-winsor2 dlnprice_hit_YoY, trim replace
-* merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
-* add exchange rates and other macro variables
-merge n:1 year month using ER\NER_US_month,nogen keep(matched)
-* add monetary policy shocks
-merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master)
-merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
-replace brw=0 if brw==.
-replace NS_shock=0 if NS_shock==.
-replace ffr_shock=0 if ffr_shock==.
-xtset group_id time
-save samples\sample_monthly_exp_firm_HS6,replace
