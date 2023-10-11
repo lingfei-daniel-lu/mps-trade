@@ -43,12 +43,12 @@ esttab price_brw_USD_noRER price_brw_USD price_brw_USD_lag using tables\table_br
 
 * 2. Alternative shocks
 
+* 2.1 EU shock
+
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
 merge m:1 year using MPS\others\shock_ea,nogen keep(matched)
-sort group_id year
 
-* EU shock
 eststo price_eus_noRER: reghdfe dlnprice_tr target_ea path_ea dlnrgdp, a(group_id) vce(cluster group_id)
 eststo price_eus: reghdfe dlnprice_tr target_ea path_ea dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 eststo price_eus_lag: reghdfe dlnprice_tr L.target_ea L.path_ea dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
@@ -133,6 +133,8 @@ eststo price_brw_OECD: reghdfe dlnprice_tr c.brw#c.OECD dlnRER dlnrgdp, a(group_
 eststo price_brw_EME: reghdfe dlnprice_tr c.brw#c.EME dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 esttab price_brw_USA price_brw_EU price_brw_OECD price_brw_EME using tables\table_brw_country.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
+
+* 5.2 Top partners
 
 cd "D:\Project E"
 use samples\sample_matched_exp,clear
@@ -265,3 +267,20 @@ eststo quant_brw_Markup: reghdfe dlnquant_tr c.brw#c.L.Markup_DLWTLD dlnRER dlnr
 eststo quant_brw_tfp: reghdfe dlnquant_tr c.brw#c.L.tfp_tld dlnRER dlnrgdp, a(group_id year) vce(cluster group_id)
 
 esttab price_brw_Markup price_brw_tfp quant_brw_Markup quant_brw_tfp using tables\table_brw_markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
+
+*-------------------------------------------------------------------------------
+
+* 9. brw as IV
+
+cd "D:\Project E"
+use samples\sample_matched_exp,clear
+
+eststo price_brw_IEoL_iv: xtivreg dlnprice_tr dlnRER dlnrgdp l.lnrSI (d.IEoL=brw), fe vce(cluster group_id)
+eststo price_brw_Cash_iv: xtivreg dlnprice_tr dlnRER dlnrgdp l.lnrSI (d.Cash=brw), fe vce(cluster group_id)
+eststo price_brw_Liquid_iv: xtivreg dlnprice_tr dlnRER dlnrgdp l.lnrSI (d.Liquid=brw), fe vce(cluster group_id)
+
+eststo quant_brw_IEoL_iv: xtivreg dlnquant_tr dlnRER dlnrgdp l.lnrSI (d.IEoL=brw), fe vce(cluster group_id)
+eststo quant_brw_Cash_iv: xtivreg dlnquant_tr dlnRER dlnrgdp l.lnrSI (d.Cash=brw), fe vce(cluster group_id)
+eststo quant_brw_Liquid_iv: xtivreg dlnquant_tr dlnRER dlnrgdp l.lnrSI (d.Liquid=brw), fe vce(cluster group_id)
+
+esttab price_*_iv quant_*_iv using tables\table_brw_iv.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(D.*)

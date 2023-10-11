@@ -49,11 +49,11 @@ eststo Invent_brw1: reghdfe D.Invent brw, a(firm_id) vce(cluster firm_id)
 eststo Invent_brw2: reghdfe D.Invent brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 estfe IEoL_* WC_* Liquid_* Cash_* Arec_* Invent_*, labels(firm_id "Firm FE")
-esttab IEoL_* WC_* Liquid_* Cash_* Arec_* Invent_* using tables\brw_firm_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+esttab IEoL_* WC_* Liquid_* Cash_* Arec_* Invent_* using tables\firm_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
-* 2. Other firm performance
+* 2. Firm performance
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
@@ -64,9 +64,6 @@ eststo SI_brw: reghdfe D.lnrSI brw lnrSI, a(firm_id) vce(cluster firm_id)
 * Wage payment per worker
 eststo CWP_brw: reghdfe D.lnrCWP brw lnrSI, a(firm_id) vce(cluster firm_id)
 eststo CWPoP_brw: reghdfe D.lnCWPoP brw lnrSI, a(firm_id) vce(cluster firm_id)
-
-* Total cost to sales income
-eststo CoS_brw: reghdfe D.CoS brw lnrSI, a(firm_id) vce(cluster firm_id)
 
 * Total profit to sales income
 eststo TPoS_brw: reghdfe D.TPoS brw lnrSI, a(firm_id) vce(cluster firm_id)

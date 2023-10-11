@@ -71,14 +71,14 @@ esttab month_brw_HS6_* using tables\month_HS6.csv, replace b(3) se(3) noconstant
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo month_brw_NS_1: reghdfe dlnprice_YoY NS_shock, a(firm_id) vce(cluster firm_id)
-eststo month_brw_NS_2: reghdfe dlnprice_YoY NS_shock l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_NS_1: reghdfe dlnprice_YoY NS_shock, a(firm_id) vce(cluster firm_id)
+eststo month_NS_2: reghdfe dlnprice_YoY NS_shock l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
-eststo month_brw_FFR_1: reghdfe dlnprice_YoY ffr_shock, a(firm_id) vce(cluster firm_id)
-eststo month_brw_FFR_2: reghdfe dlnprice_YoY ffr_shock l.dlnprice_YoY l12.lnrSI , a(firm_id) vce(cluster firm_id)
+eststo month_FFR_1: reghdfe dlnprice_YoY ffr_shock, a(firm_id) vce(cluster firm_id)
+eststo month_FFR_2: reghdfe dlnprice_YoY ffr_shock l.dlnprice_YoY l12.lnrSI , a(firm_id) vce(cluster firm_id)
 
-estfe month_brw_NS_* month_brw_FFR_*, labels(firm_id "Firm FE")
-esttab month_brw_NS_* month_brw_FFR_* using tables\month_alt_measure.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+estfe month_NS_* month_FFR_*, labels(firm_id "Firm FE")
+esttab month_NS_* month_FFR_* using tables\month_alt_measure.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
@@ -104,13 +104,12 @@ cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
 eststo month_brw_IEoL: reghdfe dlnprice_YoY brw c.brw#c.IEoL_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_IEoS: reghdfe dlnprice_YoY brw c.brw#c.IEoS_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Liquid: reghdfe dlnprice_YoY brw c.brw#c.Liquid_cic2, a(firm_id) vce(cluster firm_id)
 eststo month_brw_Cash: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_Liquid: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2, a(firm_id) vce(cluster firm_id)
 eststo month_brw_Arec: reghdfe dlnprice_YoY brw c.brw#c.Arec_cic2, a(firm_id) vce(cluster firm_id)
 
-estfe month_brw_IEo* month_brw_Cash month_brw_Arec, labels(firm_id "Firm FE")
-esttab month_brw_IEo* month_brw_Cash month_brw_Arec using tables\month_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+estfe month_brw_IEoL month_brw_Liquid month_brw_Cash month_brw_Arec, labels(firm_id "Firm FE")
+esttab month_brw_IEoL month_brw_Liquid month_brw_Cash month_brw_Arec using tables\month_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
@@ -130,7 +129,7 @@ esttab month_brw_*_US using tables\month_credit.csv, replace b(3) se(3) noconsta
 
 *-------------------------------------------------------------------------------
 
-* 7. Ownership type
+* 8. Ownership type
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -146,3 +145,18 @@ eststo month_brw_JV_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if owne
 
 estfe month_brw_SOE_* month_brw_MNE_* month_brw_DPE_* month_brw_JV_*, labels(firm_id "Firm FE")
 esttab month_brw_SOE_* month_brw_MNE_* month_brw_DPE_* month_brw_JV_* using tables\month_ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress mtitle("SOE" "SOE" "MNE" "MNE" "DPE" "DPE" "JV" "JV")
+
+*-------------------------------------------------------------------------------
+
+* 9. Time periods
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_fixed_1: reghdfe dlnprice_YoY brw if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo month_brw_fixed_2: reghdfe dlnprice_YoY l.dlnprice_YoY l12.lnrSI brw if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo month_brw_float_1: reghdfe dlnprice_YoY brw if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo month_brw_float_2: reghdfe dlnprice_YoY l.dlnprice_YoY l12.lnrSI brw if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+
+estfe month_brw_fixed_* month_brw_float_*, labels(firm_id "Firm FE")
+esttab month_brw_fixed_* month_brw_float_* using tables\month_regime.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress mtitle("fixed" "fixed" "float" "float")
