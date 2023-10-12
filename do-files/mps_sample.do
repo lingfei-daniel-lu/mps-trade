@@ -243,13 +243,15 @@ gen Debt=TL/TA
 drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Debt<0
 gen Arec=NAR/SI
 gen IEoL=IE/TL
-gen IEoS=IE/SI
+gen IEoCL=IE/CL
+gen FNoL=FN/TL
+gen FNoCL=FN/CL
 gen CWPoP=rCWP/PERSENG
 gen CoS=vc/rSI
 gen TPoS=TP/SI
 * Construct industry-level financial constraints by CIC2
 bys cic2: egen RDint_cic2=mean(RDint)
-local varlist "Tang Invent Arec Debt Cash Liquid IEoL IEoS"
+local varlist "Tang Invent Arec Debt Cash Liquid IEoL"
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys cic2: egen `var'_cic2 = median(`var')
