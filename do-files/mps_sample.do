@@ -251,7 +251,7 @@ gen CoS=vc/rSI
 gen TPoS=TP/SI
 * Construct industry-level financial constraints by CIC2
 bys cic2: egen RDint_cic2=mean(RDint)
-local varlist "Tang Invent Arec Debt Cash Liquid IEoL"
+local varlist "Tang Invent IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec"
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys cic2: egen `var'_cic2 = median(`var')
@@ -320,8 +320,8 @@ replace distw=distw/1000
 foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
 	drop if strmatch(EN, "*`key'*") 
 }
-cd "D:\Project E\customs"
-save customs_matched_exp,replace
+cd "D:\Project E"
+save customs_matched\customs_matched_exp,replace
 
 cd "D:\Project C\sample_matched"
 use customs_matched,clear
@@ -342,8 +342,22 @@ replace distw=distw/1000
 foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
 	drop if strmatch(EN, "*`key'*") 
 }
-cd "D:\Project E\customs"
-save customs_matched_imp,replace
+cd "D:\Project E"
+save customs_matched\customs_matched_imp,replace
+
+* Construct matching directory
+use "D:\Project A\customs merged\cust.matched.all.dta",clear
+keep FRDM party_id year exp_imp
+tostring party_id,replace
+duplicates drop party_id year exp_imp,force
+cd "D:\Project E"
+save customs_matched\party_id\customs_matched_partyid,replace
+
+cd "D:\Project E"
+use customs_matched\party_id\customs_matched_partyid,clear
+keep if exp_imp=="exp"
+drop exp_imp
+save customs_matched\party_id\customs_matched_exp_partyid,replace
 
 *-------------------------------------------------------------------------------
 
@@ -458,21 +472,12 @@ keep if exp_imp=="`var'"
 drop exp_imp
 gen HS6=substr(HS8,1,6)
 gen HS2=substr(HS8,1,2)
-collapse (sum) value quantity, by(party_id EN HS6 HS2 coun_aim year month CompanyType)
+collapse (sum) value quantity, by(party_id EN HS6 HS2 coun_aim year month CompanyType shipment)
 destring year month,replace
 format EN %30s
 format coun_aim %20s
 save tradedata_monthly_`var',replace
 }
-forv j=0/6{
-erase tradedata_200`j'_monthly.dta
-}
-
-cd "D:\Project E"
-use customs_matched\party_id\customs_matched_partyid,clear
-keep if exp_imp=="exp"
-drop exp_imp
-save customs_matched\party_id\customs_matched_exp_partyid,replace
 
 cd "D:\Project E"
 use customs_raw\tradedata_monthly_exp,clear
@@ -488,48 +493,46 @@ replace HS1996=HS6 if year<2002
 drop HS6 HS2002
 rename HS1996 HS6
 drop if HS6=="" | FRDM=="" | quant==0 | value==0
-collapse (sum) value quant, by (FRDM HS6 coun_aim year month)
-gen time=monthly(string(year)+"-"+string(month),"YM")
-format time %tm
-sort FRDM HS6 coun_aim time
-save customs_matched\customs_matched_monthly_exp,replace
-
-cd "D:\Project E"
-use customs_matched\customs_matched_monthly_exp,clear
+* mark processing or assembly trade
+gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
+replace process=0 if process==.
+gen assembly = 1 if shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
+replace assembly=0 if assembly==.
+collapse (sum) value quant, by (FRDM HS6 coun_aim year month process assembly)
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 gen value_RMB=value*NER_US
 gen price_RMB=value_RMB/quantity
-collapse (sum) value_RMB quantity (mean) price_hit=price_RMB [aweight=value], by(FRDM year month HS6)
-egen group_id=group(FRDM HS6)
-xtset group_id time
-by group_id: gen dlnprice_hit=ln(price_hit)-ln(L.price_hit)
-by group_id: gen dlnprice_hit_YoY=ln(price_hit)-ln(L12.price_hit)
-by group_id: gen dlnprice_hit_next=ln(price_hit)-ln(price_hit[_n-1])
-save customs_matched\customs_matched_monthly_exp_HS6,replace
+gen time=monthly(string(year)+"-"+string(month),"YM")
+format time %tm
+sort FRDM HS6 coun_aim time
+save customs_matched\customs_monthly_exp,replace
 
 cd "D:\Project E"
-use customs_matched\customs_matched_monthly_exp_HS6,clear
+use customs_matched\customs_monthly_exp,clear
+collapse (sum) value_RMB quantity (mean) price_hit=price_RMB process assembly [aweight=value], by(FRDM time year month HS6)
+egen group_id=group(FRDM HS6)
+xtset group_id time
+by group_id: gen dlnprice_hit_MoM=ln(price_hit)-ln(L.price_hit)
+by group_id: gen dlnprice_hit_YoY=ln(price_hit)-ln(L12.price_hit)
+by group_id: gen dlnprice_hit_next=ln(price_hit)-ln(price_hit[_n-1])
+save customs_matched\customs_monthly_exp_HS6,replace
+
+cd "D:\Project E"
+use customs_matched\customs_monthly_exp_HS6,clear
 bys FRDM time: egen share_it=pc(value),prop
 sort group_id time
-by group_id: gen share_bar=0.5*(share_it+L.share_it)
-replace share_bar=share_it if share_bar==.
+by group_id: gen share_bar_MoM=0.5*(share_it+L.share_it)
+replace share_bar_MoM=share_it if share_bar_MoM==.
 by group_id: gen share_bar_YoY=0.5*(share_it+L12.share_it)
 replace share_bar_YoY=share_it if share_bar_YoY==.
 by group_id: gen share_bar_next=0.5*(share_it+share_it[_n-1])
 replace share_bar_next=share_it if share_bar_next==.
 sort FRDM time
-by FRDM time: egen dlnprice=sum(dlnprice_hit*share_bar), missing
+by FRDM time: egen dlnprice_MoM=sum(dlnprice_hit_MoM*share_bar_MoM), missing
 by FRDM time: egen dlnprice_YoY=sum(dlnprice_hit_YoY*share_bar_YoY), missing
 by FRDM time: egen dlnprice_next=sum(dlnprice_hit_next*share_bar_next), missing
-by FRDM time: egen value_firm=sum(value_RMB),missing
-keep FRDM time year month value_firm dlnprice dlnprice_YoY dlnprice_next
-duplicates drop
-by FRDM: drop if _N==1
-label var value_firm "Total export value in RMB"
-label var dlnprice "Month-on-month price growth"
-label var dlnprice_YoY "Year-on-year price growth"
-label var dlnprice_next "Adjacent-recorded-month price growth"
-save customs_matched\customs_matched_monthly_exp_firm,replace
+collapse (sum) value_firm=value_RMB (mean) process assembly, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next)
+save customs_matched\customs_monthly_exp_firm,replace
 
 ********************************************************************************
 
@@ -635,17 +638,16 @@ save samples\sample_customs_exp,replace
 * 6.1 Firm-product-country level price
 
 cd "D:\Project E"
-use customs_matched\customs_matched_monthly_exp,clear
+use customs_matched\customs_monthly_exp,clear
+* merge with CIE data
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
 merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
-* calculate changes of price, quantity and marginal cost
-gen price_RMB=value*NER_US/quant
-gen price_USD=value/quant
 * add monetary policy shocks
-merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master)
-merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
+merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
+merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
 replace brw=0 if brw==.
 replace NS_shock=0 if NS_shock==.
 replace ffr_shock=0 if ffr_shock==.
@@ -653,50 +655,55 @@ replace ffr_shock=0 if ffr_shock==.
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * construct group id
-egen group_id=group(FRDM HS6 coun_aim)
+egen group_id=group(FRDM HS6 coun_aim process assembly)
 xtset group_id time
+* calculate price change
+by group_id: gen dlnprice_MoM=ln(price_RMB)-ln(L.price_RMB)
 by group_id: gen dlnprice_YoY=ln(price_RMB)-ln(L12.price_RMB)
-winsor2 dlnprice_YoY, trim replace
+* calculate marginal cost
+gen MC_RMB=price_RMB/Markup_DLWTLD
+by group_id: gen dlnMC_YoY=ln(MC_RMB)-ln(MC_RMB)
+winsor2 dlnprice_MoM dlnprice_YoY dlnMC_YoY, trim replace
 save samples\sample_monthly_exp,replace
 
 * 6.2 Firm-product level price
 
 cd "D:\Project E"
-use customs_matched\customs_matched_monthly_exp_HS6,clear
-winsor2 dlnprice_hit_next, replace
-winsor2 dlnprice_hit, trim replace
-winsor2 dlnprice_hit_YoY, trim replace
+use customs_matched\customs_monthly_exp_HS6,clear
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
-* add exchange rates and other macro variables
-merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 * add monetary policy shocks
-merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master)
-merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
+merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
+merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
 replace brw=0 if brw==.
 replace NS_shock=0 if NS_shock==.
 replace ffr_shock=0 if ffr_shock==.
-xtset group_id time
+* calculate marginal cost
+gen MC_hit=price_hit/Markup_DLWTLD
+sort group_id time
+by group_id: gen dlnMC_hit_YoY=ln(MC_hit)-ln(L12.MC_hit)
+winsor2 dlnprice_hit_MoM dlnprice_hit_YoY dlnMC_hit_YoY, trim replace
 save samples\sample_monthly_exp_firm_HS6, replace
 
 * 6.3 Firm-level price index
+
 cd "D:\Project E"
-use customs_matched\customs_matched_monthly_exp_firm,clear
-winsor2 dlnprice_next, replace
-winsor2 dlnprice, trim replace
-winsor2 dlnprice_YoY, trim replace
+use customs_matched\customs_monthly_exp_firm,clear
+* calculate price index
 by FRDM: gen price_index=1 if dlnprice_next==.
 by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. & price_index[_n-1]!=.
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
-* add exchange rates and other macro variables
-merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 * add monetary policy shocks
-merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master)
-merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master)
+merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
+merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
 replace brw=0 if brw==.
 replace NS_shock=0 if NS_shock==.
 replace ffr_shock=0 if ffr_shock==.
+* construct firm id
 egen firm_id=group(FRDM)
 xtset firm_id time
+* calculate marginal cost
+by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup
+winsor2 dlnprice_MoM dlnprice_YoY dlnMC_YoY, trim replace
 save samples\sample_monthly_exp_firm,replace
