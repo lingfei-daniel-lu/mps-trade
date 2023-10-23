@@ -281,7 +281,7 @@ save CIE\cie_credit_v2,replace
 cd "D:\Project E"
 use CIE\cie_credit_v2,clear
 * calculate trade intensity
-merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",nogen keep(master matched) keepus(export_sum import_sum)
+merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",nogen keep(master matched) keepus(twoway_trade export_sum import_sum)
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 gen exp_int=export_sum*NER_US/(SI*1000)
 gen imp_int=import_sum*NER_US/(vc*InputDefl*10)
@@ -291,7 +291,7 @@ replace imp_int=0 if imp_int==.
 replace trade_int=0 if trade_int==.
 replace exp_int=1 if exp_int>=1
 replace imp_int=1 if imp_int>=1
-keep FRDM year *_int
+keep FRDM year twoway_trade *_int
 duplicates drop
 save CIE\cie_int,replace
 
@@ -311,7 +311,6 @@ gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装�
 replace process=0 if process==.
 collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
 * add other firm-level variables
-merge n:1 FRDM year using customs_matched_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
 replace dist=dist/1000
@@ -323,27 +322,27 @@ foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口
 cd "D:\Project E"
 save customs_matched\customs_matched_exp,replace
 
-cd "D:\Project C\sample_matched"
-use customs_matched,clear
-* keep only import records
-keep if exp_imp =="imp"
-drop exp_imp
-* mark processing or assembly trade
-gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
-replace process=0 if process==.
-collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
-* add other firm-level variables
-merge n:1 FRDM year using customs_matched_twoway,nogen keep(matched) keepus(twoway_trade export_sum import_sum)
-merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
-merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
-replace dist=dist/1000
-replace distw=distw/1000
-* drop trade service firms
-foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
-	drop if strmatch(EN, "*`key'*") 
-}
 cd "D:\Project E"
-save customs_matched\customs_matched_imp,replace
+use customs_matched\customs_matched_exp,clear
+collapse (sum) value_year quant_year (mean) process dist distw [aweight=value_year], by(FRDM HS6 year)
+* calculate RMB value and price
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
+gen value_RMB=value_year*NER_US
+gen price_RMB=value_year/quant_year
+gen price_USD=value_year/quant_year
+egen group_id=group(FRDM HS6)
+xtset group_id year
+by group_id: gen dlnprice_h=ln(price_RMB)-ln(L.price_RMB)
+by group_id: gen dlnprice_h_USD=ln(price_USD)-ln(L.price_USD)
+bys FRDM year: egen share_it=pc(value_year),prop
+sort group_id year
+by group_id: gen share_bar=0.5*(share_it+L.share_it)
+replace share_bar=share_it if share_bar==.
+sort FRDM year
+by FRDM year: egen dlnprice=sum(dlnprice_h*share_bar), missing
+by FRDM year: egen dlnprice_USD=sum(dlnprice_h_USD*share_bar), missing
+collapse (sum) value_USD=value_year value_RMB (mean) process dist distw, by(FRDM year dlnprice dlnprice_USD)
+save customs_matched\customs_matched_exp_firm,replace
 
 * Construct matching directory
 use "D:\Project A\customs merged\cust.matched.all.dta",clear
@@ -376,90 +375,6 @@ save customs_00_15_exp,replace
 
 * 4.3 Monthly customs data, 2000-2006
 
-cd "D:\Project E\customs_raw"
-
-* 2000-2001
-forv j=0/1{
-use 200`j'\tradedata_200`j'_1,clear
-forv i=2/12{
-append using 200`j'\tradedata_200`j'_`i'
-}
-gen year=substr(shipment_date,1,4)
-gen month=substr(shipment_date,5,2)
-drop shipment_date
-rename (hs_id company country) (HS8 EN coun_aim)
-collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
-replace exp_imp="imp" if exp_imp=="1"
-replace exp_imp="exp" if exp_imp=="0"
-drop if party_id==""
-save tradedata_200`j'_monthly.dta,replace
-}
-
-* 2002
-use 2002\tradedata_2002_1,clear
-forv i=2/12{
-append using 2002\tradedata_2002_`i'
-}
-gen year=substr(shipment_date,1,4)
-gen month=substr(shipment_date,5,2)
-drop shipment_date
-rename (hs_id pname 国家名称_C 进出口_C companytype) (HS8 EN coun_aim exp_imp CompanyType)
-collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
-replace exp_imp="imp" if exp_imp=="进口"
-replace exp_imp="exp" if exp_imp=="出口"
-drop if party_id==""
-save tradedata_2002_monthly.dta,replace
-
-* 2003-2004
-forv j=3/4{
-use 200`j'\tradedata_200`j'_1,clear
-forv i=2/12{
-append using 200`j'\tradedata_200`j'_`i'
-}
-gen year=substr(日期,1,4)
-gen month=substr(日期,5,2)
-drop 日期
-rename (进口或出口 企业编码 经营单位 企业性质 税号编码 起运国或目的国 金额 数量) (exp_imp party_id EN CompanyType HS8 coun_aim value quantity)
-collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
-replace exp_imp="imp" if exp_imp=="进口"
-replace exp_imp="exp" if exp_imp=="出口"
-drop if party_id==""
-save tradedata_200`j'_monthly.dta,replace
-}
-
-* 2005
-use 2005\tradedata_2005_1,clear
-forv i=2/12{
-append using 2005\tradedata_2005_`i'
-}
-gen year=substr(shipment_date,1,4)
-gen month=substr(shipment_date,5,2)
-drop shipment_date
-replace CompanyType=companyType if CompanyType==""
-rename (exp_or_imp company hs_id country) (exp_imp EN HS8 coun_aim)
-collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
-replace exp_imp="imp" if exp_imp=="进口"
-replace exp_imp="exp" if exp_imp=="出口"
-drop if party_id==""
-save tradedata_2005_monthly.dta,replace
-
-* 2006
-use 2006\tradedata_2006_1,clear
-forv i=2/12{
-append using 2006\tradedata_2006_`i'
-}
-gen year=substr(月度,1,4)
-gen month=substr(月度,5,2)
-drop 月度
-rename (进出口 企业代码 企业名称 企业类型 商品代码 var18 金额 数量) (exp_imp party_id EN CompanyType HS8 coun_aim value quantity)
-destring value quantity,replace
-collapse (sum) value quantity, by(exp_imp party_id CompanyType EN HS8 coun_aim year month)
-replace exp_imp="imp" if exp_imp=="进口"
-replace exp_imp="exp" if exp_imp=="出口"
-drop if party_id==""
-format EN %30s
-save tradedata_2006_monthly.dta,replace
-
 * Append 2000-2006
 cd "D:\Project E\customs_raw"
 local direction "exp imp"
@@ -483,10 +398,12 @@ cd "D:\Project E"
 use customs_raw\tradedata_monthly_exp,clear
 destring year month, replace
 merge n:1 party_id year using customs_matched\party_id\customs_matched_exp_partyid,nogen keep(matched)
+* clean the country names
 merge n:1 coun_aim using "D:\Project C\customs data\customs_country_name",nogen keep(matched)
 drop coun_aim
 rename country_adj coun_aim
 drop if coun_aim==""|coun_aim=="中华人民共和国"
+* clean the HS codes
 gen HS2002=HS6 if year<2007 & year>=2002
 merge n:1 HS2002 using "D:\Project C\HS Conversion\HS2002to1996.dta",nogen update replace
 replace HS1996=HS6 if year<2002
@@ -498,10 +415,18 @@ gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装�
 replace process=0 if process==.
 gen assembly = 1 if shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
 replace assembly=0 if assembly==.
+* drop trade service firms
+foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
+	drop if strmatch(EN, "*`key'*") 
+}
 collapse (sum) value quant, by (FRDM HS6 coun_aim year month process assembly)
+* add Rauch (1999) classification
+merge m:1 HS6 using "Rauch classification\HS6_Rauch", nogen keep(matched master)
+* calculate RMB value and price
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 gen value_RMB=value*NER_US
 gen price_RMB=value_RMB/quantity
+gen price_USD=value/quantity
 gen time=monthly(string(year)+"-"+string(month),"YM")
 format time %tm
 sort FRDM HS6 coun_aim time
@@ -509,17 +434,20 @@ save customs_matched\customs_monthly_exp,replace
 
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp,clear
-collapse (sum) value_RMB quantity (mean) price_hit=price_RMB process assembly [aweight=value], by(FRDM time year month HS6)
+collapse (sum) value_RMB value_USD=value quantity (mean) price_h=price_RMB price_h_USD=price_USD process assembly [aweight=value], by(FRDM time year month HS6 Rauch_*)
 egen group_id=group(FRDM HS6)
 xtset group_id time
-by group_id: gen dlnprice_hit_MoM=ln(price_hit)-ln(L.price_hit)
-by group_id: gen dlnprice_hit_YoY=ln(price_hit)-ln(L12.price_hit)
-by group_id: gen dlnprice_hit_next=ln(price_hit)-ln(price_hit[_n-1])
+by group_id: gen dlnprice_h_MoM=ln(price_h)-ln(L.price_h)
+by group_id: gen dlnprice_h_YoY=ln(price_h)-ln(L12.price_h)
+by group_id: gen dlnprice_h_next=ln(price_h)-ln(price_h[_n-1])
+by group_id: gen dlnprice_h_USD_MoM=ln(price_h_USD)-ln(L.price_h_USD)
+by group_id: gen dlnprice_h_USD_YoY=ln(price_h_USD)-ln(L12.price_h_USD)
+by group_id: gen dlnprice_h_USD_next=ln(price_h_USD)-ln(price_h_USD[_n-1])
 save customs_matched\customs_monthly_exp_HS6,replace
 
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp_HS6,clear
-bys FRDM time: egen share_it=pc(value),prop
+bys FRDM time: egen share_it=pc(value_RMB),prop
 sort group_id time
 by group_id: gen share_bar_MoM=0.5*(share_it+L.share_it)
 replace share_bar_MoM=share_it if share_bar_MoM==.
@@ -528,22 +456,25 @@ replace share_bar_YoY=share_it if share_bar_YoY==.
 by group_id: gen share_bar_next=0.5*(share_it+share_it[_n-1])
 replace share_bar_next=share_it if share_bar_next==.
 sort FRDM time
-by FRDM time: egen dlnprice_MoM=sum(dlnprice_hit_MoM*share_bar_MoM), missing
-by FRDM time: egen dlnprice_YoY=sum(dlnprice_hit_YoY*share_bar_YoY), missing
-by FRDM time: egen dlnprice_next=sum(dlnprice_hit_next*share_bar_next), missing
-collapse (sum) value_firm=value_RMB (mean) process assembly, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next)
+by FRDM time: egen dlnprice_MoM=sum(dlnprice_h_MoM*share_bar_MoM), missing
+by FRDM time: egen dlnprice_YoY=sum(dlnprice_h_YoY*share_bar_YoY), missing
+by FRDM time: egen dlnprice_next=sum(dlnprice_h_next*share_bar_next), missing
+by FRDM time: egen dlnprice_USD_MoM=sum(dlnprice_h_USD_MoM*share_bar_MoM), missing
+by FRDM time: egen dlnprice_USD_YoY=sum(dlnprice_h_USD_YoY*share_bar_YoY), missing
+by FRDM time: egen dlnprice_USD_next=sum(dlnprice_h_USD_next*share_bar_next), missing
+collapse (sum) value_RMB value_USD (mean) process assembly Rauch_homo Rauch_ref Rauch_index, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next dlnprice_USD*)
 save customs_matched\customs_monthly_exp_firm,replace
 
 ********************************************************************************
 
-* 5. Sample Construction (unit value)
+* 5. Sample Construction (annual)
 
 * 5.1 Firm-level matched sample, 2000-2007
 
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* Arec Debt Cash Liquid IEoL IEoS *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
@@ -567,11 +498,25 @@ gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * construct group id
 egen group_id=group(FRDM HS6 coun_aim)
+xtset group_id year
 * drop outliers
 winsor2 dlnprice* dlnquant dlnMC, trim
-xtset group_id year
 format EN %30s
 save samples\sample_matched_exp,replace
+
+cd "D:\Project E"
+use customs_matched\customs_matched_exp_firm,replace
+* merge with CIE data
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* IEo* FNo* WC Liquid Cash Arec ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+* add monetary policy shocks
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
+* construct firm id
+egen firm_id=group(FRDM)
+xtset firm_id year
+* drop outliers
+winsor2 dlnprice*, trim
+save samples\sample_matched_exp_firm,replace
 
 *-------------------------------------------------------------------------------
 
@@ -660,10 +605,12 @@ xtset group_id time
 * calculate price change
 by group_id: gen dlnprice_MoM=ln(price_RMB)-ln(L.price_RMB)
 by group_id: gen dlnprice_YoY=ln(price_RMB)-ln(L12.price_RMB)
+by group_id: gen dlnprice_USD_MoM=ln(price_USD)-ln(L.price_USD)
+by group_id: gen dlnprice_USD_YoY=ln(price_USD)-ln(L12.price_USD)
 * calculate marginal cost
 gen MC_RMB=price_RMB/Markup_DLWTLD
 by group_id: gen dlnMC_YoY=ln(MC_RMB)-ln(MC_RMB)
-winsor2 dlnprice_MoM dlnprice_YoY dlnMC_YoY, trim replace
+winsor2 dlnprice_YoY dlnprice_USD_YoY dlnMC_YoY, trim replace
 save samples\sample_monthly_exp,replace
 
 * 6.2 Firm-product level price
@@ -678,11 +625,14 @@ merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepu
 replace brw=0 if brw==.
 replace NS_shock=0 if NS_shock==.
 replace ffr_shock=0 if ffr_shock==.
+* drop special products
+gen HS2=substr(HS6,1,2)
+drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * calculate marginal cost
-gen MC_hit=price_hit/Markup_DLWTLD
+gen MC_h=price_h/Markup_DLWTLD
 sort group_id time
-by group_id: gen dlnMC_hit_YoY=ln(MC_hit)-ln(L12.MC_hit)
-winsor2 dlnprice_hit_MoM dlnprice_hit_YoY dlnMC_hit_YoY, trim replace
+by group_id: gen dlnMC_h_YoY=ln(MC_h)-ln(L12.MC_h)
+winsor2 dlnprice_h_YoY dlnprice_h_USD_YoY dlnMC_h_YoY, trim replace
 save samples\sample_monthly_exp_firm_HS6, replace
 
 * 6.3 Firm-level price index
@@ -705,5 +655,5 @@ egen firm_id=group(FRDM)
 xtset firm_id time
 * calculate marginal cost
 by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup
-winsor2 dlnprice_MoM dlnprice_YoY dlnMC_YoY, trim replace
+winsor2 dlnprice_USD_YoY dlnprice_YoY dlnMC_YoY, trim replace
 save samples\sample_monthly_exp_firm,replace

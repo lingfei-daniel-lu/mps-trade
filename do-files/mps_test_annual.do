@@ -273,14 +273,16 @@ esttab price_brw_Markup price_brw_tfp quant_brw_Markup quant_brw_tfp using table
 * 9. brw as IV
 
 cd "D:\Project E"
-use samples\sample_matched_exp,clear
+use samples\sample_matched_exp_firm,clear
 
-eststo price_brw_IEoL_iv: xtivreg dlnprice_tr dlnRER dlnrgdp l.lnrSI (d.IEoL=brw), fe vce(cluster group_id)
-eststo price_brw_Cash_iv: xtivreg dlnprice_tr dlnRER dlnrgdp l.lnrSI (d.Cash=brw), fe vce(cluster group_id)
-eststo price_brw_Liquid_iv: xtivreg dlnprice_tr dlnRER dlnrgdp l.lnrSI (d.Liquid=brw), fe vce(cluster group_id)
+eststo price_brw_IEoL_iv: xtivreg dlnprice_tr l.lnrSI (d.IEoL=brw), fe vce(cluster firm_id)
+eststo price_brw_IEoCL_iv: xtivreg dlnprice_tr l.lnrSI (d.IEoCL=brw), fe vce(cluster firm_id)
+eststo price_brw_FNoL_iv: xtivreg dlnprice_tr l.lnrSI (d.FNoL=brw), fe vce(cluster firm_id)
+eststo price_brw_FNoCL_iv: xtivreg dlnprice_tr l.lnrSI (d.FNoCL=brw), fe vce(cluster firm_id)
 
-eststo quant_brw_IEoL_iv: xtivreg dlnquant_tr dlnRER dlnrgdp l.lnrSI (d.IEoL=brw), fe vce(cluster group_id)
-eststo quant_brw_Cash_iv: xtivreg dlnquant_tr dlnRER dlnrgdp l.lnrSI (d.Cash=brw), fe vce(cluster group_id)
-eststo quant_brw_Liquid_iv: xtivreg dlnquant_tr dlnRER dlnrgdp l.lnrSI (d.Liquid=brw), fe vce(cluster group_id)
+eststo price_brw_WC_iv: xtivreg dlnprice_tr l.lnrSI (d.WC=brw), fe vce(cluster firm_id)
+eststo price_brw_Liquid_iv: xtivreg dlnprice_tr l.lnrSI (d.Liquid=brw), fe vce(cluster firm_id)
+eststo price_brw_Cash_iv: xtivreg dlnprice_tr l.lnrSI (d.Cash=brw), fe vce(cluster firm_id)
+eststo price_brw_Arec_iv: xtivreg dlnprice_tr l.lnrSI (d.Arec=brw), fe vce(cluster firm_id)
 
-esttab price_*_iv quant_*_iv using tables\table_brw_iv.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(D.*)
+esttab price_brw_*_iv using tables\table_brw_price_iv.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(D.*)

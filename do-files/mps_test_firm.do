@@ -24,32 +24,28 @@ save samples\cie_credit_brw,replace
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
 
-* Interest expense to total liability
-eststo IEoL_brw1: reghdfe D.IEoL brw, a(firm_id) vce(cluster firm_id)
-eststo IEoL_brw2: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+* Interest expense to total/current liability
 
-* Working apital to total asset
-eststo WC_brw1: reghdfe D.WC brw, a(firm_id) vce(cluster firm_id)
-eststo WC_brw2: reghdfe D.WC brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo IEoL_brw: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo IEoCL_brw: reghdfe D.IEoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+eststo FNoL_brw: reghdfe D.FNoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo FNoCL_brw: reghdfe D.FNoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+* Working capital to total asset
+eststo WC_brw: reghdfe D.WC brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 * Net liquid asset to total asset
-eststo Liquid_brw1: reghdfe D.Liquid brw, a(firm_id) vce(cluster firm_id)
-eststo Liquid_brw2: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Liquid_brw: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 * Cash to total asset
-eststo Cash_brw1: reghdfe D.Cash brw, a(firm_id) vce(cluster firm_id)
-eststo Cash_brw2: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Cash_brw: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 * Account receivable to sales income
-eststo Arec_brw1: reghdfe D.Arec brw, a(firm_id) vce(cluster firm_id)
-eststo Arec_brw2: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Arec_brw: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
-* Inventory to sales income
-eststo Invent_brw1: reghdfe D.Invent brw, a(firm_id) vce(cluster firm_id)
-eststo Invent_brw2: reghdfe D.Invent brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-
-estfe IEoL_* WC_* Liquid_* Cash_* Arec_* Invent_*, labels(firm_id "Firm FE")
-esttab IEoL_* WC_* Liquid_* Cash_* Arec_* Invent_* using tables\firm_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+estfe IEo* FNo* WC_* Liquid_* Cash_* Arec_*, labels(firm_id "Firm FE")
+esttab IEo* FNo* WC_* Liquid_* Cash_* Arec_* using tables\firm_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 

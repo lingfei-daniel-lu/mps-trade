@@ -29,17 +29,32 @@ esttab month_brw_firm_* using tables\month_baseline.csv, replace b(3) se(3) noco
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_HS6,clear
 
-eststo month_brw_HS6_1: reghdfe dlnprice_hit_YoY brw, a(group_id) vce(cluster group_id)
-eststo month_brw_HS6_2: reghdfe dlnprice_hit_YoY l.dlnprice_hit_YoY brw, a(group_id) vce(cluster group_id)
-eststo month_brw_HS6_3: reghdfe dlnprice_hit_YoY brw l.dlnprice_hit_YoY l12.lnrSI, a(group_id) vce(cluster group_id)
-eststo month_brw_HS6_4: reghdfe dlnprice_hit_YoY brw l.dlnprice_hit_YoY l12.lnrSI, a(FRDM HS6) vce(cluster FRDM HS6)
+eststo month_brw_HS6_1: reghdfe dlnprice_h_YoY brw, a(group_id) vce(cluster group_id)
+eststo month_brw_HS6_2: reghdfe dlnprice_h_YoY l.dlnprice_hit_YoY brw, a(group_id) vce(cluster group_id)
+eststo month_brw_HS6_3: reghdfe dlnprice_h_YoY brw l.dlnprice_hit_YoY l12.lnrSI, a(group_id) vce(cluster group_id)
+eststo month_brw_HS6_4: reghdfe dlnprice_h_YoY brw l.dlnprice_hit_YoY l12.lnrSI, a(FRDM HS6) vce(cluster FRDM HS6)
 
 estfe month_brw_HS6_*, labels(group_id "Firm-Product FE" FRDM "Firm FE" HS6 "Product FE")
 esttab month_brw_HS6_* using tables\month_HS6.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
-* 3. Long-term effect
+* 3. USD price index
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_firm_USD_1: reghdfe dlnprice_USD_YoY brw, a(firm_id) vce(cluster firm_id)
+eststo month_brw_firm_USD_2: reghdfe dlnprice_USD_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
+eststo month_brw_firm_USD_3: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_firm_USD_4: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id year)
+
+estfe month_brw_firm_USD_*, labels(firm_id "Firm FE")
+esttab month_brw_firm_USD_* using tables\month_USD.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+
+*-------------------------------------------------------------------------------
+
+* 4. Long-term effect
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -49,11 +64,11 @@ eststo month_brw_f_`i': reghdfe f`i'.dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, 
 }
 
 estfe month_brw_f_*, labels(firm_id "Firm FE")
-esttab month_brw_f_* using tables\month_long.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+esttab month_brw_f_* using tables\month_forward.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
-* 4. Alternative monetary policy shock measures
+* 5. Alternative monetary policy shock measures
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -68,7 +83,7 @@ esttab month_NS_* month_FFR_* using tables\month_alt_measure.csv, replace b(3) s
 
 *-------------------------------------------------------------------------------
 
-* 5. Decomposition into markup and marginal cost
+* 6. Decomposition into markup and marginal cost
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -84,7 +99,7 @@ esttab month_*_brw month_brw_Markup month_brw_MC using tables\month_markup.csv, 
 
 *-------------------------------------------------------------------------------
 
-* 6. Interaction with liquidity
+* 7. Interaction with liquidity
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -104,7 +119,7 @@ esttab month_brw_*o*L month_brw_WC month_brw_Liquid month_brw_Cash month_brw_Are
 
 *-------------------------------------------------------------------------------
 
-* 7. Interaction with industry-level credit constraints
+* 8. Interaction with industry-level credit constraints
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -120,7 +135,7 @@ esttab month_brw_*_US using tables\month_credit.csv, replace b(3) se(3) noconsta
 
 *-------------------------------------------------------------------------------
 
-* 8. Ownership type
+* 9. Ownership type
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -139,7 +154,7 @@ esttab month_brw_SOE_* month_brw_MNE_* month_brw_DPE_* month_brw_JV_* using tabl
 
 *-------------------------------------------------------------------------------
 
-* 9. Ordinary vs Processing
+* 10. Ordinary vs Processing
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -156,7 +171,7 @@ esttab month_brw_ordinary_* month_brw_process_* month_brw_assembly_* using table
 
 *-------------------------------------------------------------------------------
 
-* 10. Time periods
+* 11. Time periods
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
