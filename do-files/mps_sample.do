@@ -291,7 +291,11 @@ replace imp_int=0 if imp_int==.
 replace trade_int=0 if trade_int==.
 replace exp_int=1 if exp_int>=1
 replace imp_int=1 if imp_int>=1
-keep FRDM year twoway_trade *_int
+* High-Markup vs Low-Markup
+bys year: egen Markup_median=median(Markup_DLWTLD)
+gen Markup_High=1 if Markup_DLWTLD > Markup_median
+replace Markup_High=0 if Markup_High==.
+keep FRDM year twoway_trade *_int Markup_High
 duplicates drop
 save CIE\cie_int,replace
 
@@ -448,6 +452,7 @@ save customs_matched\customs_monthly_exp_HS6,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp_HS6,clear
 bys FRDM time: egen share_it=pc(value_RMB),prop
+by FRDM time: egen HS6_count=nvals(HS6)
 sort group_id time
 by group_id: gen share_bar_MoM=0.5*(share_it+L.share_it)
 replace share_bar_MoM=share_it if share_bar_MoM==.
@@ -462,7 +467,7 @@ by FRDM time: egen dlnprice_next=sum(dlnprice_h_next*share_bar_next), missing
 by FRDM time: egen dlnprice_USD_MoM=sum(dlnprice_h_USD_MoM*share_bar_MoM), missing
 by FRDM time: egen dlnprice_USD_YoY=sum(dlnprice_h_USD_YoY*share_bar_YoY), missing
 by FRDM time: egen dlnprice_USD_next=sum(dlnprice_h_USD_next*share_bar_next), missing
-collapse (sum) value_RMB value_USD (mean) process assembly Rauch_homo Rauch_ref Rauch_index, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next dlnprice_USD*)
+collapse (sum) value_RMB value_USD (mean) process assembly Rauch_homo Rauch_ref Rauch_index, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next dlnprice_USD* HS6_count)
 save customs_matched\customs_monthly_exp_firm,replace
 
 ********************************************************************************
@@ -632,7 +637,8 @@ drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 gen MC_h=price_h/Markup_DLWTLD
 sort group_id time
 by group_id: gen dlnMC_h_YoY=ln(MC_h)-ln(L12.MC_h)
-winsor2 dlnprice_h_YoY dlnprice_h_USD_YoY dlnMC_h_YoY, trim replace
+by group_id: gen dlnquant_h_YoY=ln(quantity)-ln(L12.quantity)
+winsor2 dlnprice_h_YoY dlnprice_h_USD_YoY dlnMC_h_YoY dlnquant_h_YoY, trim replace
 save samples\sample_monthly_exp_firm_HS6, replace
 
 * 6.3 Firm-level price index
@@ -644,6 +650,7 @@ by FRDM: gen price_index=1 if dlnprice_next==.
 by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. & price_index[_n-1]!=.
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int Markup_High)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
@@ -654,6 +661,6 @@ replace ffr_shock=0 if ffr_shock==.
 egen firm_id=group(FRDM)
 xtset firm_id time
 * calculate marginal cost
-by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup
+by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup_DLWTLD
 winsor2 dlnprice_USD_YoY dlnprice_YoY dlnMC_YoY, trim replace
 save samples\sample_monthly_exp_firm,replace
