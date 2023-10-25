@@ -17,7 +17,7 @@ use samples\sample_monthly_exp_firm,clear
 eststo month_brw_firm_1: reghdfe dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_2: reghdfe dlnprice_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo month_brw_firm_4: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id year)
+eststo month_brw_firm_4: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id year) vce(cluster firm_id)
 
 estfe month_brw_firm_*, labels(firm_id "Firm FE")
 esttab month_brw_firm_* using tables\month_baseline.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
@@ -32,7 +32,7 @@ use samples\sample_monthly_exp_firm_HS6,clear
 eststo month_brw_HS6_1: reghdfe dlnprice_h_YoY brw, a(group_id) vce(cluster group_id)
 eststo month_brw_HS6_2: reghdfe dlnprice_h_YoY l.dlnprice_h_YoY brw, a(group_id) vce(cluster group_id)
 eststo month_brw_HS6_3: reghdfe dlnprice_h_YoY brw l.dlnprice_h_YoY l12.lnrSI, a(group_id) vce(cluster group_id)
-eststo month_brw_HS6_4: reghdfe dlnprice_h_YoY brw l.dlnprice_h_YoY l12.lnrSI, a(group_id) vce(cluster group_id year)
+eststo month_brw_HS6_4: reghdfe dlnprice_h_YoY brw l.dlnprice_h_YoY l12.lnrSI, a(group_id year) vce(cluster group_id)
 
 estfe month_brw_HS6_*, labels(group_id "Firm-Product FE")
 esttab month_brw_HS6_* using tables\month_HS6.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
@@ -47,7 +47,7 @@ use samples\sample_monthly_exp_firm,clear
 eststo month_brw_firm_USD_1: reghdfe dlnprice_USD_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_USD_2: reghdfe dlnprice_USD_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_USD_3: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo month_brw_firm_USD_4: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id year)
+eststo month_brw_firm_USD_4: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id year) vce(cluster firm_id)
 
 estfe month_brw_firm_USD_*, labels(firm_id "Firm FE")
 esttab month_brw_firm_USD_* using tables\month_USD.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
@@ -73,18 +73,27 @@ esttab month_brw_f_* using tables\month_forward.csv, replace b(3) se(3) noconsta
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
+merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
 merge m:1 year month using MPS\monthly\target_path_ns,nogen keep(matched master) keepus(target path)
+merge m:1 year month using MPS\monthly\us_infoshock_monthly,nogen keep(matched master) keepus(mp_median)
+replace NS_shock=0 if NS_shock==.
+replace ffr_shock=0 if ffr_shock==.
+replace target=0 if target==.
+replace path=0 if path==.
+replace mp_median=0 if mp_median==.
 xtset firm_id time
 
 eststo month_NS_1: reghdfe dlnprice_YoY NS_shock, a(firm_id) vce(cluster firm_id)
 eststo month_NS_2: reghdfe dlnprice_YoY NS_shock l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_FFR_1: reghdfe dlnprice_YoY ffr_shock, a(firm_id) vce(cluster firm_id)
+eststo month_FFR_2: reghdfe dlnprice_YoY ffr_shock l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 eststo month_Acosta_1: reghdfe dlnprice_YoY target path, a(firm_id) vce(cluster firm_id)
 eststo month_Acosta_2: reghdfe dlnprice_YoY target path l.dlnprice_YoY l12.lnrSI , a(firm_id) vce(cluster firm_id)
-eststo month_FFR_1: reghdfe dlnprice_YoY ffr_shock, a(firm_id) vce(cluster firm_id)
-eststo month_FFR_2: reghdfe dlnprice_YoY ffr_shock l.dlnprice_YoY l12.lnrSI , a(firm_id) vce(cluster firm_id)
+eststo month_JK_1: reghdfe dlnprice_YoY mp_median, a(firm_id) vce(cluster firm_id)
+eststo month_JK_2: reghdfe dlnprice_YoY mp_median l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
-estfe month_NS_* month_Acosta_* month_FFR_*, labels(firm_id "Firm FE")
-esttab month_NS_* month_Acosta_* month_FFR_* using tables\month_alt_measure.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*_shock target path)
+estfe month_NS_* month_FFR_* month_Acosta_* month_JK_*, labels(firm_id "Firm FE")
+esttab month_NS_* month_FFR_* month_Acosta_* month_JK_* using tables\month_alt_measure.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*_shock target path mp_median)
 
 *-------------------------------------------------------------------------------
 
@@ -95,14 +104,11 @@ use samples\sample_monthly_exp_firm,clear
 
 eststo month_Markup_brw: reghdfe S12.Markup_DLWTLD brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
 eststo month_MC_brw: reghdfe dlnMC_YoY brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo month_Markup_high_brw: reghdfe S12.Markup_DLWTLD brw c.brw#c.Markup_High l12.lnrSI, a(firm_id) vce(cluster firm_id)
-
 eststo month_brw_Markup: reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 eststo month_brw_MC: reghdfe dlnprice_YoY brw dlnMC_YoY l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo month_brw_Markup_high: reghdfe dlnprice_YoY brw c.brw#c.Markup_High l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
-estfe month_*_brw month_brw_Markup month_brw_MC month_brw_Markup_high, labels(firm_id "Firm FE")
-esttab month_*_brw  month_brw_Markup month_brw_MC month_brw_Markup_high using tables\month_markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
+estfe month_*_brw month_brw_Markup month_brw_MC, labels(firm_id "Firm FE")
+esttab month_*_brw  month_brw_Markup month_brw_MC using tables\month_markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw*)
 
 *-------------------------------------------------------------------------------
 
@@ -170,11 +176,11 @@ eststo month_brw_ordinary_1: reghdfe dlnprice_YoY brw if process==0, a(firm_id) 
 eststo month_brw_ordinary_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if process==0, a(firm_id) vce(cluster firm_id)
 eststo month_brw_process_1: reghdfe dlnprice_YoY brw if process==1, a(firm_id) vce(cluster firm_id)
 eststo month_brw_process_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if process==1, a(firm_id) vce(cluster firm_id)
-eststo month_brw_assembly_1: reghdfe dlnprice_YoY brw if assembly==1, a(firm_id) vce(cluster firm_id)
-eststo month_brw_assembly_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if assembly==1, a(firm_id) vce(cluster firm_id)
+eststo month_brw_process_int_1: reghdfe dlnprice_YoY brw c.brw#c.process, a(firm_id) vce(cluster firm_id)
+eststo month_brw_process_int_2: reghdfe dlnprice_YoY brw c.brw#c.process l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
-estfe month_brw_ordinary_* month_brw_process_* month_brw_assembly_*, labels(firm_id "Firm FE")
-esttab month_brw_ordinary_* month_brw_process_* month_brw_assembly_* using tables\month_process.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress mtitle("ordinary" "ordinary" "processing" "processing" "assembly" "assembly")
+estfe month_brw_ordinary_* month_brw_process_*, labels(firm_id "Firm FE")
+esttab month_brw_ordinary_* month_brw_process_* using tables\month_process.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress mtitle("ordinary" "ordinary" "processing" "processing" "comparison" "comparison")
 
 *-------------------------------------------------------------------------------
 
@@ -263,27 +269,3 @@ eststo month_Japan_2: reghdfe dlnprice_YoY target_japan path_japan l.dlnprice_Yo
 
 estfe month_EU_* month_UK_* month_Japan_*, labels(firm_id "Firm FE")
 esttab month_EU_* month_UK_* month_Japan_* using tables\month_EUshock.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(target_* path_* shock_*)
-
-*-------------------------------------------------------------------------------
-
-* 16. Info shock
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-* add monetary policy shocks
-merge m:1 year month using MPS\monthly\us_infoshock_monthly,nogen keep(matched master) keepus(mp_median cbi_median)
-merge m:1 year month using MPS\monthly\eu_infoshock_monthly,nogen keep(matched master) keepus(mp_median_mpd cbi_median_mpd)
-replace mp_median=0 if mp_median==.
-replace cbi_median=0 if cbi_median==.
-replace mp_median_mpd=0 if mp_median_mpd==.
-replace cbi_median_mpd=0 if cbi_median_mpd==.
-xtset firm_id time
-
-eststo month_USinfo_1: reghdfe dlnprice_YoY mp_median cbi_median, a(firm_id) vce(cluster firm_id)
-eststo month_USinfo_2: reghdfe dlnprice_YoY mp_median cbi_median l.dlnprice_YoY l12.lnrSI , a(firm_id) vce(cluster firm_id)
-eststo month_EUinfo_1: reghdfe dlnprice_YoY mp_median_mpd cbi_median_mpd, a(firm_id) vce(cluster firm_id)
-eststo month_EUinfo_2: reghdfe dlnprice_YoY mp_median_mpd cbi_median_mpd l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
-
-estfe month_USinfo_* month_EUinfo_*, labels(firm_id "Firm FE")
-esttab month_USinfo_* month_EUinfo_* using tables\month_infoshock.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(mp_median cbi_median mp_median_mpd cbi_median_mpd)

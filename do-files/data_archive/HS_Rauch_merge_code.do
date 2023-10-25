@@ -23,14 +23,13 @@ cd "D:\Project E\Rauch classification"
 use HS1996-SITC2,clear
 merge n:1 sitc2_T4 using Rauch_classification_T4, nogen keep(matched master)
 merge n:1 sitc2_T3 using Rauch_classification_T3, nogen keep(matched master) update
-rename (HS96 con lib)(HS6 Rauch_con Rauch_lib)
-gen Rauch_homo=1 if Rauch_con=="w"
-replace Rauch_homo=0 if Rauch_con!="w"
-gen Rauch_ref=1 if Rauch_con=="r"
-replace Rauch_ref=0 if Rauch_con!="r"
-gen Rauch_index=0 if Rauch_lib=="n"
-replace Rauch_index=0.25 if Rauch_con=="n" & Rauch_lib=="r"
-replace Rauch_index=0.5 if Rauch_con=="r" & Rauch_lib=="r"
-replace Rauch_index=0.75 if Rauch_con=="r" & Rauch_lib=="w"
-replace Rauch_index=1 if Rauch_con=="w"
+rename (HS96)(HS6)
+gen Rauch_con=1 if con=="w"
+replace Rauch_con=0 if con!="w"
+gen Rauch_lib=1 if lib=="w"
+replace Rauch_lib=0 if lib!="w"
+gen Rauch_con_r=1 if con=="w" | con=="r"
+replace Rauch_con_r=0 if Rauch_con_r==.
+gen Rauch_lib_r=1 if lib=="w" | lib=="r"
+replace Rauch_lib_r=0 if Rauch_lib_r==. 
 save HS6_Rauch,replace

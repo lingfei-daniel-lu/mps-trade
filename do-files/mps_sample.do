@@ -246,9 +246,9 @@ gen IEoL=IE/TL
 gen IEoCL=IE/CL
 gen FNoL=FN/TL
 gen FNoCL=FN/CL
-gen CWPoP=rCWP/PERSENG
-gen CoS=vc/rSI
-gen TPoS=TP/SI
+gen rwage=rCWP/PERSENG
+gen CWPoS=CWP/SI
+gen TOIPToS=TOIPT/SI
 * Construct industry-level financial constraints by CIC2
 bys cic2: egen RDint_cic2=mean(RDint)
 local varlist "Tang Invent IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec"
@@ -272,11 +272,18 @@ rename f1 FPC_US
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
 * log sales and costs
-local varlist "rSI rCWP CWPoP"
+local varlist "rSI rwage"
 foreach var of local varlist{
 gen ln`var'=ln(`var')
 }
 save CIE\cie_credit_v2,replace
+
+cd "D:\Project E"
+use CIE\cie_credit_v2,clear
+merge n:1 year using MPS\brw\brw_94_22,keep(matched master)
+egen firm_id=group(FRDM)
+xtset firm_id year
+save samples\cie_credit_brw,replace
 
 cd "D:\Project E"
 use CIE\cie_credit_v2,clear
@@ -292,7 +299,7 @@ replace trade_int=0 if trade_int==.
 replace exp_int=1 if exp_int>=1
 replace imp_int=1 if imp_int>=1
 * High-Markup vs Low-Markup
-bys year: egen Markup_median=median(Markup_DLWTLD)
+bys year cic2: egen Markup_median=median(Markup_DLWTLD)
 gen Markup_High=1 if Markup_DLWTLD > Markup_median
 replace Markup_High=0 if Markup_High==.
 keep FRDM year twoway_trade *_int Markup_High
@@ -339,13 +346,14 @@ xtset group_id year
 by group_id: gen dlnprice_h=ln(price_RMB)-ln(L.price_RMB)
 by group_id: gen dlnprice_h_USD=ln(price_USD)-ln(L.price_USD)
 bys FRDM year: egen share_it=pc(value_year),prop
+by FRDM year: egen HS6_count=nvals(HS6)
 sort group_id year
 by group_id: gen share_bar=0.5*(share_it+L.share_it)
 replace share_bar=share_it if share_bar==.
 sort FRDM year
 by FRDM year: egen dlnprice=sum(dlnprice_h*share_bar), missing
 by FRDM year: egen dlnprice_USD=sum(dlnprice_h_USD*share_bar), missing
-collapse (sum) value_USD=value_year value_RMB (mean) process dist distw, by(FRDM year dlnprice dlnprice_USD)
+collapse (sum) value_USD=value_year value_RMB (mean) process dist distw, by(FRDM year dlnprice dlnprice_USD HS6_count)
 save customs_matched\customs_matched_exp_firm,replace
 
 * Construct matching directory
@@ -417,15 +425,13 @@ drop if HS6=="" | FRDM=="" | quant==0 | value==0
 * mark processing or assembly trade
 gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
 replace process=0 if process==.
-gen assembly = 1 if shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
-replace assembly=0 if assembly==.
 * drop trade service firms
 foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
 	drop if strmatch(EN, "*`key'*") 
 }
-collapse (sum) value quant, by (FRDM HS6 coun_aim year month process assembly)
+collapse (sum) value quant, by (FRDM HS6 coun_aim year month process)
 * add Rauch (1999) classification
-merge m:1 HS6 using "Rauch classification\HS6_Rauch", nogen keep(matched master)
+merge m:1 HS6 using "Rauch classification\HS6_Rauch", nogen keep(matched master) keepus(Rauch_*)
 * calculate RMB value and price
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 gen value_RMB=value*NER_US
@@ -438,7 +444,7 @@ save customs_matched\customs_monthly_exp,replace
 
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp,clear
-collapse (sum) value_RMB value_USD=value quantity (mean) price_h=price_RMB price_h_USD=price_USD process assembly [aweight=value], by(FRDM time year month HS6 Rauch_*)
+collapse (sum) value_RMB value_USD=value quantity (mean) price_h=price_RMB price_h_USD=price_USD process [aweight=value], by(FRDM time year month HS6 Rauch_*)
 egen group_id=group(FRDM HS6)
 xtset group_id time
 by group_id: gen dlnprice_h_MoM=ln(price_h)-ln(L.price_h)
@@ -467,7 +473,7 @@ by FRDM time: egen dlnprice_next=sum(dlnprice_h_next*share_bar_next), missing
 by FRDM time: egen dlnprice_USD_MoM=sum(dlnprice_h_USD_MoM*share_bar_MoM), missing
 by FRDM time: egen dlnprice_USD_YoY=sum(dlnprice_h_USD_YoY*share_bar_YoY), missing
 by FRDM time: egen dlnprice_USD_next=sum(dlnprice_h_USD_next*share_bar_next), missing
-collapse (sum) value_RMB value_USD (mean) process assembly Rauch_homo Rauch_ref Rauch_index, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next dlnprice_USD* HS6_count)
+collapse (sum) value_RMB value_USD (mean) process Rauch_*, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next dlnprice_USD* HS6_count)
 save customs_matched\customs_monthly_exp_firm,replace
 
 ********************************************************************************
@@ -479,7 +485,7 @@ save customs_matched\customs_monthly_exp_firm,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *_US ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
@@ -512,15 +518,17 @@ save samples\sample_matched_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp_firm,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* IEo* FNo* WC Liquid Cash Arec ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* IEo* FNo* WC Liquid Cash Arec ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 * construct firm id
 egen firm_id=group(FRDM)
 xtset firm_id year
+* calculate marginal cost
+by firm_id: gen dlnMC=dlnprice-D.Markup_DLWTLD
 * drop outliers
-winsor2 dlnprice*, trim
+winsor2 dlnprice dlnMC, replace trim
 save samples\sample_matched_exp_firm,replace
 
 *-------------------------------------------------------------------------------
@@ -590,22 +598,19 @@ save samples\sample_customs_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp,clear
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *_US ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
 merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
-merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
 replace brw=0 if brw==.
-replace NS_shock=0 if NS_shock==.
-replace ffr_shock=0 if ffr_shock==.
 * drop special products
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * construct group id
-egen group_id=group(FRDM HS6 coun_aim process assembly)
+egen group_id=group(FRDM HS6 coun_aim process)
 xtset group_id time
 * calculate price change
 by group_id: gen dlnprice_MoM=ln(price_RMB)-ln(L.price_RMB)
@@ -623,13 +628,10 @@ save samples\sample_monthly_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp_HS6,clear
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *_US ln* ownership affiliate)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
-merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
 replace brw=0 if brw==.
-replace NS_shock=0 if NS_shock==.
-replace ffr_shock=0 if ffr_shock==.
 * drop special products
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
@@ -649,14 +651,11 @@ use customs_matched\customs_monthly_exp_firm,clear
 by FRDM: gen price_index=1 if dlnprice_next==.
 by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. & price_index[_n-1]!=.
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US CWPoS TOIPToS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int Markup_High)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
-merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
 replace brw=0 if brw==.
-replace NS_shock=0 if NS_shock==.
-replace ffr_shock=0 if ffr_shock==.
 * construct firm id
 egen firm_id=group(FRDM)
 xtset firm_id time
