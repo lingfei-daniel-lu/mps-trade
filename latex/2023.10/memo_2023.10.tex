@@ -1,17 +1,14 @@
 \documentclass[12pt]{article}
-\usepackage{amsmath,amsthm,booktabs,subfigure,anysize,hyperref,graphicx,float,bbm,epstopdf}
+\usepackage{amsmath,amsthm,amssymb,amsfonts}
+
+\usepackage{booktabs,subfigure,anysize,hyperref,graphicx,float,bbm,epstopdf}
+
 \usepackage[margin=1in]{geometry}
+\setlength{\parskip}{0.15cm}
 \bibliographystyle{aea}
 
-\usepackage{threeparttable}
-\usepackage{array}
-\usepackage{booktabs}
-\usepackage{multirow}
+\usepackage{threeparttable, array, multirow}
 \usepackage{xcolor}
-\usepackage{bm}
-\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
-\definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
-\definecolor{medium-blue}{rgb}{0,0,0.5}
 \definecolor{ChadBlue}{rgb}{.1,.1,.5}
 \definecolor{ChadDarkBlue}{rgb}{.1,0,.1}
 \definecolor{ChadBlue}{rgb}{.1,.1,.5}
@@ -23,18 +20,15 @@
     citecolor=ChadBlue, urlcolor=ChadBlue
 }
 \newcommand\posscite[1]{\citeauthor{#1}'s (\citeyear{#1})}
-\setlength{\parskip}{0.15cm}
+
 \newtheorem{proposition}{\color{ChadGreen} Proposition}
 \newtheorem{finding}{\color{ChadGreen} Finding}
 \newtheorem{SF}{\color{ChadGreen} Stylized fact}
 \newtheorem{hyp}{Hypothesis}
 \newtheorem{fact}{Fact}
 \newtheorem{prop}{Proposition}
+
 \usepackage{caption}
-\usepackage[font=small,labelfont=bf]{caption}
-\usepackage{amssymb}
-\usepackage{amsfonts}
-\usepackage{amsmath}
 \usepackage{accents}
 \usepackage{color,soul}
 \usepackage{smartdiagram}
@@ -44,7 +38,6 @@
 \usepackage{multicol}
 \usepackage{tikz}
 \usepackage{comment}
-\usepackage{float}
 \usepackage{natbib}
 
 \newcommand{\ubar}[1]{\underaccent{\bar}{#1}}
@@ -70,13 +63,11 @@
 \geometry{a4paper,scale=0.75}
 \setlength{\parskip}{0.5em}
 
-
 %---------------------------------------------------------------------------------------
 
 \begin{document}
 
 \title{\Large \textbf{Global Monetary Policy Shocks and Export Prices}}
-
 
 \author{\large \href{http://yaoli.people.ust.hk/}{Yao Amber Li}\thanks{Li: Department of Economics and Faculty Associate of the Institute for Emerging Market Studies (IEMS), The Hong Kong University of Science and Technology, Hong Kong}\\ \large{HKUST}
 \medskip
@@ -139,21 +130,20 @@ Benchmark: use firm aggregate price, monthly data
 - Positive and significant, add year FE also hold
 
 \begin{center}
-\begin{tabular}{l*{4}{c}}
+\begin{tabular}{l*{6}{c}}
 \toprule
-            &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}   &\multicolumn{1}{c}{(4)}   \\
-\midrule
-brw         &       0.187***&       0.149***&       0.042***&       0.058***\\
-            &     (0.011)   &     (0.011)   &     (0.011)   &     (0.010)   \\
-\addlinespace
-L.dlnprice\_YoY&               &       0.302***&               &       0.300***\\
-            &               &     (0.003)   &               &     (0.003)   \\
-\addlinespace
-Firm FE     &         Yes   &         Yes   &         Yes   &         Yes   \\
-\addlinespace
-Year FE     &          No   &          No   &         Yes   &         Yes   \\
-\midrule
-\(N\)       &     1108044   &      946438   &     1108044   &      946438   \\
+          & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+\midrule        
+    brw   & 0.180*** & 0.143*** & 0.145*** & 0.145** & 0.139*** & 0.066*** \\
+          & (0.011) & (0.010) & (0.010) & (0.041) & (0.011) & (0.011) \\
+    L.dlnprice\_YoY &       & 0.302*** & 0.300*** & 0.300*** & 0.236*** & 0.179*** \\
+          &       & (0.003) & (0.003) & (0.014) & (0.003) & (0.002) \\
+    L12.lnrSI &       &       & -0.004*** & -0.004 & -0.004*** & -0.005*** \\
+          &       &       & (0.001) & (0.004) & (0.001) & (0.002) \\
+          &       &       &       &       &       &  \\
+    Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+          &       &       &       &       &       &  \\
+    N     & 1108044 & 946438 & 923321 & 923321 & 839933 & 803530 \\
 \bottomrule
 \multicolumn{5}{l}{\footnotesize Standard errors in parentheses}\\
 \multicolumn{5}{l}{\footnotesize * \(p<0.1\), ** \(p<0.05\), *** \(p<0.01\)}\\
@@ -172,34 +162,6 @@ Note: Column (1)(2): firm FE; Column (3)(4): firm FE and year FE. All clusters a
     \Delta \ln P_{it} = \alpha + \beta \cdot \sum^{N}_{n=1}  brw_{t-n}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{i t}
 \end{equation}
 
-\begin{center}
-\begin{tabular}{l*{4}{c}}
-\toprule
-            &\multicolumn{1}{c}{(1)}   &\multicolumn{1}{c}{(2)}   &\multicolumn{1}{c}{(3)}   &\multicolumn{1}{c}{(4)}   \\
-\midrule
-L.brw       &       0.166***&               &               &               \\
-            &     (0.012)   &               &               &               \\
-\addlinespace
-brw\_lag3    &               &       0.111***&               &               \\
-            &               &     (0.008)   &               &               \\
-\addlinespace
-brw\_lag6    &               &               &       0.131***&               \\
-            &               &               &     (0.007)   &               \\
-\addlinespace
-brw\_lag12   &               &               &               &       0.072***\\
-            &               &               &               &     (0.006)   \\
-\addlinespace
-Firm FE     &         Yes   &         Yes   &         Yes   &         Yes   \\
-\midrule
-\(N\)       &     1045563   &      949715   &      829476   &      662749   \\
-\bottomrule
-\multicolumn{5}{l}{\footnotesize Standard errors in parentheses}\\
-\multicolumn{5}{l}{\footnotesize * \(p<0.1\), ** \(p<0.05\), *** \(p<0.01\)}\\
-\end{tabular}
-\end{center}
-
-Note: Column (1), brw in the last month; Column (2), sum of brw in the last three months; Column (3), sum of brw in the last six months; Column (4), sum of brw in the last 12 months.
-
 (2) Using firm-product level price, monthly data, no year fixed effect: \footnote{Using product level price has two shortcomings: (i) many dimensions in the dependent variables, but the explanatory variable only has one dimension, so there are many noises. To alleviate it, we can control past price levels and price changes; (ii) Sometimes, the product scope of the exporting firm may change.}
 
 
@@ -209,7 +171,6 @@ Note: Column (1), brw in the last month; Column (2), sum of brw in the last thre
 \end{equation}
 
 Lag effects with different time horizons are all positive and significant, but it is weaker with year FE.
-
 
 \begin{tabular}{l*{6}{c}}
 \toprule
@@ -418,26 +379,14 @@ brw         &       0.143***&       0.142***&       0.517***&       0.203***\\
 c.brw.c.IEoL\_cic2&       6.940***&                     &                     &                     \\
             &     (2.132)         &                     &                     &                     \\
 \addlinespace
-IEoL\_cic2   &       0.536         &                     &                     &                     \\
-            &     (0.432)         &                     &                     &                     \\
-\addlinespace
 c.brw.c.IEoS\_cic2&                     &      21.134***&                     &                     \\
             &                     &     (6.365)         &                     &                     \\
-\addlinespace
-IEoS\_cic2   &                     &       1.079         &                     &                     \\
-            &                     &     (1.296)         &                     &                     \\
 \addlinespace
 c.brw.c.Cash\_cic2&                     &                     &      -2.025***&                     \\
             &                     &                     &     (0.541)         &                     \\
 \addlinespace
-Cash\_cic2   &                     &                     &      -0.030         &                     \\
-            &                     &                     &     (0.109)         &                     \\
-\addlinespace
 c.brw.c.Arec\_cic2&                     &                     &                     &      -0.147         \\
             &                     &                     &                     &     (0.238)         \\
-\addlinespace
-Arec\_cic2   &                     &                     &                     &      -0.014         \\
-            &                     &                     &                     &     (0.070)         \\
 \addlinespace
 Firm FE     &         Yes         &         Yes         &         Yes         &         Yes         \\
 \midrule
@@ -458,34 +407,17 @@ The financial condition of State-owned enterprises (SOE) usually are less likely
 (1) Borrowing cost response: SOE vs DPE \\
 Note: the dependent variable is d.IEoL. The borrowing cost of SOE even decreases, this is reasonable because under financial distress, bank tends to shift loans to SOE.
 
-\begin{figure}
-     \centering
-         \includegraphics[width=0.9\textwidth]{latex/2023.10/Picture/IEoL_SOE_DPE.png}
-         \caption{Impact of US shock on borrowing cost: SOE vs DPE}
-         \label{fig:IEoL_SOE_DPE}
-\end{figure}
+
 
 (2) Price response: SOE vs DPE \\
-Note: the dependent variable is dlnprice YoY. The prices of SOE are unaffected (see Figure \ref{fig:Price_brw_DPE_SOE}).
-
-\begin{figure}
-     \centering
-         \includegraphics[width=0.9\textwidth]{latex/2023.10/Picture/Price_brw_DPE_SOE.png}
-         \caption{Impact of US shock on export price: SOE vs DPE}
-         \label{fig:Price_brw_DPE_SOE}
-\end{figure}
+Note: the dependent variable is dlnprice YoY.
 
 
 \textbf{Further check 2: exposure heterogeneity to US shock across industries}
 
 Some industries are more exposed to international financial market, such as the commodities prices, which has very mature global financial market. From this picture, we can see that 25(oil), 26/28(chemistry), 32/33(metal) have much bigger responses compared with other industries (see Figure \ref{fig:Industry}).
 
-\begin{figure}
-     \centering
-         \includegraphics[width=0.9\textwidth]{latex/2023.10/Picture/Industry.png}
-         \caption{Impact of US shock on export price across industries}
-         \label{fig:Industry}
-\end{figure}
+
 
 
 \textbf{Further check 3: exposure heterogeneity to US shock across regimes: Fixed VS floating}
@@ -493,14 +425,7 @@ Some industries are more exposed to international financial market, such as the 
 “\textit{A large body of this literature has shown that in the post-Bretton Woods period interest rates are more closely linked in countries that peg and in countries with open capital markets compared with countries that do not peg or impose capital restrictions. (See e.g., Klein and Shambaugh (2010).})” -- Dedola, Luca, Giulia Rivolta, and Livio Stracca. "If the Fed sneezes, who catches a cold?." Journal of International Economics 108 (2017): S23-S41.
 
 
-If the global borrowing cost channel and global liquidity channel hold, then under fixed regime Chinese financial conditions are more exposed to US shock, so we expect that the export prices responses should be larger (see Figure \ref{fig:regime}). 
-
-\begin{figure}
-     \centering
-         \includegraphics[width=0.9\textwidth]{latex/2023.10/Picture/regime.png}
-         \caption{Impact of US shock on export price across regimes}
-         \label{fig:regime}
-\end{figure}
+If the global borrowing cost channel and global liquidity channel hold, then under fixed regime Chinese financial conditions are more exposed to US shock, so we expect that the export prices responses should be larger.
 
  
 Note: Column (1)(2): fixed regime; Column (3)(4): floating regime
@@ -510,7 +435,7 @@ Note: Column (1)(2): fixed regime; Column (3)(4): floating regime
 
 \subsection{Demand side expansion?}
 
-The idea presented is that after a shock, global demand goes up, causing China's export prices to rise. However, if we have a tightening shock, it should lead to reduced demand and lower prices, not an increase. So, the argument about the demand side doesn't make sense. Some people argue that a tightening shock makes Chinese exports more competitive because Chinese products become cheaper compared to similar ones from other countries. They compare this to Giffen goods, where prices go up when people's incomes drop. But this doesn't seem likely because most product prices increase after a shock, especially things like oil and metal related goods, which aren't considered as Giffen goods.
+The idea presented is that global demand goes up after a shock, causing China's export prices to rise. However, if we have a tightening shock, it should lead to reduced demand and lower prices, not an increase. So, the argument about the demand side doesn't make sense. Some people argue that a tightening shock makes Chinese exports more competitive because Chinese products become cheaper compared to similar ones from other countries. They compare this to Giffen goods, where prices go up when people's incomes drop. But this doesn't seem likely because most product prices increase after a shock, especially things like oil and metal-related goods, which aren't considered as Giffen goods.
 
 \subsection{Import price increase?}
 
@@ -539,7 +464,187 @@ ii. Using the annually firm-product-country level export price data, we have con
 \section{Model}
 
 \subsection{Baseline model}
-Following \cite{melitz2003impact}, \cite{manova2013credit} and \cite{fan2015credit}, here we construct a partial equilibrium micro-founded model to rationalize why firms increase export prices in response to a US monetary contraction and capture how this is related to borrowing cost increase and liquidity constrain. The big picture is that a positive US shock will induce the increase of borrowing rate and thus the marginal cost, and finally the export price. What’s more, liquidity condition is an augmenter of this transmission: the firm will increase more when liquidity is worse.
+ In this section, we construct a partial-equilibrium model to show how exporting firms' behaviors respond to a global monetary contraction and illustrate the mechanism related to borrowing cost increases and liquidity constrain.  \footnote{A general equilibrium model will not alter the direction of the impact of global monetary policy shocks.} Our model builds on the heterogeneous-firm trade model of \cite{melitz2003impact} and \cite{manova2013credit}, and we further incorporate the global monetary shocks. The main difference with the existing literature on firm credit constraints and trade is that the constraints not only vary across sectors but also are affected by global monetary shocks. The big picture is that a tightening global monetary shock will increase the borrowing cost and incentivize the firm to uplift its export price. What’s more, the contractionary shock worsens the firm's liquidity conditions which will motivate it to increase prices more. \\
+
+
+\textbf{Preferences and demand}
+
+The source country and the destination country are denoted by $i$ and $j$ respectively. In this paper, $i$ is China and $j$ denotes the rest of the world. Consumers in country $j$ have access to a set of goods $X_j$, which is potentially different across countries. It is assumed that a representative consumer in country $j$ has a constant-elasticity-of-substitution (CES) utility function given by
+
+$$
+U_j=(\int_{\omega \in \Omega_j} [\chi_{ij}(\omega)]^{\frac{\sigma-1}{\sigma}} d\omega\ )^\frac{\sigma}{\sigma-1}
+$$
+
+where $\chi_{ij}$ is country $j$’s quantity consumed of variety $\omega$ originated from country $i$; and $\sigma$ $>$ 1 is the elasticity of substitution between varieties. Therefore, consumer optimization yields the following demand function for variety $\omega$:
+
+$$
+\chi_{ij}(\omega)=\frac{p_{ij}(\omega)^{-\sigma}}{P_j^{1-\sigma}} Y_j
+$$
+
+
+where $p_{ij}(\omega)$ is the price of variety $\omega$, $P_j=(\int_{\omega \in \Omega_j} [p_{ij}(\omega)]^{1-\sigma} d \omega)^{\frac{1}{1-\sigma}}$ is an aggregate price index in country $j$, and $Y_j$ represents the total expenditure of country $j$. We assume that it is affected by global monetary shocks $m$ (e.g., US monetary shock): $Y_j=\bar{Y_j}+\rho_{Y}^j m+\epsilon_Y$, where $\bar{Y_j}$ is a trend component of $Y_j$, $\rho_{Y}^j<0$, $\epsilon_Y$ is a random error, and a positive $m$ means tightening shock. \footnote{Many papers have documented that US monetary policy tightening has a negative spillover effect on the GDP of other countries (e.g. \cite{kim2001international}, \cite{georgiadis2016determinants}, and \cite{iacoviello2019foreign}, etc.).} \\
+ 
+
+\textbf{Exporting firm}
+
+In each source country $i$, there is a continuum of firms that ex-ante differ in their productivity level $\phi_i$. We assume that there is only one input (e.g. materials, or labor) for production and the production function is $ y_i= \phi_i L_i$, where $\phi_i$ is productivity and $L_i$ is input. The firm in country $i$ minimizes its cost to satisfy the demand in the country $j$, $\chi_{ij}(\omega)=\frac{p_{ij}(\omega)^{-\sigma}}{P_j^{1-\sigma}} Y_j$. This yields a total cost function $ C_{ij}=\frac{w_i}{\phi_i} \frac{p_{ij}(\omega)^{-\sigma}}{P_j^{1-\sigma}} Y_j$, where $w_i$ is the price of input. We allow the input price to fluctuate in response to global monetary shocks: $w_i=\bar{w_i}+\rho_w^i m + \epsilon_w^i$, where $\bar{w_i}$ is a trend component of $w_i$, $\rho_w^i<0$ and $\epsilon_w^i$ is a random error.\footnote{A contractionary global monetary shock may depress domestic total demand and hence decrease the price of input.} We further assume a working capital constraint that a fraction $\delta_i$ of the input costs should be borrowed from outside financial institutions (e.g. loans from banks, or issuing bonds) and paid in advance. $\delta_i$ $\in$ [0, 1] and is a decreasing function of firm's cash holding and trade credit: $\delta_i \equiv 1-c_i^\gamma-t_i$, where $c_i$ is the cash to asset ratio, $c_i^\gamma$ is the fraction of input cost covered by cash, $\gamma$ is a positive constant and reflects the elasticity of cash fraction with respect to cash ratio, $t_i$ is the fraction that is supported by trade credit. \footnote{The intuition is that input cost can be funded by own money, trade credit, or financial credit. A firm with more cash holding and trade credit has less need for external financing.} $c_i$ is assumed to be impacted by monetary policy shock exogenously: $c_i=\bar{c_i}+\rho_c^i m+\epsilon_c^i$, where $\bar{c_i}$ is a trend component of $c_i$, $\rho_c^i<0$ and $\epsilon_c^i$ is a random error.\footnote{The intuition is that the cash flow from sales income may be adversely affected after a contractionary shock. For simplicity, here the liquidity conditions are assumed to be exogenous and the endogenization of cash holding will not alter the main results.} Trade credit is also assumed to be affected by global monetary shocks: $t_i=\bar{t_i}+\rho_t^i m+\epsilon_t^i$, where $\bar{t_i}$ is a trend component of $t_i$, $\rho_t^i<0$ and $\epsilon_t^i$ is a random error. \footnote{\cite{lin2018foreign} revealed that global liquidity shocks may decrease domestic trade credit.} Thus the cost function becomes $ C_{ij}=\frac{w_i(1-\delta_i+\delta_i R_i)}{\phi_i} \frac{p_{ij}(\omega)^{-\sigma}}{P_j^{1-\sigma}} Y_j$, where $R_i$ is the gross borrowing interest rate in country $i$. We explicitly assume $R_i=\bar{R_i}+\rho_R^i m+\epsilon_R^i$ where $\bar{R_i}$ is a trend component of $R_i$, $\rho_R^i>0$ and $\epsilon_R^i$ is a random error.\footnote{The literature (like \cite{georgiadis2016determinants} and \cite{miranda2020us}, etc.) has reached an agreement that the borrowing cost of domestic firms will increase after a contractionary global monetary policy shock. Here we assume it is exogenous and the firm takes it as given. The endogenization of borrowing costs will not change our main results.} Also, to allow the non-linear elasticity of cost with respect to interest rate (which can be generated by other financial costs associated with borrowing), we replace $R_i$ with $R_i^\alpha$, where $\alpha$ is a constant and represents the elasticity of cost with respect to the interest rate. Following the convention, we also add an iceberg trade cost such that $\tau_{ij}>=1$ units of good must be shipped from country $i$ in order for one unit to arrive in $j$. For the simplicity of notation, the subscripts for source and destination as well as the index for variety are omitted. Thus, the new cost function is
+
+$$ 
+C=\frac{\tau w(1-\delta+\delta R^\alpha)}{\phi} \frac{p^{-\sigma}}{P^{1-\sigma}} Y
+$$
+
+We also assume that firms cannot borrow more than a fraction $\theta$ of the expected cash flow from exporting and it is smaller when $R$ is higher. The intuition behind this is that higher interest rates imply higher risk and access to credit should be lower. Without loss of generality, we can assume $\theta=R^{-\nu}$, where $\nu$ is $>0$ and reflects the elasticity of financial credit access with respect to the interest rate. The optimization problem of the firm is 
+
+$$
+\max_{p} \ (p- \frac{\tau w(1-\delta+\delta R^\alpha)}{\phi}) \frac{p^{-\sigma}}{P^{1-\sigma}} Y
+$$
+
+$$
+\text{s.t.} \ \theta [(p-t \frac{\tau w}{\phi}) \frac{p^{-\sigma}}{P^{1-\sigma}} Y]>=(1-c^\gamma-t)\frac{\tau w}{\phi} \frac{p^{-\sigma}}{P^{1-\sigma}} Y
+$$
+
+
+\textbf{Case 1: borrowing constraint is binding: }
+
+If $\theta<=\bar{\theta}$, where $\bar{\theta}$ is a threshold, the borrowing constraint is binding and we can rewrite the borrowing constraint as 
+
+$$
+p=[(1-R^{\nu})t+(1-c^\gamma)R^{\nu}] \frac{\tau w}{\phi}
+$$
+
+\textbf{Case 2: borrowing constraint is not binding}
+
+If $\theta>\bar{\theta}$, the borrowing constraint is not binding. Solving the unconstrained optimization problem obtains that
+
+$$
+p=\frac{\sigma}{\sigma-1}\frac{\tau w [c^\gamma+t+(1-c^\gamma-t) R^\alpha]}{\phi}
+$$
+
+This reduces to $p=\frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}$ if $c$=0 and $R$=1, which is similar to \cite{melitz2003impact} \\
+
+
+\textbf{Proposition 1.} $\frac{\partial p}{\partial R}>0$, $\frac{\partial p}{\partial c}<0$, $\frac{\partial p}{\partial t}<0$
+
+\textit{Proof }
+
+If the borrowing constraint is binding
+$$
+\frac{\partial p}{\partial R}=\frac{\tau w}{\phi}(1-c^\gamma-t)\nu R^{\nu-1}>0
+$$
+$$
+\frac{\partial p}{\partial c}=\frac{\tau w}{\phi} R^\nu(-1)\gamma c^{\gamma-1}<0
+$$
+$$
+\frac{\partial p}{\partial t}=\frac{\tau w}{\phi}(1-R^\nu)<0
+$$
+
+If the borrowing constraint is not binding
+$$
+\frac{\partial p}{\partial R}=\frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}[\alpha(1-c^\gamma-t)R^{\alpha-1}]>0
+$$
+$$
+\frac{\partial p}{\partial c}=\frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}\gamma(1-R^\alpha)c^{\gamma-1}<0
+$$
+$$
+\frac{\partial p}{\partial t}=\frac{\sigma}{\sigma-1}\frac{\tau w}{\phi} (1-R^\alpha)<0
+$$
+
+
+\textbf{Proposition 2.} $\frac{\partial p}{\partial m}>0$ if supply side dominates.
+
+If the borrowing constraint is binding
+
+\begin{align*} 
+\frac{\partial p}{\partial m} =&\frac{\partial p}{\partial R}\frac{\partial R}{\partial m}+\frac{\partial p}{\partial c}\frac{\partial c}{\partial m}+\frac{\partial p}{\partial t}\frac{\partial t}{\partial m}+\frac{\partial p}{\partial w}\frac{\partial w}{\partial m}  \\
+=& \frac{\tau w}{\phi}(1-c^\gamma-t)\nu R^{\nu-1} \rho_R+ \frac{\tau w}{\phi} R^\nu(-1)\gamma c^{\gamma-1} \rho_c +\\  
+& \frac{\tau w}{\phi}(1-R^\nu) \rho_t+\frac{\tau}{\phi}[(1-R^\nu)t+(1-c^\gamma)R^\nu] \rho_w
+\end{align*} 
+
+If the borrowing constraint is not binding
+
+\begin{align*} 
+\frac{\partial p}{\partial m} =&\frac{\partial p}{\partial R}\frac{\partial R}{\partial m}+\frac{\partial p}{\partial c}\frac{\partial c}{\partial m}+\frac{\partial p}{\partial t}\frac{\partial t}{\partial m}+\frac{\partial p}{\partial w}\frac{\partial w}{\partial m}  \\
+=& \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}[\alpha(1-c^\gamma-t)R^{\alpha-1}] \rho_R + \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}\gamma(1-R^\alpha)c^{\gamma-1} \rho_c + \\
+& \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi} (1-R^\alpha) \rho_t + \frac{\sigma}{\sigma-1}\frac{\tau}{\phi}[c^\gamma+t+(1-c^\gamma-t)R^\alpha] \rho_w
+\end{align*} 
+
+In both cases, the first three parts $\frac{\partial p}{\partial R}\frac{\partial R}{\partial m}$, $\frac{\partial p}{\partial c}\frac{\partial c}{\partial m}$, $\frac{\partial p}{\partial t}\frac{\partial t}{\partial m}$ are positive, while the fourth part $\frac{\partial p}{\partial w}\frac{\partial w}{\partial m} $ is negative
+
+
+
+\textbf{Proposition 3.} If $\alpha>1$, $\gamma<1$, and $\nu>1$, $\frac{\partial p}{\partial m}$ is bigger when $R$ is larger, $c$ and $t$ is smaller.
+
+This can be easily derived from Proposition 2.
+
+\subsection{Extension} 
+
+\textbf{Both variable and fixed costs are paid in advance}
+
+If we incorporate fixed costs into the benchmark model and allow a proportion of $\delta$ ($\equiv 1-c^{\gamma}-t$) of both types of costs to be paid in advance. The firm's problem now becomes
+
+$$
+\max_{p} \ (p- \frac{\tau w(1-\delta+\delta R^\alpha)}{\phi}) \frac{p^{-\sigma}}{P^{1-\sigma}} Y-f
+$$
+
+$$
+\text{s.t.} \ \theta [(p -t \frac{\tau w}{\phi}) \frac{p^{-\sigma}}{P^{1-\sigma}} Y -tf ]>=(1-c^\gamma-t) (\frac{\tau w}{\phi} \frac{p^{-\sigma}}{P^{1-\sigma}} Y+f)
+$$
+
+where $f$ is the fixed cost, if the constraint not binding, the result is similar to the benchmark model result; if the constraint is binding, we can rewrite it as 
+
+$$
+p^{1-\sigma}=[(\frac{1-c^{\gamma}-t}{\theta}+t)\frac{\tau w}{\phi}] (p^{1-\sigma})^{\frac{\sigma}{\sigma-1}}+f(\frac{1-c^{\gamma}-t}{\theta}+t)\frac{P^{1-\sigma}}{Y}
+$$
+
+Add the new constraint into the objective function, we get the profit: 
+
+$$
+[\frac{1-c^\gamma-t}{R^{-\nu}}-c^\gamma-(1-c^\gamma-t)R^{\alpha}]\frac{\tau w}{\phi} \frac{Y}{P^{1-\sigma}}p^{-\sigma}+f(\frac{1-c^\gamma-t}{R^{-\nu}}-1+t)
+$$
+
+To solve this constraint equation, we can illustrate it with Figure \ref{fig: fixed_cost}, the left-hand side is represented by the straight line, and the curve denotes the right-hand side. There are two intersections of these two lines, which means there are two solutions to this equation. Owing to the fact that the profit is a decreasing function of $p$, the firm will choose the lower price, which corresponds to $p_H^{1-\sigma}$. When interest rate $R$ increases, cash ratio $c$ and trade credit $t$ decreases, the curve will move upward, and $p_H^{1-\sigma}$ will be smaller, which yields a higher optimal price. So, Proposition 1 still holds. A tightening shock will drive up interest rates, reduce cash holding, and trade credit, so the price goes up. So, Proposition 2 also holds. Also, if $\nu>1$ and $\gamma>1$, one percent of change in $c$ and $R$ will cause the curve to move upward with a bigger magnitude, thus one unit of monetary shock will induce a bigger price change. This is exactly what Proposition 3 predicts. To sum up, the inclusion of fixed costs will not alter our main propositions.
+
+
+Later, we can relax our assumptions through three lines: (1) endogenize the behavior of banks, or even households; (2) allow mark-up to be variable; (3) consider dynamic optimization and include prices adjusted costs;
+
+\section{Other issues}
+
+\subsection{About year fixed effect}
+Our benchmark level regression should not add year fixed effect. There are several reasons: (i) add year effect will absorb the variation of brw. We only have 7-years monthly data, which is a big loss of variation; (ii) control year effect is to alleviate the concern of omitted variable, which can affect brw and price simultaneously. However, our brw is very exogenous and can’t be affected by other variables; (iii) add year effect has very few benefits because it can only control the annually varying factors but keep silent on other quarterly and monthly level changes; (iv) in the monetary policy shock literature, people don’t control time fixed effect. Chari (2021, RFS) reg monthly capital flow on mps, without control year fixed effect. Lin (2018, JDE) reg annual trade value on mps, doesn’t control decade fixed effect; (v) control year fixed effect, will make the firm-product level regression insignificant, will make firm level regression insignificant in both fixed and floating regime, will make NS shock has a positive effect on dlnprice but negative impact on f.dlnprice. So, to guarantee the consistency of results, I suggest not to control it in our benchmark regression.
+
+\subsection{About cluster level}
+Our benchmark now is cluster on firm level. Sometimes this will make some other results also significant, which is difficult to explain. 
+
+\subsection{Why do firms increase prices more under tighter constraints?}
+
+Our measure of FPC doesn’t change across time, so it can’t tell us how firms’ FPC change in response to brw shock. The data reveals that tighter-constrained firms usually have higher prices, which is consistent with Fan, Lai, and Li (2015). But this doesn’t mean that when there is a contractional brw shock, firms with tighter constrains increase prices more because we don’t how the FPC changes.
+
+\subsection{Better to investigate the shocks from all main central banks}
+
+To make our research more general, we'd better examine shocks emanating from all major central banks: the US, Europe, Japan, UK. But there is a question that in our firm-level regression, Japan's shock has a positive effect on export prices if we only cluster on the firm level, which is hard to explain. But this result is not robust, if we cluster on both firm and year-month, this effect will be statistically weak. However, the current regression may not be reasonable, because we don't control exchange rate change. Also, I didn't check the impact in the monthly firm-product-country level regression. I remember in the annual firm-product-country regression, this is insignificant. We need to check this again. Also, we need to check how country X shock affects the export prices to country X, especially to verify the demand shrink effect. Additionally, we should put all the shocks in one equation and see what happens. If we can solve this properly, our paper can go to a better place.
+
+\subsection{Better to explain the difference across country and sectors}
+
+Similarly, to make our research more general, we'd better offer explanations on the differences across countries and sectors. Especially, why the prices of US export doesn't respond. In our current model framework, price is a function of brw and some other exogenous country-sector-specific parameters. The impact of brw is determined by these parameters. As for why the prices of US are insignificant, maybe the demand side and supply side effects are offset because US shock may have a bigger effect on domestic demand and the demand of US-peg countries than other countries. We may still need to regress price change on the interaction term of shock and country/sector-specific characteristics (for country factors: such as gravity controls, financial market development, and financial openness, etc. for sector/product factors: homogeneous or differentiated goods, etc.) to verify which factor drives the differences. 
+If we can solve this properly, our paper can go to a better place.
+
+\subsection{The impact between 2008-2015}
+Our primary analysis is grounded in the data from 2000 to 2007. Naturally, questions may arise regarding the impact between 2008 and 2015. In our yearly firm-product-country level regression, this period appears statistically insignificant. We have two plausible explanations: Firstly, owing to the zero lower bound, the influence of US monetary policy shocks on global interest rates, particularly short-term rates, has considerably waned. Secondly, noteworthy alterations in China's exchange rate regime, transitioning from a Dollar-targeting approach to a basket-targeting approach, may serve as a mitigating factor in buffering international monetary shocks.
+
+\subsection{Quantity and total value responses}
+We can't circumvent this question. Need to add the results.
+
+\subsection{How to model liquidity effect}
+Now, how to model the liquidity effect is not quite clear. Still need to read more papers.
+
+
+\newpage
+\bibliography{my.bib}
+
+\end{document}
+
+
+
 
 \subsubsection{Model setting}
 
@@ -601,71 +706,3 @@ Firms will increase export prices in response to a tightening shock and this imp
 Following \cite{corugedo2011understanding}, we can also capture trade credit in the model.
 
 Through exogenous parameters setting, we can even write the price as a function of country/sector specific characteristic, so that our model explain cross-country, cross-industry differences.
-
-
-\subsection{Extension} 
-
-Later, we can relax our assumptions through three lines: (1) endogenize the behavior of banks, or even households; (2) allow mark-up to be variable; (3) assume sticky price, like Calvo type; (4) consider dynamic optimization
-; (5) model firm entry and exit
-
-
-
-
-
-
-
-
-
-
-
-\section{Other issues}
-
-\subsection{About year fixed effect}
-Our benchmark level regression should not add year fixed effect. There are several reasons: (i) add year effect will absorb the variation of brw. We only have 7-years monthly data, which is a big loss of variation; (ii) control year effect is to alleviate the concern of omitted variable, which can affect brw and price simultaneously. However, our brw is very exogenous and can’t be affected by other variables; (iii) add year effect has very few benefits because it can only control the annually varying factors but keep silent on other quarterly and monthly level changes; (iv) in the monetary policy shock literature, people don’t control time fixed effect. Chari (2021, RFS) reg monthly capital flow on mps, without control year fixed effect. Lin (2018, JDE) reg annual trade value on mps, doesn’t control decade fixed effect; (v) control year fixed effect, will make the firm-product level regression insignificant, will make firm level regression insignificant in both fixed and floating regime, will make NS shock has a positive effect on dlnprice but negative impact on f.dlnprice. So, to guarantee the consistency of results, I suggest not to control it in our benchmark regression.
-
-\subsection{About cluster level}
-Our benchmark now is cluster on firm level. Sometimes this will make some other results also significant, which is difficult to explain. 
-
-\subsection{Why do firms increase prices more under tighter constraints?}
-
-Our measure of FPC doesn’t change across time, so it can’t tell us how firms’ FPC change in response to brw shock. The data reveals that tighter-constrained firms usually have higher prices, which is consistent with Fan, Lai, and Li (2015) (see Figure \ref{fig: FPC_price}). But this doesn’t mean that when there is a contractional brw shock, firms with tighter constrains increase prices more because we don’t how the FPC changes.
-
-\begin{figure}
-     \centering
-         \includegraphics[width=0.9\textwidth]{latex/2023.10/Picture/FPC_price.png}
-         \caption{the impact of FPC on price}
-         \label{fig: FPC_price}
-\end{figure}
-
-The impact of brw*FPC on borrowing cost and cash ratio is insignificant (see Figure \ref{fig: IEOL_Cash_FPC}).
-
-\begin{figure}
-     \centering
-         \includegraphics[width=0.9\textwidth]{latex/2023.10/Picture/IEOL_Cash_FPC.png}
-         \caption{The imapact of brw on borrowing cost and cash ratio conditional on FPC}
-         \label{fig: IEOL_Cash_FPC}
-\end{figure}
-
-\subsection{Better to investigate the shocks from all main central banks}
-
-To make our research more general, we'd better examine shocks emanating from all major central banks: the US, Europe, Japan, UK. But there is a question that in our firm-level regression, Japan's shock has a positive effect on export prices if we only cluster on the firm level, which is hard to explain. But this result is not robust, if we cluster on both firm and year-month, this effect will be statistically weak. However, the current regression may not be reasonable, because we don't control exchange rate change. Also, I didn't check the impact in the monthly firm-product-country level regression. I remember in the annual firm-product-country regression, this is insignificant. We need to check this again. Also, we need to check how country X shock affects the export prices to country X, especially to verify the demand shrink effect. Additionally, we should put all the shocks in one equation and see what happens. If we can solve this properly, our paper can go to a better place.
-
-\subsection{Better to explain the difference across country and sectors}
-
-Similarly, to make our research more general, we'd better offer explanations on the differences across countries and sectors. Especially, why the prices of US export doesn't respond. In our current model framework, price is a function of brw and some other exogenous country-sector-specific parameters. The impact of brw is determined by these parameters. As for why the prices of US are insignificant, maybe the demand side and supply side effects are offset because US shock may have a bigger effect on domestic demand and the demand of US-peg countries than other countries. We may still need to regress price change on the interaction term of shock and country/sector-specific characteristics (for country factors: such as gravity controls, financial market development, and financial openness, etc. for sector/product factors: homogeneous or differentiated goods, etc.) to verify which factor drives the differences. 
-If we can solve this properly, our paper can go to a better place.
-
-\subsection{The impact between 2008-2015}
-Our primary analysis is grounded in the data from 2000 to 2007. Naturally, questions may arise regarding the impact between 2008 and 2015. In our yearly firm-product-country level regression, this period appears statistically insignificant. We have two plausible explanations: Firstly, owing to the zero lower bound, the influence of US monetary policy shocks on global interest rates, particularly short-term rates, has considerably waned. Secondly, noteworthy alterations in China's exchange rate regime, transitioning from a Dollar-targeting approach to a basket-targeting approach, may serve as a mitigating factor in buffering international monetary shocks.
-
-\subsection{Quantity and total value responses}
-We can't circumvent this question. Need to add the results.
-
-\subsection{How to model liquidity effect}
-Now, how to model the liquidity effect is not quite clear. Still need to read more papers.
-
-
-\newpage
-\bibliography{my.bib}
-
-\end{document}
