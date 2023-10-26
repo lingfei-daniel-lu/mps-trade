@@ -219,13 +219,18 @@ use CIE\cie_98_07,clear
 keep if year>=1999
 tostring cic_adj,replace
 gen cic2=substr(cic_adj,1,2)
+* drop unwanted firms
+drop if FRDM==""
+keep if TA>TWC
+keep if TA>FA
+keep if SI>0
+keep if PERSENG>=10
 * Calculate firm-level markup from CIE
 merge 1:1 FRDM year using markup\cie9907markup, nogen keepus(Markup_DLWTLD tfp_tld) keep(matched master)
 winsor2 Markup_*, trim replace by(cic2)
 winsor2 tfp_*, trim replace by(cic2)
 * Calculate firm-level real sales and cost
 sort FRDM year 
-keep if SI>0
 gen rSI=SI/OutputDefl*100
 gen rTOIPT=TOIPT/InputDefl*100
 gen rCWP=CWP/InputDefl*100
@@ -240,7 +245,6 @@ gen Cash=(TWC-NAR-STOCK)/TA
 gen WC=TWC/TA
 gen Liquid=(TWC-CL)/TA
 gen Debt=TL/TA
-drop if Tang<0 | Invent<0 | RDint<0 | Cash<0 | Debt<0
 gen Arec=NAR/SI
 gen IEoL=IE/TL
 gen IEoCL=IE/CL
@@ -508,7 +512,7 @@ merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * construct group id
-egen group_id=group(FRDM HS6 coun_aim)
+egen group_id=group(FRDM HS6 coun_aim process)
 xtset group_id year
 * drop outliers
 winsor2 dlnprice* dlnquant dlnMC, trim
