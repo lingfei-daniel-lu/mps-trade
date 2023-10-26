@@ -1,0 +1,52 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amsthm,amssymb,amsfonts}
+
+\usepackage{booktabs,float,graphicx,hyperref,subfigure,sectsty}
+
+\usepackage{geometry}
+
+\usepackage{natbib}
+\bibliographystyle{aea}
+
+\usepackage{threeparttable, array, multirow, multicol}
+
+\usepackage{color, xcolor}
+\definecolor{ChadBlue}{rgb}{.1,.1,.5}
+\definecolor{ChadDarkBlue}{rgb}{.1,0,.1}
+\definecolor{ChadBlue}{rgb}{.1,.1,.5}
+\definecolor{ChadRoyal}{rgb}{.2,.2,.8}
+\definecolor{ChadGreen}{rgb}{0,.4,0}
+\definecolor{ChadRed}{rgb}{.5,0,.5}
+\hypersetup{
+    colorlinks, linkcolor=ChadRed,
+    citecolor=ChadBlue, urlcolor=ChadBlue
+}
+
+\newcommand\posscite[1]{\citeauthor{#1}'s (\citeyear{#1})}
+\newtheorem{proposition}{\color{ChadGreen} Proposition}
+\newtheorem{finding}{\color{ChadGreen} Finding}
+\newtheorem{SF}{\color{ChadGreen} Stylized fact}
+\newtheorem{hyp}{Hypothesis}
+\newtheorem{fact}{Fact}
+\newtheorem{prop}{Proposition}
+
+\usepackage{accents, caption, comment, diagbox, soul, smartdiagram, tikz}
+\usepackage[figuresright]{rotating} % Rotating table
+\usepackage{lscape} % Rotating table
+
+\newcommand{\ubar}[1]{\underaccent{\bar}{#1}}
+\usepackage[all]{hypcap}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{cor}[theorem]{Corollary}
+\renewcommand{\proof}{\noindent \textbf{Proof.\ }}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{example}{Example}
+\newtheorem{defn}{Definition}
+\renewcommand{\qed}{\hfill\rule{2.1mm}{2.1mm}}
+\newcommand\fnote[1]{\captionsetup{font=small}\caption*{#1}}
+
+\let\LaTeXtitle\title
+\renewcommand{\arraystretch}{1.1} % space between rows
+\graphicspath{{figure/}}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
