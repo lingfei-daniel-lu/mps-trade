@@ -27,7 +27,11 @@ use brw_month,replace
 collapse (sum) brw, by(year)
 save brw_94_22,replace
 
-twoway scatter brw year, ytitle(US monetary policy shock) xtitle(Year) title("Monetary policy shock series by BRW(2021)") saving(BRW_94_22.png, replace)
+cd "D:\Project E\MPS\brw"
+use brw_month,replace
+drop if brw==0
+keep if year<=2021
+twoway scatter brw ym, ytitle(US monetary policy shock) xtitle(time) tline(2000m1 2006m12) title("Monetary policy shock series by BRW(2021)") saving(BRW.png, replace)
 
 * mpu: US monetary policy uncertainty. 1985-2022
 cd "D:\Project E\MPS\mpu"

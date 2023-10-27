@@ -73,9 +73,9 @@ cd "D:\Project E"
 use samples\sample_monthly_exp,clear
 rename group_id group_id_ipc
 
-eststo altagg_4: reghdfe dlnprice_YoY brw, a(group_id_ipc) vce(cluster group_id_ipc)
-eststo altagg_5: reghdfe dlnprice_YoY l.dlnprice_YoY brw, a(group_id_ipc) vce(cluster group_id_ipc)
-eststo altagg_6: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(group_id_ipc) vce(cluster group_id_ipc)
+eststo altagg_4: reghdfe dlnprice_YoY brw dlnRER dlnrgdp, a(group_id_ipc) vce(cluster group_id_ipc)
+eststo altagg_5: reghdfe dlnprice_YoY l.dlnprice_YoY brw dlnRER dlnrgdp, a(group_id_ipc) vce(cluster group_id_ipc)
+eststo altagg_6: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI dlnRER dlnrgdp, a(group_id_ipc) vce(cluster group_id_ipc)
 
 estfe altagg_*, labels(group_id "Firm-Product FE" group_id_ipc "Firm-Product-Country FE")
 esttab altagg_* using tables_Oct2023\altagg.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw L.*)
