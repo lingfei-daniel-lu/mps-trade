@@ -7,21 +7,7 @@ set processor 8
 
 * 1. Monetary policy shocks
 
-* brw: US monetary policy surprise, 1994-2021
-cd "D:\Project E\MPS\brw"
-use BRW_mps,replace
-collapse (sum) brw_fomc, by(year)
-rename brw_fomc brw
-save brw_94_21,replace
-
-twoway scatter brw year, ytitle(US monetary policy shock) xtitle(Year) title("Monetary policy shock series by BRW(2021)") saving(BRW.png, replace)
-
-cd "D:\Project E\MPS\brw"
-use BRW_mps,replace
-collapse (sum) brw_fomc, by(year month)
-rename brw_fomc brw
-save brw_94_21_monthly,replace
-
+* brw: US monetary policy surprise, 1994-2022
 cd "D:\Project E\MPS\brw"
 use brw_month,replace
 collapse (sum) brw, by(year)
@@ -33,7 +19,7 @@ drop if brw==0
 keep if year<=2021
 twoway scatter brw ym, ytitle(US monetary policy shock) xtitle(time) tline(2000m1 2006m12) title("Monetary policy shock series by BRW(2021)") saving(BRW.png, replace)
 
-* mpu: US monetary policy uncertainty. 1985-2022
+* mpu: US monetary policy uncertainty, 1985-2022
 cd "D:\Project E\MPS\mpu"
 import excel HRS_MPU_monthly.xlsx, sheet("Sheet1") firstrow clear
 gen year=substr(Month,1,4) if substr(Month,1,1)!=" "
@@ -42,7 +28,7 @@ destring year,replace
 collapse (sum) USMPU, by(year)
 save mpu_85_22,replace
 
-* lsap & fwgd: US large scale asset purchasing and forward guidance
+* lsap & fwgd: US large scale asset purchasing and forward guidance, 1991-2019
 cd "D:\Project E\MPS\lsap"
 use lsap_shock,replace
 gen year=substr(date,-4,.)
@@ -50,6 +36,12 @@ destring year,replace
 rename (federalfundsratefactor lsapfactor forwardguidancefactor) (ffr lsap fwgd)
 collapse (sum) ffr lsap fwgd, by(year)
 save lsap_91_19,replace
+
+* eu: EU monetary policy surprise, 1999-2022
+cd "D:\Project E\MPS\monthly"
+use eu_infoshock_monthly,replace
+collapse (sum) *_mpd, by(year)
+save eu_infoshock_annual,replace
 
 ********************************************************************************
 
@@ -606,7 +598,7 @@ save samples\sample_customs_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp,clear
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
@@ -636,7 +628,7 @@ save samples\sample_monthly_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp_HS6,clear
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 ln* ownership affiliate)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 replace brw=0 if brw==.
@@ -659,7 +651,7 @@ use customs_matched\customs_monthly_exp_firm,clear
 by FRDM: gen price_index=1 if dlnprice_next==.
 by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. & price_index[_n-1]!=.
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* tfp_* *_cic2 *_US CWPoS TOIPToS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 CWPoS TOIPToS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int Markup_High)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)

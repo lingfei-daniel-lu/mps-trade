@@ -8,6 +8,18 @@ set processor 8
 
 * 1. Summary Statistics
 
+cd "D:\Project E"
+use customs_matched\customs_matched_exp_firm,clear
+
+replace value_RMB=value_RMB/1000
+
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched)
+
+eststo sum_stats: estpost sum HS6_count value_RMB SI PERSENG Debt IEoL Liquid exp_int imp_int, detail
+
+esttab sum_stats using "sum_stats.tex", replace cells("mean(fmt(2)) sd(fmt(2)) p50(fmt(2)) p25(fmt(2)) p75(fmt(2))") label booktab nonumber nomtitles
+
 *-------------------------------------------------------------------------------
 
 * 2. Baseline
@@ -300,33 +312,33 @@ esttab ordinary_* process_* process_int_* using tables_Oct2023\process.csv, repl
 
 *-------------------------------------------------------------------------------
 
-* 16. EU and UK shocks
+* 16. EU shocks
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
 * add monetary policy shocks
-merge m:1 year month using MPS\monthly\eu_shock_monthly,nogen keep(matched master) keepus(target_ea path_ea)
-replace target_ea=0 if target_ea==.
-replace path_ea=0 if path_ea==.
+merge m:1 year month using MPS\monthly\eu_infoshock_monthly,nogen keep(matched master) keepus(mp_median_mpd)
+rename mp_median_mpd eu_shock
+replace eu_shock=0 if eu_shock==.
 xtset firm_id time
 
-eststo EU_1: reghdfe dlnprice_YoY target_ea path_ea, a(firm_id) vce(cluster firm_id)
-eststo EU_2: reghdfe dlnprice_YoY target_ea path_ea l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo EU_3: reghdfe dlnprice_YoY target_ea path_ea l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo EU_1: reghdfe dlnprice_YoY eu_shock, a(firm_id) vce(cluster firm_id)
+eststo EU_2: reghdfe dlnprice_YoY eu_shock l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo EU_3: reghdfe dlnprice_YoY eu_shock l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
 
 * add monetary policy shocks
-merge m:1 year using MPS\others\shock_ea,nogen keep(matched master) keepus(target_ea path_ea)
-replace target_ea=0 if target_ea==.
-replace path_ea=0 if path_ea==.
+merge m:1 year using MPS\monthly\eu_infoshock_annual,nogen keep(matched master) keepus(mp_median_mpd)
+rename mp_median_mpd eu_shock
+replace eu_shock=0 if eu_shock==.
 xtset firm_id year
 
-eststo EU_4: reghdfe dlnprice target_ea path_ea, a(firm_id) vce(cluster firm_id)
-eststo EU_5: reghdfe dlnprice l.dlnprice target_ea path_ea, a(firm_id) vce(cluster firm_id)
-eststo EU_6: reghdfe dlnprice target_ea path_ea l.dlnprice l.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo EU_4: reghdfe dlnprice eu_shock, a(firm_id) vce(cluster firm_id)
+eststo EU_5: reghdfe dlnprice l.dlnprice eu_shock, a(firm_id) vce(cluster firm_id)
+eststo EU_6: reghdfe dlnprice eu_shock l.dlnprice l.lnrSI, a(firm_id) vce(cluster firm_id)
 
 estfe EU_*, labels(firm_id "Firm FE")
-esttab EU_* using tables_Oct2023\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(target_* path_*)
+esttab EU_* using tables_Oct2023\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(eu_shock)
