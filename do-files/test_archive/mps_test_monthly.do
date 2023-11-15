@@ -269,3 +269,17 @@ eststo month_Japan_2: reghdfe dlnprice_YoY target_japan path_japan l.dlnprice_Yo
 
 estfe month_EU_* month_UK_* month_Japan_*, labels(firm_id "Firm FE")
 esttab month_EU_* month_UK_* month_Japan_* using tables\month_EUshock.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(target_* path_* shock_*)
+
+*-------------------------------------------------------------------------------
+
+* 16. MoM price change
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_MoM_1: reghdfe dlnprice_MoM brw, a(firm_id month) vce(cluster firm_id)
+eststo month_brw_MoM_2: reghdfe dlnprice_MoM brw l.dlnprice_MoM, a(firm_id month) vce(cluster firm_id)
+eststo month_brw_MoM_3: reghdfe dlnprice_MoM brw l.dlnprice_MoM l.lnrSI, a(firm_id month) vce(cluster firm_id)
+
+eststo month_brw_MoM_4: reghdfe dlnprice_MoM brw l.brw, a(firm_id month) vce(cluster firm_id)
+eststo month_brw_MoM_5: reghdfe dlnprice_MoM brw l.brw l2.brw, a(firm_id month) vce(cluster firm_id)

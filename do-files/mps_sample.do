@@ -246,7 +246,7 @@ gen IEoL=IE/TL
 gen IEoCL=IE/CL
 gen FNoL=FN/TL
 gen FNoCL=FN/CL
-gen rwage=rCWP/PERSENG
+gen rW=rCWP/PERSENG
 gen CWPoS=CWP/SI
 gen TOIPToS=TOIPT/SI
 * Construct industry-level financial constraints by CIC2
@@ -382,6 +382,29 @@ sort party_id HS6 coun_aim year
 order party_id HS* coun* year
 format coun_aim %20s
 save customs_00_15_exp,replace
+
+cd "D:\Project E"
+use custom_0015\customs_00_15_exp,clear
+collapse (sum) value quant=quantity, by(party_id HS6 HS4 HS2 year)
+* calculate RMB value and price
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
+gen value_RMB=value*NER_US
+gen price_RMB=value_RMB/quant
+gen price_USD=value/quant
+egen group_id=group(party_id HS6)
+xtset group_id year
+by group_id: gen dlnprice_h=ln(price_RMB)-ln(L.price_RMB)
+by group_id: gen dlnprice_h_USD=ln(price_USD)-ln(L.price_USD)
+bys party_id year: egen share_it=pc(value),prop
+by party_id year: egen HS6_count=nvals(HS6)
+sort group_id year
+by group_id: gen share_bar=0.5*(share_it+L.share_it)
+replace share_bar=share_it if share_bar==.
+sort party_id year
+by party_id year: egen dlnprice=sum(dlnprice_h*share_bar), missing
+by party_id year: egen dlnprice_USD=sum(dlnprice_h_USD*share_bar), missing
+collapse (sum) value_USD=value value_RMB, by(party_id year dlnprice dlnprice_USD HS6_count)
+save custom_0015\customs_00_15_exp_firm,replace
 
 *-------------------------------------------------------------------------------
 
@@ -588,6 +611,18 @@ drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * drop outliers
 winsor2 dlnprice* dlnquant, trim
 save samples\sample_customs_exp,replace
+
+cd "D:\Project E"
+use custom_0015\customs_00_15_exp_firm,replace
+* add monetary policy shocks
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
+drop if dlnprice==.
+* construct firm id
+egen firm_id=group(party_id)
+xtset firm_id year
+* drop outliers
+winsor2 dlnprice*, replace trim
+save samples\sample_customs_exp_firm,replace
 
 ********************************************************************************
 
