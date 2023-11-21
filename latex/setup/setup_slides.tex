@@ -1,0 +1,47 @@
+\usepackage{amssymb,amsthm}% http://ctan.org/pkg/amssymb
+\newtheorem{proposition}{Proposition}
+\setbeamertemplate{theorems}[numbered]
+\usecolortheme[RGB={100,0,0}]{structure}
+\setbeamercolor{block title}{use=structure,fg=white,bg=structure.fg!75!black}
+\setbeamercolor{block body}{parent=normal text,use=block title,bg=block title.bg!10!bg}
+
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+
+\usepackage{natbib}
+\bibliographystyle{aea}
+
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{numprint}
+\npdecimalsign{.}
+\nprounddigits{3}
+\usepackage{colortbl}
+\usepackage{appendixnumberbeamer}
+\usepackage{subfigure}
+\usepackage{comment}
+
+%\usepackage[hyperref]{beamerarticle} or 
+\usepackage{hyperref}
+\usepackage{caption}
+%\captionsetup{font=scriptsize,labelfont=scriptsize}
+\setbeamerfont{caption}{size=\scriptsize}
+\usetheme{Singapore}
+\usecolortheme{beaver}
+
+% for adding regression tables
+\usepackage{dcolumn} 
+% column to line up decimals
+\usepackage{booktabs,caption}
+\captionsetup[table]{name=Table} 
+\usepackage[flushleft]{threeparttable} 
+% The above two allow that last line with the dagger as a bottom note.
+\captionsetup{skip=0pt}
+
+\usepackage{xcolor}
+\definecolor{underbrace}{RGB}{30,199,166}
+\newcommand{\textfrac}[1]{
+  \begin{tabular}{@{}l@{}}#1\end{tabular}
+}
