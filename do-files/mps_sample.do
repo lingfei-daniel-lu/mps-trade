@@ -581,8 +581,30 @@ drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * construct group id
 egen group_id=group(HS6 coun_aim)
 * drop outliers
-winsor2 dlnprice* dlnquant, trim
+winsor2 dlnprice* dlnquant, trim replace
 xtset group_id year
+save samples\sample_HS6_country,replace
+
+cd "D:\Project E"
+use "D:\Project D\HS6_exp_00-19",clear
+collapse (sum) value quant=quantity, by(HS6 year)
+* calculate changes of price and quantity
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
+gen value_RMB=value*NER_US
+gen price_RMB=value_RMB/quant
+gen price_USD=value/quant
+sort HS6 year
+by HS6: gen dlnquant=ln(quant)-ln(quant[_n-1]) if year==year[_n-1]+1
+by HS6: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
+by HS6: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
+* add monetary policy shocks
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
+merge m:1 year using MPS\lsap\lsap_91_19,nogen keep(matched)
+* drop special products
+gen HS2=substr(HS6,1,2)
+drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
+* drop outliers
+winsor2 dlnprice* dlnquant, trim replace
 save samples\sample_HS6,replace
 
 *-------------------------------------------------------------------------------

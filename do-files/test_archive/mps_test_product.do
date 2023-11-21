@@ -11,66 +11,47 @@
 * 1. Baseline
 
 cd "D:\Project E"
-use sample_HS6,clear
+use samples\sample_HS6_country,clear
 
 * Baseline
-eststo product_brw0: reghdfe dlnprice_tr brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo product_brw: reghdfe dlnprice_tr dlnRER brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo product_brw_lag: reghdfe dlnprice_tr dlnRER brw_lag dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo product_brw_fixed: reghdfe dlnprice_tr dlnRER brw dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
+eststo HS6_brw1: reghdfe dlnprice brw, a(group_id) vce(cluster group_id)
+eststo HS6_brw2: reghdfe dlnprice brw dlnrgdp, a(group_id) vce(cluster group_id)
+eststo HS6_brw3: reghdfe dlnprice brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 * USD price
-eststo product_brw_USD: reghdfe dlnprice_USD_tr dlnRER brw dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo product_brw_USD_fixed: reghdfe dlnprice_USD_tr dlnRER brw dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
-
-* US and EU exposure
-** exposure to US
-gen value_year_US=value_year if coun_aim=="美国"
-replace value_year_US=0 if value_year_US==.
-bys FRDM year: egen export_sum_US=total(value_year_US) 
-gen exposure_US=export_sum_US/export_sum
-** exposure to EU
-gen value_year_EU=value_year if EU==1
-replace value_year_EU=0 if value_year_EU==.
-bys FRDM year: egen export_sum_EU=total(value_year_EU) 
-gen exposure_EU=export_sum_EU/export_sum
-drop export_sum_* value_year_*
-
-eststo product_brw_expo_US: reghdfe dlnprice_tr brw c.brw#c.exposure_US dlnrgdp, a(group_id) vce(cluster group_id year)
-eststo product_brw_nozlb_expo_US: reghdfe dlnprice_tr brw c.brw#c.exposure_US dlnRER dlnrgdp if zlb==0, a(group_id) vce(cluster group_id year)
+eststo HS6_brw_USD1: reghdfe dlnprice_USD brw, a(group_id) vce(cluster group_id)
+eststo HS6_brw_USD2: reghdfe dlnprice_USD brw dlnrgdp, a(group_id) vce(cluster group_id)
+eststo HS6_brw_USD3: reghdfe dlnprice_USD brw dlnRER dlnrgdp, a(group_id) vce(cluster group_id)
 
 *-------------------------------------------------------------------------------
 
 * 2. Different periods
 
 cd "D:\Project E"
-use sample_HS6,clear
+use samples\sample_HS6,clear
 
-* Zero lower bound
-gen brw_prezlb=brw*prezlb
-gen brw_zlb=brw*zlb
-gen brw_postzlb=brw*postzlb
-eststo product_brw_zlb0: reghdfe dlnprice_tr brw dlnRER dlnrgdp if zlb==0, a(group_id) vce(cluster group_id year)
-eststo product_brw_zlb: reghdfe dlnprice_tr brw_prezlb brw_zlb brw_postzlb dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo HS6_brw_0104: reghdfe dlnprice brw if year<=2004, a(HS6) vce(cluster HS6)
+eststo HS6_brw_0508: reghdfe dlnprice brw if year>=2005 & year<=2008, a(HS6) vce(cluster HS6)
+eststo HS6_brw_0912: reghdfe dlnprice brw if year>=2009 & year<=2012, a(HS6) vce(cluster HS6)
+eststo HS6_brw_1316: reghdfe dlnprice brw if year>=2013 & year<=2016, a(HS6) vce(cluster HS6)
+eststo HS6_brw_1719: reghdfe dlnprice brw if year>=2017 & year<=2019, a(HS6) vce(cluster HS6)
+
+esttab HS6_brw_0104 HS6_brw_0508 HS6_brw_0912 HS6_brw_1316 HS6_brw_1719 using "D:\Project E\tables\HS6_brw_period.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') mtitle("01-04" "05-08" "09-12" "13-16" "17-19") compress order(brw)
 
 *-------------------------------------------------------------------------------
 
 * 3. Alternative shocks
 
 cd "D:\Project E"
-use sample_HS6,clear
+use samples\sample_HS6,clear
 
 * Large scale asset purchase and forward guidance
-eststo product_lsap: reghdfe dlnprice_tr lsap fwgd dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
+eststo product_lsap: reghdfe dlnprice lsap fwgd, a(HS6) vce(cluster HS6)
 
-gen lsap_prezlb=lsap*prezlb
-gen lsap_zlb=lsap*zlb
-gen lsap_postzlb=lsap*postzlb
-gen fwgd_prezlb=fwgd*prezlb
-gen fwgd_zlb=fwgd*zlb
-gen fwgd_postzlb=fwgd*postzlb
+eststo HS6_lsap_0104: reghdfe dlnprice lsap fwgd if year<=2004, a(HS6) vce(cluster HS6)
+eststo HS6_lsap_0508: reghdfe dlnprice lsap fwgd if year>=2005 & year<=2008, a(HS6) vce(cluster HS6)
+eststo HS6_lsap_0912: reghdfe dlnprice lsap fwgd if year>=2009 & year<=2012, a(HS6) vce(cluster HS6)
+eststo HS6_lsap_1316: reghdfe dlnprice lsap fwgd if year>=2013 & year<=2016, a(HS6) vce(cluster HS6)
+eststo HS6_lsap_1719: reghdfe dlnprice lsap fwgd if year>=2017 & year<=2019, a(HS6) vce(cluster HS6)
 
-eststo product_lsap_zlb: reghdfe dlnprice_tr lsap_prezlb lsap_zlb lsap_postzlb fwgd_prezlb fwgd_zlb fwgd_postzlb dlnRER dlnrgdp, a(group_id) vce(cluster group_id year)
-
-eststo product_lsap_zlb1: reghdfe dlnprice_tr lsap fwgd dlnRER dlnrgdp if zlb==1, a(group_id) vce(cluster group_id year)
-eststo product_lsap_zlb0: reghdfe dlnprice_tr lsap fwgd dlnRER dlnrgdp if zlb==0, a(group_id) vce(cluster group_id year)
+esttab HS6_lsap_0104 HS6_lsap_0508 HS6_lsap_0912 HS6_lsap_1316 HS6_lsap_1719 using "D:\Project E\tables\HS6_lsap_period.csv", replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') mtitle("01-04" "05-08" "09-12" "13-16" "17-19") compress

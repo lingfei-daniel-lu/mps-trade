@@ -28,8 +28,6 @@ eststo customs_brw_quant_lag: reghdfe dlnquant_tr brw_lag dlnRER dlnrgdp, a(grou
 cd "D:\Project E"
 use samples\sample_customs_exp,clear
 
-* Fixed exchange rate regime
-
 eststo customs_brw_0105: reghdfe dlnprice_tr brw dlnRER dlnrgdp if year<=2005, a(group_id) vce(cluster group_id year)
 eststo customs_brw_0609: reghdfe dlnprice_tr brw dlnRER dlnrgdp if year>=2006 & year<=2009, a(group_id) vce(cluster group_id year)
 eststo customs_brw_1013: reghdfe dlnprice_tr brw dlnRER dlnrgdp if year>=2010 & year<=2013, a(group_id) vce(cluster group_id year)
