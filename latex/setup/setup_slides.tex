@@ -5,6 +5,8 @@
 \setbeamercolor{block title}{use=structure,fg=white,bg=structure.fg!75!black}
 \setbeamercolor{block body}{parent=normal text,use=block title,bg=block title.bg!10!bg}
 
+\setbeamertemplate{footline}[frame number]
+
 \usepackage{amsmath}
 \DeclareMathOperator*{\argmax}{argmax}
 \DeclareMathOperator*{\argmin}{argmin}
@@ -23,22 +25,21 @@
 \usepackage{subfigure}
 \usepackage{comment}
 
-%\usepackage[hyperref]{beamerarticle} or 
 \usepackage{hyperref}
 \usepackage{caption}
-%\captionsetup{font=scriptsize,labelfont=scriptsize}
-\setbeamerfont{caption}{size=\scriptsize}
+\setbeamerfont{caption}{size=\small}
 \usetheme{Singapore}
 \usecolortheme{beaver}
 
 % for adding regression tables
-\usepackage{dcolumn} 
+\usepackage{dcolumn}
 % column to line up decimals
 \usepackage{booktabs,caption}
-\captionsetup[table]{name=Table} 
+\captionsetup[table]{name=Table}
+\setlength{\abovecaptionskip}{-1pt}
+\setlength{\belowcaptionskip}{-1.5pt}
 \usepackage[flushleft]{threeparttable} 
 % The above two allow that last line with the dagger as a bottom note.
-\captionsetup{skip=0pt}
 
 \usepackage{xcolor}
 \definecolor{underbrace}{RGB}{30,199,166}

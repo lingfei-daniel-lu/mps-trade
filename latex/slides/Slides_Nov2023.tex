@@ -4,10 +4,11 @@
 
 \begin{document}
 
-\title{Global Monetary Policy Shocks, Financial Friction and Export Prices}
+\title{Global Monetary Policy Shock, Financial Friction and Export Price}
 \author[Yao Amber LI, Lingfei LU and Jingbo YAO]{Yao Amber LI, Lingfei LU, Jingbo YAO}
 \institute{\small HKUST}
 \date{Dec 1, 2023}
+\logo{\includegraphics[scale=0.15]{UST4C_L3.eps}}
 
 \begin{frame}
 \maketitle
@@ -34,7 +35,6 @@ HKUST Research Postgraduate Student Workshop
     \medskip
     \item  In an era of growing global financial and trade integration, understanding how global monetary shocks affect export prices by affecting firms' financial conditions is quite important
     \medskip
-
 \end{itemize}
 \end{frame}
 
@@ -52,27 +52,24 @@ HKUST Research Postgraduate Student Workshop
 
 
 \begin{frame}{Literature}
-
 \begin{itemize}
     \item Financial friction and international trade
     \begin{itemize}
         \item Sector-specific and time-invariant constraint: \cite{manova2013credit}, \cite{lin2018international}
-        \item This paper: firm-level time-varying constraint and the role of global monetary shocks
+        \item \textcolor{red}{This paper: firm-level time-variant constraint and the role of global monetary shocks}
     \end{itemize}
     \item Determinants of export prices
         \begin{itemize}
-        \item  Exchange rate shocks: \cite{amiti2014importers}, \cite{auer2018quality}.
-        \item Other factors like firm characteristics, destinations, and trade liberalization:  \cite{manova2012export}, \cite{fan2015trade}, etc.
-        \item This paper: global monetary policy shocks
+        \item Exchange rate shocks: \cite{amiti2014importers}, \cite{auer2018quality}.
+        \item Firm characteristics, destinations, and trade liberalization: \cite{manova2012export}, \cite{fan2015trade}, etc.
+        \item \textcolor{red}{This paper: global monetary policy shocks}
     \end{itemize}
     \item Global monetary policy spillover
         \begin{itemize}
-        \item Real economy: \cite{bluedorn2011open},  and \cite{di2023impact}
+        \item Real economy: \cite{bluedorn2011open}, \cite{di2023impact}
         \item Asset prices: \cite{rogers2014evaluating}, \cite{miranda2020us}.
-        \item This paper: exporter behaviors
+        \item \textcolor{red}{This paper: exporter pricing behaviors}
     \end{itemize}
-    \medskip
-
 \end{itemize}
 
 \end{frame}
@@ -83,94 +80,570 @@ HKUST Research Postgraduate Student Workshop
 
 \begin{frame}{Data: Monetary Policy Shock}
     \begin{itemize}
-        \item First, we use a US monetary policy shock series developed by \cite{bu2021unified}.
+        \item Our US monetary policy shocks refer to \cite{bu2021unified}.
         \begin{itemize}
             \item This measure uses \cite{fama1973risk} two-step partial-least squares estimation using FOMC announcements.
         \end{itemize}
         \item This measure has several advantages:
         \begin{enumerate}
-            \item It is largely unpredictable from past available information so that we can regard it as exogenous for the US and other countries;
-            \item Its information effect is not significant (pure policy shock);
-            \item This unified measure is comparable across the conventional and unconventional monetary policy regimes.
+            \item Unpredictable from past available information (exogenous);
+            \item No significant information effect (pure policy shock);
+            \item Bridge conventional and unconventional monetary policy regimes
         \end{enumerate}
         \item We also use alternative measures for monetary policy shocks from \cite{nakamura2018high}, \cite{guraynak2005actions}, and \cite{jarocinski2020deconstructing}.
+        \item The whole series is from 1994 to 2022, but we will focus on the period from 2000 to 2006 (84 months) within the matched sample.
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Data: Monetary Policy Shock}
-    \begin{itemize}
-        \item The whole series is from 1994 to 2022. Within the matched sample, we will focus on the period from 2000 to 2006, 84 months.
-    \end{itemize}
     \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.8\columnwidth]{latex/drafts/pic/BRW.png}
+	\includegraphics[width=0.9\columnwidth]{latex/drafts/pic/BRW.png}
 	\label{sum.brw}
     \end{figure}
 \end{frame}
 
-\begin{frame}{Data: Firm-level Information}
+\begin{frame}{Data: Firm-level and Customs data}
+    \begin{itemize}
+	\item First, we use annual surveys of Chinese manufacturing firms conducted by the National Bureau of Statistics of China (NBSC).
 	\begin{itemize}
-		\item Second, we use annual surveys of Chinese manufacturing firms conducted by the National Bureau of Statistics of China (NBSC).
-		\begin{itemize}
-			\item This dataset covers all state-owned enterprises and above-scale firms with annual sales of more than 5 million RMB from 1999 to 2007.
-			\item The data provide details about firms' identification codes, ownership, industry type, and 80 other balance sheet variables.
-                \item To merge firm data with customs records, we match identification codes using firms' contact information (\cite{fan2015trade}).
-		\end{itemize}
-            \item Our research will focus on the variables related to two aspects:
-            \begin{enumerate}
-                \item production costs and sales, including total wage payment, total operation inputs, sales income, etc.
-                \item financial costs and liquidity conditions, including financial expense and interest payment, total and net working capital, cash holding.
-            \end{enumerate}
+		\item This dataset covers all state-owned enterprises and above-scale firms with annual sales of more than 5 million RMB from 1999 to 2007. 
 	\end{itemize}
+        \item Our research will focus on the variables related to two aspects:
+        \begin{enumerate}
+            \item Production costs and sales, including total wage payment, total operation inputs, sales income, etc.
+            \item Financial costs and liquidity, including financial expense and interest payment, total and net working capital, and cash holding.
+        \end{enumerate}
+        \item Then, we use monthly trade transaction records from the General Administration of Customs of China (GACC) from 2000-2006.
+        \begin{itemize}
+            \item This dataset provides universal information on Chinese trade transactions, including import and export values, quantities, product names and codes, source and destination countries, and firm types.
+	\end{itemize}
+         
+    \end{itemize}
 \end{frame}
 
-\begin{frame}{Data: Customs Transaction Records}
+\begin{frame}{Data: Summary Statistics}
+    \begin{table}[htbp]
+        \centering
+        \caption{Summary statistics}
+        \resizebox{0.9\columnwidth}{!}{
+        \begin{threeparttable}
+            \begin{tabular}{lccccc}
+            \toprule
+                    &        Mean&          SD&         p50&         p25&         p75\\
+            \midrule
+            $\Delta P$        &        0.03&        0.42&        0.01&       -0.11&        0.17\\
+            \# HS6 Products           &        6.29&       10.31&        3.00&        2.00&        7.00\\
+            Export Value (*1000 RMB)    &   129580&   372029&    19709&     3890&    80525\\
+            Sales (*1000 RMB)   &   160148&  1201262&    34910&    15350&    90852\\
+            Employment     &      449&     1210&      197&       96&      418\\
+            $Debt$              &        0.55&        0.26&        0.56&        0.37&        0.74\\
+            $IE/L$               &        0.02&        0.04&        0.01&        0.00&        0.03\\
+            $Liquid$       &        0.10 &        0.29 &        0.10 &       -0.07 &        0.28\\
+            $\phi^{exp}$ (Export/Sales)         &        0.46&        0.38&        0.36&        0.07&        0.89\\
+            $\phi^{imp}$ (Export/Inputs)               &        0.18&        0.30&        0.01&        0.00&        0.25\\
+            \midrule
+            Firm-year observations        &     \multicolumn{5}{c}{270271}      \\
+            \bottomrule
+            \end{tabular}
+            \begin{tablenotes}
+        	\footnotesize
+                \item Notes: This table shows the summary statistics of firms in the matched sample. The first row $\Delta P$ indicates monthly price changes, while all other rows describe annual-level firm variables. $Debt$ denotes the ratio of total liability over total assets, $IE/L$ denotes the ratio of interest expense over total liability, and $Liquid$ denotes the ratio of net liquid assets over total assets.
+            \end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.summary}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Export price index}
     \begin{itemize}
-	\item Finally, we use trade transaction records from the General Administration of Customs of China (GACC).
-	\begin{itemize}
-		\item This dataset provides universal information on Chinese trade transactions, including import and export values, quantities, product names and codes, source and destination countries, and firm types.
-            \item The monthly firm-level transaction records range from 2000-2006.
-	\end{itemize}		
+	\item We compute the unit values of each firm-product-country-year observation as the proxy of export prices:
+        $$
+        P_{chit}=\frac{V_{chit}\cdot NER_{US,t}}{Q_{chit}}
+        $$
+        \item We construct the firm-level Tornqvist price index as in \cite{smeets2013estimating}:
+        \begin{itemize}
+            \item First, we aggregate the unit value to the firm-product level price, $P_{hit}=\sum_c s_{c,hit} P_{chit}$, where the value share is $s_{c,hit}=V_{chit}/V_{hit}$.
+            \item Second, we calculate the weighted average firm-product level price growth rate $\Delta_n \ln P_{hit} = \ln P_{hit}- \ln P_{hi(t-n)}$ across $n$ periods.
+            \item Then, we calculate the firm-level price change as: 
+            $$
+            \Delta_n \ln P_{it} = \sum _{h} \frac{s_{h,i(t-n)}+s_{h,it}}{2} \Delta_n \ln P_{hit}
+            $$
+            where the product-specific value share is $s_{h,it}=V_{hit}/V_{it}$.
+            \item In the monthly regression, we set the time gap $n$ as 12 months.
+        \end{itemize}
     \end{itemize}
-    \begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.8\columnwidth]{latex/drafts/pic/BRW.png}
-	\label{sum.brw}
-    \end{figure}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{III. Empirical Results}
 
-\begin{frame}{}
-\begin{itemize}
-    \item 
-    \medskip
+\begin{frame}{Benchmark specification}
+    \begin{itemize}
+        \item Our primary target is to study the impacts of monetary policy shocks on export prices.
+        \item In our benchmark empirical analysis, we use the below specifications:
+            \begin{equation}
+                \Delta \ln P_{it} = \alpha+\beta \cdot m_{t}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{it}
+            \end{equation}
+        \begin{itemize}
+            \item $\Delta \ln P_{it}$: the year-over-year export price index change;
+            \item $m_t$: the unexpected monetary policy shock at time $t$;
+            \item $\textbf{Z}_{it-1}$: firm-level (time-variant) lagged control terms;
+            \item $\xi_{i}$: firm-level (time-invariant) fixed effects.
+            \item $\beta$: the average export price response to the concurrent monetary policy surprises.
+        \end{itemize}
+        
+    \end{itemize}
+\end{frame}
 
-\end{itemize}
+\begin{frame}{Export price responses to monetary policy shocks}
+    \begin{table}[htbp]
+        \centering
+        \caption{Export price responses to US monetary policy shocks}
+        \resizebox{\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lcccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+            & \multicolumn{3}{c}{Monthly $\Delta ln P_{it}$} & \multicolumn{3}{c}{Annual $\Delta ln P_{it}$}  \\
+            \midrule
+            $brw_t$   & 0.181*** & 0.145*** & 0.147*** & 0.136*** & 0.173*** & 0.173*** \\
+                  & (0.011) & (0.010) & (0.010) & (0.007) & (0.009) & (0.009) \\
+            $\Delta ln P_{it-1}$ &       & 0.301*** & 0.299*** &       & -0.297*** & -0.298***  \\
+                  &       & (0.003) & (0.003) &       & (0.005) & (0.005) \\
+            $Sales_{it-1}$ &       &       & -0.004*** &       &       &  0.004*\\
+                  &       &       & (0.001) &       &       &  (0.003)\\
+            \midrule
+            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+            N     & 1100399 & 940015 & 917435 & 151542 & 96296 & 96296 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(3) are changes in monthly price, while columns (4)-(6) are changes in annual price. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.baseline}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Robustness checks: Alternative monetary policy shocks}
+    \begin{table}[htbp]
+        \centering
+        \caption{Alternative monetary policy shocks}
+        \resizebox{\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lcccccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5)   & (6) & (7)   & (8) \\
+            & \multicolumn{2}{c}{$\Delta$ FFR} & \multicolumn{2}{c}{Nakamura \& Steinsson}  & \multicolumn{2}{c}{Acosta} & \multicolumn{2}{c}{Jarocinski \& Karadi}\\
+            \midrule
+            $\Delta FFR_t$ & 0.029*** & 0.025***&       &        &       &       &       &  \\
+                  & (0.008) & (0.007)&       &        &       &       &       &  \\
+            $NS_t$  &       &    & 0.152*** & 0.144***     &       &  \\
+                  &       &   & (0.009) & (0.009)       &       &  \\
+            $Target^{US}_t$ &       &       &       &       & 0.002*** & 0.002*** &       &  \\
+                  &       &       &       &       & (0.000) & (0.000) &       &  \\
+            $Path^{US}_t$  &       &       &       &       & 0.005*** & 0.004*** &       &  \\
+                  &       &       &       &       & (0.000) & (0.000) &       &  \\
+            $MP_t$ &       &       &       &       &       &       & 0.045*** & 0.068*** \\
+                  &       &       &       &       &       &       & (0.006) & (0.006) \\
+            $\Delta ln P_{it-1}$ &       & 0.299*** &       & 0.300*** &       & 0.299*** &       & 0.300*** \\
+                  &       & (0.003) &       & (0.003) &       & (0.003) &       & (0.003) \\
+            $Sales_{it-1}$ &       & -0.005*** &       & -0.004*** &       & -0.005*** &       & -0.004*** \\
+                  &       & (0.001) &       & (0.001) &       & (0.001) &       & (0.001) \\
+            \midrule
+            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+            N     & 1100399 & 917435 & 1100399 & 917435 & 1100399 & 917435 & 1100399 & 917435 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in all columns are changes in monthly price. Monetary policy shock measures in columns (1)-(2), (3)-(4), (5)-(6), (7)-(8) are from Fed fund rate changes, \cite{nakamura2018high}, \cite{acosta2022perceived}, and \cite{jarocinski2020deconstructing}, respectively. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.altmps}
+    \end{table}
+\end{frame}
+
+\begin{frame}[label=robustness_other]{Robustness checks: Other tests}
+    In addition, we also adopt other robustness tests:
+    \medskip
+    \begin{enumerate}
+        \item Alternative \textbf{aggregation levels of price index} \hyperlink{appendix_tab.altagg}{\beamergotobutton{Alternative aggregation}}
+        \item Sub-sample with \textbf{only single product firms} \hyperlink{appendix_tab.single}{\beamergotobutton{Single product firms}}
+        \item Alternative \textbf{standard error cluster levels and fixed effects} \hyperlink{appendix_tab.altfe}{\beamergotobutton{Alternative SE clusters and FEs}}
+        \item Export prices \textbf{denominated in US dollars} \hyperlink{appendix_tab.USD}{\beamergotobutton{USD prices}}
+    \end{enumerate}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{IV. Mechanism}
-\begin{frame}{}
-\begin{itemize}
-    \item 
-    \medskip
 
-\end{itemize}
+\begin{frame}{Decomposition of prices: markup vs marginal cost}
+    \begin{itemize}
+        \item To study why prices adjust with monetary policy shocks, we further decompose export prices into markups and marginal costs.
+        \begin{itemize}
+            \item The markup is estimated as the ratio of an input factor's output elasticity to its firm-specific factor payment share $\mu_{t}=\theta_{t}^{X}\left(\alpha_{t}^{X}\right)^{-1}$
+            \item We the structural assumptions of \cite{deloecker2012markups} and the GMM estimation by \cite{brooks2021agglomeration}.
+        \end{itemize}
+        \item We replace the price changes with the markup and marginal cost changes or add markups into the control terms. 
+        \begin{equation}
+            \Delta \mu_{it} = \alpha +\beta \cdot brw_{t}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{it} \label{reg.markup}
+        \end{equation}
+        \begin{equation}
+            \Delta \ln P_{it} = \alpha+\beta \cdot brw_{t}+ \gamma \cdot \Delta \mu_{it}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{i t} \label{reg.markup_int}
+        \end{equation}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Decomposition of prices: markup vs marginal cost}
+\begin{table}[htbp]
+    \centering
+    \caption{Decomposition of prices: markup vs marginal cost}
+    \resizebox{\columnwidth}{!}{
+    \begin{threeparttable}
+    \begin{tabular}{lcccccccc}
+        \toprule
+        & (1)   & (2)   & (3)   & (4)   & (5)   & (6) & (7)   & (8) \\
+        & \multicolumn{4}{c}{Monthly sample} & \multicolumn{4}{c}{Annual sample}  \\
+        \cline{2-5}  \cline{6-9}
+        & $\Delta Markup_{it}$ & $\Delta ln(MC)_{it}$ & \multicolumn{2}{c}{$\Delta ln P_{it}$}  & $\Delta Markup_{it}$ & $\Delta MC_{it}$ & \multicolumn{2}{c}{$\Delta ln P_{it}$}\\
+        \midrule
+        $brw_t$   & -0.010 & 0.190*** & 0.149*** & 0.036*** & -0.017** & 0.174*** & 0.176*** & 0.084*** \\
+              & (0.008) & (0.015) & (0.012) & (0.007) & (0.009) & (0.012) & (0.010) & (0.007) \\
+        $\Delta Markup_{it}$&       &       & 0.004* &       &       &       &   0.007*    &  \\
+              &       &       & (0.002) &       &       &       &   (0.004)    &  \\
+        $\Delta MC_{it}$&       &       &       & 0.668*** &       &       &       &  0.472***\\
+              &       &       &       & (0.004) &       &       &       &  (0.005)\\
+        $\Delta ln P_{it-1}$&       &       & 0.280*** & 0.099*** &       &       &   -0.307*** & -0.163*** \\
+              &       &       & (0.003) & (0.002) &       &       &   (0.005) & (0.004)  \\
+        $Sales_{it-1}$ & -0.022*** & 0.019*** & -0.005*** & -0.018*** &  -0.022*** & 0.018*** & 0.006** & -0.009*** \\
+              & (0.003) & (0.004) & (0.002) & (0.002) &  (0.002) & (0.003) & (0.003) & (0.002) \\
+        \midrule
+        Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+        N     & 830585 & 767768 & 665438 & 661680 & 110750 & 105330 & 81471 & 80831 \\
+        \bottomrule
+    \end{tabular}
+        \begin{tablenotes}
+            \footnotesize
+            \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1), (2), (3)-(4) are changes in markup, marginal cost, and price in the monthly sample; the dependent variables in columns (5), (6), (7)-(8) are changes in markup, marginal cost, and price in the annual sample. All regressions include firm fixed effects.
+	\end{tablenotes}
+    \end{threeparttable}
+    }
+    \label{tab.markup}
+\end{table}
+\end{frame}
+
+\begin{frame}{Borrowing cost and liquidity conditions}
+    \begin{itemize}
+        \item Two hypotheses about the mechanism of monetary policy effects:
+        \begin{enumerate}
+            \item \textbf{Global borrowing cost channel}. A tightening US monetary shock deteriorates the financing environment and increases the borrowing cost of firms, forcing them to offset this cost by lifting export prices.
+            \item \textbf{Global liquidity channel}. A contractionary US monetary shock aggregates firms' liquidity conditions, which induces firms to raise prices to alleviate liquidity constraints.
+        \end{enumerate}
+        \item We will check whether and how borrowing costs and liquidity conditions of firms change with the monetary policy shocks:
+        \begin{equation}
+            \Delta F_{it} = \alpha +\beta \cdot brw_{t}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{it} \label{reg.liquid}
+        \end{equation}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Borrowing cost and liquidity conditions}
+    \begin{table}[htbp]
+        \centering
+        \caption{Borrowing cost channel and liquidity channel}
+        \resizebox{\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lcccccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5)   & (6) & (7)   & (8) \\
+            & $\Delta IE/L$ & $\Delta IE/CL$ & $\Delta FN/L$ & $\Delta FN/CL$ & $\Delta WC$  & $\Delta Liquid$ & $\Delta Cash$ & $\Delta Arec$ \\
+            \midrule
+            $brw_t$   & 0.002*** & 0.004*** & 0.002*** & 0.004*** & -0.005*** & -0.021*** & -0.007*** & -0.004** \\
+                  & (0.000) & (0.001) & (0.001) & (0.001) & (0.002) & (0.002) & (0.002) & (0.002) \\
+            $Sales_{it-1}$ & -0.001*** & -0.002*** & -0.003*** & -0.004*** & -0.009*** & -0.000 & -0.001*** & 0.059*** \\
+                  & (0.000) & (0.000) & (0.000) & (0.000) & (0.000) & (0.001) & (0.000) & (0.001) \\
+            $Debt_{it-1}$ & 0.045*** & 0.052*** & 0.080*** & 0.089*** & -0.105*** & 0.599*** & -0.005*** & -0.053*** \\
+                  & (0.001) & (0.001) & (0.001) & (0.001) & (0.002) & (0.002) & (0.002) & (0.002) \\
+            \midrule
+            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+            N     & 1081803 & 1056283 & 1081803 & 1056283 & 1090620 & 1090620 & 1090620 & 1090620 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(4) are changes in interest expense over the total liability ratio, interest expense over the current liability ratio, total financial expense over the total liability ratio, and total financial expense over the current liability ratio, respectively. The dependent variables in columns (5)-(8) are changes in working capital over total asset ratio, net liquidity asset over total asset ratio, cash over total asset ratio, and accounts receivable over sales ratio, respectively. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.liquid}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Confounding effects of other production costs}
+    \begin{table}[htbp]
+        \centering
+        \caption{Discussion about other production costs}
+        \resizebox{0.9\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5) \\
+            & $\Delta Input/Sales$ & $\Delta Wage/Sales$ & \multicolumn{3}{c}{$\Delta ln P_{it}$}\\
+            \midrule
+            $brw_t$   & 0.403 & -0.164 & 0.142*** & 0.159*** & 0.154*** \\
+                  & (0.263) & (0.135) & (0.011) & (0.013) & (0.014) \\
+            $brw_t \times Input/Sales $ &       &       & 0.007 &       &       \\
+                  &       &       & (0.005) &       &      \\
+            $brw_t \times Wage/Sales $ &       &       &       & -0.108 &         \\
+                  &       &       &       & (0.078) &     \\
+            $brw_t \times \phi^{imp}_t$ &       &       &       &       & -0.027  \\
+                  &       &       &       &       & (0.032)  \\
+            $Debt_{it_1}$ & 0.436** & 0.241 &       &       &       \\
+                  & (0.180) & (0.162) &       &       &    \\
+            $\Delta ln P_{it-1}$ &       &       & 0.299*** & 0.299*** & 0.299***  \\
+                  &       &       & (0.003) & (0.003) & (0.003)  \\
+            $Sales_{it-1}$ &  1.075*** & -0.044   & -0.004*** & -0.004*** & -0.004*** \\
+                  &  (0.262) & (0.187) & (0.001) & (0.001) & (0.001) \\
+            \midrule
+            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes \\
+            N     & 1090620 & 1090620 & 917435 & 917435 & 917435 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(2) are changes in intermediate input cost over sales ratio and wage expense over sales ratio, respectively. The dependent variables in columns (3)-(7) are changes in monthly price. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.other}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Non-linear effects of borrowing cost and liquidity}
+    \begin{table}[htbp]
+        \centering
+        \caption{Non-linearity of borrowing cost channel and liquidity channel}
+        \resizebox{0.85\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lcccccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5)   & (6)   & (7)   & (8) \\
+        \midrule
+        $brw_t$ & 0.107*** & 0.109*** & 0.087*** & 0.092*** & 0.351*** & 0.236*** & 0.510*** & 0.129*** \\
+              & (0.017) & (0.017) & (0.033) & (0.031) & (0.097) & (0.022) & (0.082) & (0.025) \\
+        $brw_t \times IE/L_{st}$ & 6.580*** &       &       &       &       &       &       &  \\
+              & (1.977) &       &       &       &       &       &       &  \\
+        $brw_t \times IE/CL_{st}$ &       & 5.415*** &       &       &       &       &       &  \\
+              &       & (1.701) &       &       &       &       &       &  \\
+        $brw_t \times FN/L_{st}$ &       &       & 4.203** &       &       &       &       &  \\
+              &       &       & (2.112) &       &       &       &       &  \\
+        $brw_t \times FN/CL_{st}$ &       &       &       & 3.466** &       &       &       &  \\
+              &       &       &       & (1.768) &       &       &       &  \\
+        $brw_t \times WC_{st}$ &       &       &       &       & -0.331** &       &       &  \\
+              &       &       &       &       & (0.159) &       &       &  \\
+        $brw_t \times Liquid_{st}$ &       &       &       &       &       & -1.137*** &       &  \\
+              &       &       &       &       &       & (0.270) &       &  \\
+        $brw_t \times Cash_{st}$ &       &       &       &       &       &       & -2.226*** &  \\
+              &       &       &       &       &       &       & (0.498) &  \\
+        $brw_t \times Arec_{st}$ &       &       &       &       &       &       &       & 0.167 \\
+              &       &       &       &       &       &       &       & (0.218) \\
+        $\Delta ln P_{it-1}$ & 0.299*** & 0.299*** & 0.299*** & 0.299*** & 0.299*** & 0.299*** & 0.299*** & 0.299*** \\
+              & (0.003) & (0.003) & (0.003) & (0.003) & (0.003) & (0.003) & (0.003) & (0.003) \\
+        $Sales_{it-1}$ & -0.004*** & -0.004*** & -0.004*** & -0.004*** & -0.004*** & -0.004*** & -0.004*** & -0.004*** \\
+              & (0.001) & (0.001) & (0.001) & (0.001) & (0.001) & (0.001) & (0.001) & (0.001) \\
+        \midrule
+        Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+        N     & 917435 & 917435 & 917435 & 917435 & 917435 & 917435 & 917435 & 917435 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The interaction terms in columns (1)-(8) are the industry-level average interest expense over the total liability ratio, interest expense over the current liability ratio, total financial expense over the total liability ratio, total financial expense over the current liability ratio, working capital over total asset ratio, net liquidity asset over total asset ratio, cash over total asset ratio, and accounts receivable over sales ratio. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.non-linearity}
+    \end{table}    
+\end{frame}
+
+\begin{frame}{Ordinary trade vs processing trade}
+    \begin{itemize}
+        \item \textbf{Processing trade}: a firm imports raw materials and intermediate inputs from a foreign firm for domestic processing and re-exports to the same firm. It is less dependent on external financing.
+    \end{itemize}
+    \begin{table}[h]
+        \centering
+        \caption{Ordinary trade vs processing trade}
+        \resizebox{0.85\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lcccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+              & \multicolumn{2}{c}{Ordinary trade}  & \multicolumn{2}{c}{Processing trade} & \multicolumn{2}{c}{Comparison}\\
+            \midrule
+            $brw_t$   & 0.201*** & 0.186*** & 0.098*** & 0.065*** & 0.225*** & 0.185*** \\
+                  & (0.018) & (0.019) & (0.019) & (0.016) & (0.016) & (0.016) \\
+            $brw_t \times process_{it}$ &       &       &       &       & -0.102*** & -0.085*** \\
+                  &       &       &       &       & (0.024) & (0.023) \\
+            $\Delta ln P_{it-1}$ &       & 0.190*** &       & 0.473*** &       & 0.299*** \\
+                  &       & (0.003) &       & (0.005) &       & (0.003) \\
+            $Sales_{it-1}$ &       & -0.004* &       & -0.009*** &       & -0.004*** \\
+                  &       & (0.002) &       & (0.002) &       & (0.001) \\
+            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+            N     & 499418 & 391336 & 283952 & 242587 & 1100399 & 917435 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(3) are changes in monthly price denominated in the US dollar, while columns (4)-(6) are changes in annual price denominated in the US dollar. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.process}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Alternative explanations}
+    \begin{itemize}
+        \item \textbf{Demand shift}: Will global demand shift to Chinese goods in the global recession caused by tightening global monetary shock because of the lower quality?
+        \begin{itemize}
+            \item \textbf{Homogeneous}: reference priced or traded on an organized exchange.
+            \item \textbf{Differentiated}: each firm sets a different price for its product.
+        \end{itemize}
+    \end{itemize}
+    \begin{table}[htbp]
+        \centering
+        \caption{Homogeneous good vs differentiated good}
+        \resizebox{0.9\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lcccccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5)   & (6)   & (7)   & (8) \\
+            & \multicolumn{4}{c}{Conservative classification} & \multicolumn{4}{c}{Liberal classification} \\
+            \midrule
+            $brw_t$   & 0.170*** & 0.126*** & 0.149*** & 0.114*** & 0.168*** & 0.124*** & 0.148*** & 0.115*** \\
+              & (0.011) & (0.011) & (0.012) & (0.012) & (0.012) & (0.011) & (0.013) & (0.012) \\
+            $brw_t \times ToE_{it} $ & 0.152 & 0.112 &       &    & 0.263*** & 0.242***    &       &  \\
+              & (0.128) & (0.125) &       &      & (0.086) & (0.082)     &       &  \\
+            $brw_t \times Ref_{it} $ &       &       & 0.208*** & 0.125*** &       &    & 0.167*** & 0.082*** \\
+              &       &       & (0.033) & (0.032) &       &         & (0.031) & (0.030)\\
+            $\Delta ln P_{it-1}$ &       & 0.298*** &       & 0.298*** &       & 0.298*** &       & 0.298*** \\
+              &       & (0.003) &       & (0.003) &       & (0.003) &       & (0.003) \\
+            $Sales_{it-1}$ &       & 0.004*** &       & 0.004*** &       & 0.004*** &       & 0.004*** \\
+              &       & (0.001) &       & (0.001) &       & (0.001) &       & (0.001) \\
+        \midrule
+        Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+        N     & 1014106 & 850174 & 1014106 & 850174 & 1014106 & 850174 & 1014106 & 850174 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The variables "ToE" and "Ref" represent the value share of goods traded on an organized exchange and the value share of reference-priced goods of firm $i$. Columns (1)-(4) use the "conservative" classification, while columns (5)-(8) use the "liberal" classification, both referring to \cite{rauch1999networks}. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.rauch}
+    \end{table}
+\end{frame}
+
+\begin{frame}[label=alt_erpt]{Alternative explanations}
+    \begin{itemize}
+        \item \textbf{Exchange rate pass-through}: A tightening US monetary shock will induce the depreciation of RMB, which will increase export prices denominated in RMB.
+        \item However, this explanation is not likely to be the main reason:
+        \begin{enumerate}
+            \item In most of the sample period, China's exchange rate regime is fixed to the US dollar. US tightening will cause the RMB to depreciate against other third-country currencies.
+            \item We control the change of bilateral real exchange rate in the annual firm-product-country level regression, and the results are consistent. \hyperlink{appendix_tab.altagg}{\beamergotobutton{Alternative aggregation}}
+            \item The average export exchange rate pass-through of Chinese firms is near complete (about 95\%), as in \cite{li2015exchange}.
+        \end{enumerate}
+        
+    \end{itemize}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{V. More Discussion}
-\begin{frame}{}
-\begin{itemize}
-    \item 
-    \medskip
 
-\end{itemize}
+\section{V. More Discussion}
+
+\begin{frame}{EU monetary policy shocks}
+    \begin{itemize}
+        \item The European Central Bank (ECB) is another major central bank.
+        \item What if we replace US Fed shocks with ECB shocks?
+    \end{itemize}
+    \begin{table}[htbp]
+        \centering
+        \caption{Export price responses to EU monetary policy shocks}
+        \resizebox{0.9\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lcccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+            & \multicolumn{3}{c}{Miranda-Agrippino \& Nenova} & \multicolumn{3}{c}{Jarocinski \& Karadi}  \\
+            \midrule
+            $m^{EU}_t$ & -0.002*** & -0.001*** & -0.001*** & -0.050*** & 0.002 & -0.002 \\
+                  & (0.000) & (0.000) & (0.000) & (0.011) & (0.011) & (0.011)\\  
+            $\Delta ln P_{it-1}$ &       & 0.301*** & 0.300*** &       & 0.301*** & 0.300*** \\
+                  &       & (0.003) & (0.003) &       & (0.005) & (0.005) \\
+            $Sales_{it-1}$ &       &       & -0.004*** &       &       & -0.004*** \\
+                  &       &       & (0.001) &       &       & (0.001) \\
+            \midrule
+            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+             N     & 1100399 & 940015 & 917435 & 1100399 & 940015 & 917435 \\
+            \bottomrule
+        \end{tabular}
+        \begin{tablenotes}
+            \footnotesize
+            \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. Monetary policy shocks here are from the European Central Bank. The shock in columns (1)-(3) are obtained from \cite{miranda2022tale}, while columns (4)-(6) are  from \cite{jarocinski2020deconstructing}. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.EU}
+    \end{table}
+    \begin{itemize}
+        \item This indicates the special role of US policy as a main driver of the global financial cycle.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Exchange rate regime shift: fixed VS floating}
+    \begin{itemize}
+        \item After July 2005, China's exchange rate regime shifted from the US dollar peg to targeting a basket of currencies (semi-floating).
+        \item Floating exchange rate regime acts as a buffer to alleviate adverse shock.
+    \end{itemize}
+    \begin{table}[htbp]
+        \centering
+        \caption{Exchange rate regime shift: before and after July 2005}
+        \resizebox{0.9\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lcccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+            & \multicolumn{3}{c}{Fixed regime: before July 2005} & \multicolumn{3}{c}{Floating regime: after July 2005}  \\
+            \midrule
+            $brw_t$   & 0.189*** & 0.138*** & 0.138*** & 0.031 & 0.108*** & 0.080*** \\
+                  & (0.012) & (0.012) & (0.012) & (0.022) & (0.023) & (0.023) \\
+            $\Delta ln P_{it-1}$ &       & 0.288*** & 0.287*** &       & 0.186*** & 0.182*** \\
+                  &       & (0.003) & (0.003) &       & (0.004) & (0.004) \\
+            $Sales_{it-1}$ &       &       & 0.000 &       &       & -0.025*** \\
+                  &       &       & (0.002) &       &       & (0.004) \\
+            \midrule
+            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+            N     & 708254 & 609726 & 594891 & 389776 & 328076 & 320432 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. Columns (1)-(3) cover the period from January 2000 to July 2005, while columns (4)-(6) cover the period from August 2005 to December 2006. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.regime}
+    \end{table}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -179,7 +652,11 @@ HKUST Research Postgraduate Student Workshop
 
 \begin{frame}{Preferences and demand}
 
-We here introduce a general trade model like Meliz (2003) and Manova (2012). The source and destination countries are denoted by $i$ and $j$, respectively. Consumers in the country $j$ can access a set of goods $X_j$. A representative consumer in country $j$ has a constant elasticity of substitution (CES) utility
+We introduce a general trade model as Meliz (2003) and Manova (2012). \\
+
+The source and destination countries are denoted by $i$ and $j$, respectively. Consumers in the country $j$ can access a set of goods $X_j$. \\
+\medskip
+A representative consumer in country $j$ has a constant elasticity of substitution (CES) utility:
 
 \begin{equation}
 U_j=(\int_{\omega \in \Omega_j} [\chi_{ij}(\omega)]^{\frac{\sigma-1}{\sigma}} d\omega\ )^\frac{\sigma}{\sigma-1}
@@ -200,7 +677,9 @@ Consumer optimization yields the following demand function for variety $\omega$:
 \end{equation}
 
 
-where $p_{ij}(\omega)$ is the price of variety $\omega$, $P_j=(\int_{\omega \in \Omega_j} [p_{ij}(\omega)]^{1-\sigma} d \omega)^{\frac{1}{1-\sigma}}$ is an aggregate price index in country $j$, and $Y_j$ represents the total expenditure of country $j$. We assume that it is affected by global monetary shocks $m$ (e.g., US monetary shock): $Y_j=\bar{Y_j}+\rho_{Y}^j m+\epsilon_Y$, where $\bar{Y_j}$ is a trend component of $Y_j$, $\rho_{Y}^j<0$, $\epsilon_Y$ is a random error, and a positive $m$ means tightening shock.
+where $p_{ij}(\omega)$ is the price of variety $\omega$, $P_j=(\int_{\omega \in \Omega_j} [p_{ij}(\omega)]^{1-\sigma} d \omega)^{\frac{1}{1-\sigma}}$ is an aggregate price index in country $j$, and $Y_j$ represents the total expenditure of country $j$. \\
+
+We assume that it is affected by global monetary shocks $m$ (e.g., US shock): $Y_j=\bar{Y_j}+\rho_{Y}^j m+\epsilon_Y$, where $\bar{Y_j}$ is a trend component of $Y_j$, $\rho_{Y}^j<0$, $\epsilon_Y$ is a random error, and a positive $m$ means a tightening shock.
 
 \end{frame}
 
@@ -217,7 +696,7 @@ $$
 \delta_i \equiv 1-c_i^\gamma-\zeta_i
 $$
 
-where $c_i$ $\in$ [0, 1] and is the liquidity condition (bigger value means better situation), $\gamma$ is a positive constant and reflects the elasticity of borrowing fraction with respect to liquidity condition, $\zeta_i$ is the fraction of input costs that are supported by trade credit. They are assumed to be affected by global monetary shocks $c_i=\bar{c_i}+\rho_c^i m+\epsilon_c^i$, $\rho_c^i<0$, $\zeta_i=\bar{\zeta_i}+\rho_\zeta^i m+\epsilon_t^i$,  $\rho_\zeta^i<0$. These impacts are supported by literature and our empirical evidence.
+where $c_i$ $\in$ [0, 1] and is the liquidity condition (bigger value means better situation), $\gamma$ is a positive constant and reflects the elasticity of borrowing fraction with respect to liquidity condition, $\zeta_i$ is the fraction of input costs that are supported by trade credit which is assumed to be affected by global monetary shocks $c_i=\bar{c_i}+\rho_c^i m+\epsilon_c^i$, $\rho_c^i<0$, $\zeta_i=\bar{\zeta_i}+\rho_\zeta^i m+\epsilon_t^i$,  $\rho_\zeta^i<0$. These impacts are supported by literature and our empirical evidence.
 
 \end{frame}
 
@@ -242,8 +721,6 @@ $$
 $w_i$ is the price of input and $R_i$ is the gross borrowing interest rate in country $i$. We explicitly assume $R_i=\bar{R_i}+\rho_R^i m+\epsilon_R^i$, $\rho_R^i>0$. To capture the demand side effect, we allow the input price to fluctuate in response to global monetary shocks: $w_i=\bar{w_i}+\rho_w^i m + \epsilon_w^i$, $\rho_w^i<0$.
 
 \end{frame}
-
-
 
 
 \begin{frame}{Firm's problem}
@@ -320,10 +797,9 @@ If the borrowing constraint is not binding:
 
 
 \begin{frame}[label=model_extension]{Model extension}
-\fontsize{13}{13}\selectfont
+\fontsize{11}{11}\selectfont
 
 Our conclusion is robust to:
-\medskip
 \medskip
 
 \begin{itemize}
@@ -348,15 +824,19 @@ Our conclusion is robust to:
 
 
 
-\section{VII. Summary}
+\section{VII. Conclusion}
 
-\begin{frame}{Summary}
+\begin{frame}{Conclusion}
 
 \begin{itemize}
-\item This paper studies the impact of the US monetary policy shifts on China's export prices using exogenous monetary policy shocks and detailed high-frequency customs export data. 
-\item It reveals that a tightening US monetary policy shock significantly increases China's export prices through both the borrowing cost and liquidity channels.
-\item Although we focus on the response of exporter behaviors, the finding may also provide enlightenment for some other research
-\item Such as the global monetary policy spillover on the real economy and asset prices through trade channels, the impact of international monetary shocks on global inflation in the presence of cross-border trade linkages, and the optimal domestic policy and international coordination in response to adverse global shocks in the presence of financial friction, etc.
+\item This paper studies the impact of the US monetary policy shocks on China's export prices using exogenous monetary policy shocks and detailed monthly customs data. 
+\item A tightening US monetary policy shock significantly increases China's export prices through both the borrowing cost and liquidity channels.
+\item Although we focus on the response of exporter behaviors, the finding may also provide enlightenment for other topics such as:
+    \begin{itemize}
+        \item The global monetary policy spillover on the real economy and asset prices through trade channels;
+        \item The impact of international monetary shocks on global inflation in the presence of cross-border trade linkages;
+        \item The optimal domestic policy and international coordination in response to adverse global shocks under financial friction.
+    \end{itemize}
 \end{itemize}
 
 \end{frame}
@@ -369,20 +849,152 @@ Our conclusion is robust to:
 \end{frame}
 
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Appendix}
 
+\subsection{Extra Tables}
 
+\begin{frame}[label=appendix_tab.altagg]{Alternative aggregation levels of export prices}
+\begin{table}[htbp]
+    \centering
+    \caption{Alternative aggregation levels of export prices}
+    \resizebox{\columnwidth}{!}{
+    \begin{threeparttable}
+    \begin{tabular}{lcccccc}
+        \toprule
+        & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+        & \multicolumn{3}{c}{Firm-product level $\Delta ln P_{hit}$} & \multicolumn{3}{c}{Transaction level $\Delta ln P_{chit}$}  \\
+        \midrule
+        $brw_t$   & 0.141*** & 0.116*** & 0.122*** & 0.101*** & 0.084*** & 0.086*** \\
+              & (0.011) & (0.011) & (0.011) & (0.009) & (0.010) & (0.010) \\
+        $\Delta ln P_{chit-1}$&       & 0.275*** & 0.273*** &       & 0.274*** & 0.274*** \\
+              &       & (0.002) & (0.002) &       & (0.002) & (0.002) \\
+        $Sales_{it-1}$ &       &       & -0.008*** &       &       & -0.007*** \\
+              &       &       & (0.001) &       &       & (0.001) \\
+        $\Delta ln RER_{ct}$ &       &       &       & 0.072*** & 0.060*** & 0.055*** \\
+              &       &       &       & (0.008) & (0.008) & (0.008) \\
+        $\Delta ln GDP_{ct}$ &       &       &       & 0.510*** & 0.373*** & 0.404*** \\
+              &       &       &       & (0.029) & (0.028) & (0.028) \\
+        \midrule
+        Firm-product FE & Yes   & Yes   & Yes   & No    & No    & No \\
+        Firm-product-country FE & No    & No    & No    & Yes   & Yes   & Yes \\
+        N     & 2420021 & 1800404 & 1758304 & 3477990 & 2140293 & 2140293 \\
+        \bottomrule
+    \end{tabular}
+        \begin{tablenotes}
+            \footnotesize
+            \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(3) are changes in firm-product level price, while in columns (4)-(6) are changes in firm-product-country (transaction) level price. All regressions include firm fixed effects.
+	\end{tablenotes}
+    \end{threeparttable}
+    }
+    \label{tab.altagg}
+\end{table}
+\hyperlink{robustness_other}{\beamergotobutton{Back}}
+\hyperlink{alt_erpt}{\beamergotobutton{Back:ERPT}}
+\end{frame}
 
+\begin{frame}[label=appendix_tab.single]{Alternative sample: only single-product firms}
+\begin{table}[htbp]
+    \centering
+    \caption{Alternative sample: only single-product firms}
+    \resizebox{\columnwidth}{!}{
+    \begin{threeparttable}
+    \begin{tabular}{lcccccc}
+        \toprule
+        & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+        & \multicolumn{3}{c}{Monthly $\Delta ln P_{it}$} & \multicolumn{3}{c}{Annual $\Delta ln P_{it}$}  \\
+        \midrule
+        $brw_t$   & 0.238*** & 0.191*** & 0.180*** & 0.130*** & 0.183*** & 0.183*** \\
+              & (0.021) & (0.022) & (0.024) & (0.020) & (0.033) & (0.033) \\
+        $\Delta ln P_{it-1}$ &       & 0.266*** & 0.272*** &       & -0.338*** & -0.339***\\
+              &       & (0.005) & (0.006) &       &   (0.018) & (0.018) \\
+        $Sales_{it-1}$ &       &       & -0.008** &       &       & 0.005  \\
+              &       &       & (0.003) &       &       &  (0.009) \\
+        \midrule
+        Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+        N     & 359862 & 231572 & 187476 & 21567 & 8690  & 8690 \\
+        \bottomrule
+    \end{tabular}
+        \begin{tablenotes}
+            \footnotesize
+            \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(3) are changes in monthly price, while columns (4)-(6) are changes in annual price. All regressions include firm fixed effects.
+	\end{tablenotes}
+    \end{threeparttable}
+    }
+    \label{tab.single}
+\end{table}
+\hyperlink{robustness_other}{\beamergotobutton{Back}}
+\end{frame}
+
+\begin{frame}[label=appendix_tab.altfe]{Alternative standard error clusters and fixed effects}
+\begin{table}[htbp]
+    \centering
+    \caption{Alternative standard error clusters and fixed effects}
+    \resizebox{\columnwidth}{!}{
+    \begin{threeparttable}
+    \begin{tabular}{lcccccc}
+        \toprule
+        & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+        & \multicolumn{3}{c}{Firm and year clusters} & \multicolumn{3}{c}{Firm and year fixed effects}  \\
+        \midrule
+        $brw_t$   & 0.181** & 0.145** & 0.147** & 0.042*** & 0.057*** & 0.059*** \\
+              & (0.046) & (0.042) & (0.042) & (0.010) & (0.010) & (0.010) \\
+        $\Delta ln P_{it-1}$ &       & 0.301*** & 0.299*** &       & 0.299*** & 0.297*** \\
+              &       & (0.013) & (0.013) &       & (0.003) & (0.003) \\
+        $Sales_{it-1}$ &       &       & -0.004 &       &       & -0.017*** \\
+              &       &       & (0.004) &       &       & (0.001) \\
+        \midrule
+        Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+        Year FE & No    & No    & No    & Yes   & Yes   & Yes \\
+        N     & 1100399 & 940015 & 917435 & 1100399 & 940015 & 917435 \\
+        \bottomrule
+    \end{tabular}
+        \begin{tablenotes}
+            \footnotesize
+            \item Notes: Robust standard errors clustered at both firm level and year level for columns (1)-(3) while only at the firm level for columns (4)-(6);  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. Regressions for columns (1)-(3) include firm fixed effects, while those for columns (4)-(6) include firm fixed effects and year fixed effects.
+	\end{tablenotes}
+    \end{threeparttable}
+    }
+    \label{tab.altfe}
+\end{table}
+\hyperlink{robustness_other}{\beamergotobutton{Back}}
+\end{frame}
+
+\begin{frame}[label=appendix_tab.USD]{USD price responses to monetary policy shocks}
+\begin{table}[htbp]
+    \centering
+    \caption{USD price responses to monetary policy shocks}
+    \resizebox{\columnwidth}{!}{
+    \begin{threeparttable}
+    \begin{tabular}{lcccccc}
+        \toprule
+        & (1)   & (2)   & (3)   & (4)   & (5)   & (6) \\
+        & \multicolumn{3}{c}{Monthly $\Delta ln P_{it}$} & \multicolumn{3}{c}{Annual $\Delta ln P_{it}$}  \\
+        \midrule
+        $brw_t$   & 0.173*** & 0.129*** & 0.127*** & 0.173*** & 0.217*** & 0.216*** \\
+              & (0.011) & (0.010) & (0.010) & (0.010) & (0.012) & (0.012) \\
+        $\Delta ln P_{it-1}$ &       & 0.301*** & 0.299*** &       & -0.315*** & -0.314*** \\
+              &       & (0.003) & (0.003) &       & (0.007) & (0.007) \\
+        $Sales_{it-1}$ &       &       & 0.004*** &       &      & -0.008**\\
+              &       &       & (0.001) &       &       & (0.004)\\
+        Firm FE & Yes   & Yes   & Yes   & Yes   & Yes   & Yes \\
+        N     & 1100400 & 940007 & 917428 & 155049 & 97987 & 97987 \\
+        \bottomrule
+    \end{tabular}
+        \begin{tablenotes}
+            \footnotesize
+            \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(3) are changes in monthly price denominated in the US dollar, while columns (4)-(6) are changes in annual price denominated in the US dollar. All regressions include firm fixed effects.
+	\end{tablenotes}
+    \end{threeparttable}
+    }
+    \label{tab.USD}
+\end{table}
+\hyperlink{robustness_other}{\beamergotobutton{Back}}
+\end{frame}
 
 \subsection{Model extension}
-
-
 
 \begin{frame}[label=appendix_model_extension]{Dynamic optimization and sticky price} 
 \hyperlink{model_extension}{\beamergotobutton{Back}}\\
@@ -400,10 +1012,7 @@ p_t=\frac{\sigma}{\sigma-1}\frac{\mathbb{E}_t \sum_{i=0}^{\infty} \lambda^i \Ome
 
 \end{frame}
 
-
-
 \begin{frame}{Invoicing currency}
-
 
 \textbf{\textit{DCP}}
 
@@ -471,12 +1080,6 @@ When interest rate $R$ increases, liquidity condition $c$ and trade credit $\zet
 \end{figure}
 
 \end{frame}
-
-
-
-
-
-
 
 \begin{frame}[allowframebreaks]
 \frametitle{References}
