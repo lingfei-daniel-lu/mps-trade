@@ -17,7 +17,6 @@ use samples\sample_monthly_exp_firm,clear
 eststo month_brw_firm_1: reghdfe dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_2: reghdfe dlnprice_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo month_brw_firm_4: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id year) vce(cluster firm_id)
 
 estfe month_brw_firm_*, labels(firm_id "Firm FE")
 esttab month_brw_firm_* using tables\month_baseline.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
@@ -34,7 +33,6 @@ use samples\sample_monthly_exp_firm_HS6,clear
 eststo month_brw_HS6_1: reghdfe dlnprice_h_YoY brw, a(group_id) vce(cluster group_id)
 eststo month_brw_HS6_2: reghdfe dlnprice_h_YoY l.dlnprice_h_YoY brw, a(group_id) vce(cluster group_id)
 eststo month_brw_HS6_3: reghdfe dlnprice_h_YoY brw l.dlnprice_h_YoY l12.lnrSI, a(group_id) vce(cluster group_id)
-eststo month_brw_HS6_4: reghdfe dlnprice_h_YoY brw l.dlnprice_h_YoY l12.lnrSI, a(group_id year) vce(cluster group_id)
 
 estfe month_brw_HS6_*, labels(group_id "Firm-Product FE")
 esttab month_brw_HS6_* using tables\month_HS6.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
@@ -49,7 +47,6 @@ use samples\sample_monthly_exp_firm,clear
 eststo month_brw_firm_USD_1: reghdfe dlnprice_USD_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_USD_2: reghdfe dlnprice_USD_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_firm_USD_3: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo month_brw_firm_USD_4: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id year) vce(cluster firm_id)
 
 estfe month_brw_firm_USD_*, labels(firm_id "Firm FE")
 esttab month_brw_firm_USD_* using tables\month_USD.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
@@ -210,7 +207,6 @@ keep if HS6_count==1
 eststo month_brw_single_1: reghdfe dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_single_2: reghdfe dlnprice_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
 eststo month_brw_single_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo month_brw_single_4: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id year)
 
 estfe month_brw_single_*, labels(firm_id "Firm FE")
 esttab month_brw_single_* using tables\month_single.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
@@ -231,7 +227,50 @@ esttab month_brw_*_int using tables\month_trade_int.csv, replace b(3) se(3) noco
 
 *-------------------------------------------------------------------------------
 
-* 14. Fim-product level quantity
+* 14. Country heterogeneity
+
+* 14.1 Subsamples
+
+use samples\sample_monthly_exp,clear
+gen USA=1 if coun_aim=="美国"
+
+eststo month_brw_USA: reghdfe dlnprice_YoY c.brw#c.USA dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
+eststo month_brw_EU: reghdfe dlnprice_YoY c.brw#c.EU dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
+eststo month_brw_OECD: reghdfe dlnprice_YoY c.brw#c.OECD dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
+eststo month_brw_EME: reghdfe dlnprice_YoY c.brw#c.EME dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
+
+esttab month_brw_USA month_brw_EU month_brw_OECD month_brw_EME using tables\month_brw_country.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
+
+* 14.2 Top partners
+
+cd "D:\Project E"
+use samples\sample_monthly_exp,clear
+keep if rank_exp<=54
+statsby _b _se n=(e(N)), by(coun_aim) clear: reghdfe dlnprice_YoY brw dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
+graph hbar (asis) _b_brw, over(coun_aim, label(labsize(*0.45)) sort(1)) ytitle("Export price responses to US monetary policy shocks") nofill
+graph export figures\brw_month_country_50.png, as(png) replace
+
+cd "D:\Project E"
+use samples\sample_monthly_exp,clear
+keep if rank_exp<=21
+statsby _b _se n=(e(N)), by(coun_aim) clear: reghdfe dlnprice_YoY brw dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
+graph hbar (asis) _b_brw, over(coun_aim, label(labsize(*0.45)) sort(1)) ytitle("Export price responses to US monetary policy shocks") nofill
+graph export figures\brw_month_country_20.png, as(png) replace
+
+*-------------------------------------------------------------------------------
+
+* 15. Firm level value
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_value_1: reghdfe dlnvalue brw, a(firm_id) vce(cluster firm_id)
+eststo month_brw_value_2: reghdfe dlnvalue l.dlnvalue brw, a(firm_id) vce(cluster firm_id)
+eststo month_brw_value_3: reghdfe dlnvalue brw l.dlnvalue l12.lnrSI, a(firm_id) vce(cluster firm_id)
+
+*-------------------------------------------------------------------------------
+
+* 16. Firm-product level quantity
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_HS6,clear
@@ -239,14 +278,13 @@ use samples\sample_monthly_exp_firm_HS6,clear
 eststo month_brw_quant_1: reghdfe dlnquant_h_YoY brw, a(group_id) vce(cluster group_id)
 eststo month_brw_quant_2: reghdfe dlnquant_h_YoY l.dlnquant_h_YoY brw, a(group_id) vce(cluster group_id)
 eststo month_brw_quant_3: reghdfe dlnquant_h_YoY brw l.dlnquant_h_YoY l12.lnrSI, a(group_id) vce(cluster group_id)
-eststo month_brw_quant_4: reghdfe dlnquant_h_YoY brw l.dlnquant_h_YoY l12.lnrSI, a(group_id) vce(cluster group_id year)
 
 estfe month_brw_quant_*, labels(firm_id "Firm FE")
 esttab month_brw_quant_* using tables\month_quant.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
-* 15. EU, UK, Japan shock
+* 17. EU, UK, Japan shock
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -274,7 +312,7 @@ esttab month_EU_* month_UK_* month_Japan_* using tables\month_EUshock.csv, repla
 
 *-------------------------------------------------------------------------------
 
-* 16. MoM price change
+* 18. MoM price change
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -285,3 +323,18 @@ eststo month_brw_MoM_3: reghdfe dlnprice_MoM brw l.dlnprice_MoM l.lnrSI, a(firm_
 
 eststo month_brw_MoM_4: reghdfe dlnprice_MoM brw l.brw, a(firm_id month) vce(cluster firm_id)
 eststo month_brw_MoM_5: reghdfe dlnprice_MoM brw l.brw l2.brw, a(firm_id month) vce(cluster firm_id)
+
+*-------------------------------------------------------------------------------
+
+* 19. Asymmetric impact
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_up_1: reghdfe dlnprice_YoY brw if brw>0, a(firm_id) vce(cluster firm_id)
+eststo month_brw_up_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY if brw>0, a(firm_id) vce(cluster firm_id)
+eststo month_brw_up_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw>0, a(firm_id) vce(cluster firm_id)
+
+eststo month_brw_down_1: reghdfe dlnprice_YoY brw if brw<0, a(firm_id) vce(cluster firm_id)
+eststo month_brw_down_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY if brw<0, a(firm_id) vce(cluster firm_id)
+eststo month_brw_down_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw<0, a(firm_id) vce(cluster firm_id)

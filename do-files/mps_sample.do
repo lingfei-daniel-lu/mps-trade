@@ -280,13 +280,6 @@ save CIE\cie_credit_v2,replace
 
 cd "D:\Project E"
 use CIE\cie_credit_v2,clear
-merge n:1 year using MPS\brw\brw_94_22,keep(matched master)
-egen firm_id=group(FRDM)
-xtset firm_id year
-save samples\cie_credit_brw,replace
-
-cd "D:\Project E"
-use CIE\cie_credit_v2,clear
 * calculate trade intensity
 merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",nogen keep(master matched) keepus(twoway_trade export_sum import_sum)
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
@@ -305,6 +298,14 @@ replace Markup_High=0 if Markup_High==.
 keep FRDM year twoway_trade *_int Markup_High
 duplicates drop
 save CIE\cie_int,replace
+
+cd "D:\Project E"
+use CIE\cie_credit_v2,clear
+merge n:1 year using MPS\brw\brw_94_22, nogen keep(matched)
+merge n:1 FRDM year using CIE\cie_int, nogen keep(matched master)
+egen firm_id=group(FRDM)
+xtset firm_id year
+save samples\cie_credit_brw,replace
 
 ********************************************************************************
 
@@ -660,6 +661,7 @@ merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Mark
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
 merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
+merge n:1 coun_aim using "D:\Project C\sample_matched\customs_matched_top_partners",nogen keep(matched) keepus(rank_exp)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 replace brw=0 if brw==.
@@ -670,9 +672,7 @@ drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 egen group_id=group(FRDM HS6 coun_aim process)
 xtset group_id time
 * calculate price change
-by group_id: gen dlnprice_MoM=ln(price_RMB)-ln(L.price_RMB)
 by group_id: gen dlnprice_YoY=ln(price_RMB)-ln(L12.price_RMB)
-by group_id: gen dlnprice_USD_MoM=ln(price_USD)-ln(L.price_USD)
 by group_id: gen dlnprice_USD_YoY=ln(price_USD)-ln(L12.price_USD)
 * calculate marginal cost
 gen MC_RMB=price_RMB/Markup_DLWTLD
@@ -716,6 +716,8 @@ replace brw=0 if brw==.
 * construct firm id
 egen firm_id=group(FRDM)
 xtset firm_id time
+* calculate value change
+by firm_id : gen dlnvalue=ln(value_RMB)-ln(L12.value_RMB)
 * calculate marginal cost
 by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup_DLWTLD
 winsor2 dlnprice_USD_YoY dlnprice_YoY dlnMC_YoY, trim replace

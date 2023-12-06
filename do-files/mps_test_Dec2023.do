@@ -347,9 +347,4 @@ eststo EU_5: reghdfe dlnprice l.dlnprice eu_shock, a(firm_id) vce(cluster firm_i
 eststo EU_6: reghdfe dlnprice eu_shock l.dlnprice l.lnrSI, a(firm_id) vce(cluster firm_id)
 
 estfe EU_*, labels(firm_id "Firm FE")
-esttab EU_* using tables_Oct2023\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(eu_shock)
-
-
-*-------------------------------------------------------------------------------
-
-* 16. Product-Country
+esttab EU_* using tables_Oct2023\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(eu_shock) 
