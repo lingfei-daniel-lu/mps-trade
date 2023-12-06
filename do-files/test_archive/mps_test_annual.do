@@ -25,7 +25,7 @@ eststo quant_brw_lag: reghdfe dlnquant_tr L.brw dlnRER dlnrgdp, a(group_id) vce(
 
 esttab price_brw_noRER price_brw price_brw_lag quant_brw_noRER quant_brw quant_brw_lag using tables\table_brw.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw* dlnRER)
 
-binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("US MPS and China's Export Price") savegraph(figures\US_shock.png) replace
+binscatter dlnprice_tr brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("Annual US MPS and China's Export Price") savegraph("D:\Project E\figures\brw_annual.png") replace discrete
 
 * USD price
 eststo price_brw_USD_noRER: reghdfe dlnprice_USD_tr brw dlnrgdp, a(group_id) vce(cluster group_id)

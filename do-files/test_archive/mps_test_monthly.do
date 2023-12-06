@@ -22,6 +22,8 @@ eststo month_brw_firm_4: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI, a(fi
 estfe month_brw_firm_*, labels(firm_id "Firm FE")
 esttab month_brw_firm_* using tables\month_baseline.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
+binscatter dlnprice_YoY brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("Monthly US MPS and China's Export Price") savegraph("D:\Project E\figures\brw_monthly.png") replace discrete
+
 *-------------------------------------------------------------------------------
 
 * 2. Firm-product price index
