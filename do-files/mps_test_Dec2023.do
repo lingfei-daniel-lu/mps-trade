@@ -6,6 +6,16 @@ set processor 8
 
 *-------------------------------------------------------------------------------
 
+* F1. US monetary policy shock
+
+cd "D:\Project E\MPS\brw"
+use brw_month,replace
+drop if brw==0
+keep if year<=2021
+twoway scatter brw ym, ytitle(US monetary policy shock) xtitle(time) tline(2000m1 2006m12) title("Monetary policy shock series by BRW(2021)") saving(BRW.png, replace)
+
+*-------------------------------------------------------------------------------
+
 * 1. Summary Statistics
 
 cd "D:\Project E"
@@ -22,9 +32,9 @@ esttab sum_stats using "tables_Dec2023\sum_stats.tex", replace cells("mean(fmt(2
 
 *-------------------------------------------------------------------------------
 
-* F1. Summary Statistics
+* F2. Monthly US MPS and China's Export Prices
 
-binscatter dlnprice_YoY brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("Monthly US MPS and China's Export Price") savegraph("D:\Project E\figures\brw_monthly.png") replace discrete
+binscatter dlnprice_YoY brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("Monthly US MPS and China's Export Price") savegraph("D:\Project E\tables_Dec2023\brw_monthly.png") replace discrete
 
 *-------------------------------------------------------------------------------
 
@@ -48,6 +58,20 @@ eststo baseline_8: reghdfe dlnprice brw l.lnrSI l.dlnprice, a(firm_id) vce(clust
 
 estfe baseline_*, labels(firm_id "Firm FE")
 esttab baseline_* using tables_Dec2023\baseline.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("monthly" "monthly" "monthly" "monthly" "annual" "annual" "annual" "annual")
+
+*-------------------------------------------------------------------------------
+
+* A1. Dynamic regression
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+forv i=1/12{
+eststo forward_`i': reghdfe f`i'.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
+}
+
+estfe forward_*, labels(firm_id "Firm FE")
+esttab forward_* using tables_Dec2023\dynamic.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
@@ -277,29 +301,6 @@ eststo process_int_2: reghdfe dlnprice_YoY brw c.brw#c.process l12.lnrSI l.dlnpr
 
 estfe ordinary_* process_* process_int_*, labels(firm_id "Firm FE")
 esttab ordinary_* process_* process_int_* using tables_Dec2023\process.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("ordinary" "ordinary" "processing" "processing" "comparison" "comparison")
-*-------------------------------------------------------------------------------
-
-* ?. Dynamic regression
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-forv i=1/12{
-eststo forward_`i': reghdfe f`i'.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
-}
-
-estfe forward_*, labels(firm_id "Firm FE")
-esttab forward_* using tables_Dec2023\dynamic.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-forv i=1/12{
-statsby _b _se,clear: reghdfe f`i'.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
-}
-
-graph bar (asis) _b_brw, over(coun_aim, label(labsize(*0.45)) sort(1)) ytitle("Dynamic response to monetary policy shocks") nofill
-graph export tables_Dec2023\dynamic, as(png) replace
 
 *-------------------------------------------------------------------------------
 
