@@ -34,6 +34,9 @@ esttab sum_stats using "tables_Dec2023\sum_stats.tex", replace cells("mean(fmt(2
 
 * F2. Monthly US MPS and China's Export Prices
 
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
 binscatter dlnprice_YoY brw, xtitle(US monetary policy shock) ytitle(China's export price change) title("Monthly US MPS and China's Export Price") savegraph("D:\Project E\tables_Dec2023\brw_monthly.png") replace discrete
 
 *-------------------------------------------------------------------------------
@@ -72,6 +75,34 @@ eststo forward_`i': reghdfe f`i'.dlnprice_YoY brw, a(firm_id) vce(cluster firm_i
 
 estfe forward_*, labels(firm_id "Firm FE")
 esttab forward_* using tables_Dec2023\dynamic.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+*-------------------------------------------------------------------------------
+
+* A2. Firm-level value and Firm-product level quantity
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo value_1: reghdfe dlnvalue brw, a(firm_id) vce(cluster firm_id)
+eststo value_2: reghdfe dlnvalue brw l12.lnrSI l.dlnvalue, a(firm_id) vce(cluster firm_id)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+eststo value_3: reghdfe dlnvalue brw, a(firm_id) vce(cluster firm_id)
+eststo value_4: reghdfe dlnvalue brw l.lnrSI l.dlnvalue, a(firm_id) vce(cluster firm_id)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_HS6,clear
+eststo quant_1: reghdfe dlnquant_h_YoY brw, a(group_id) vce(cluster group_id)
+eststo quant_2: reghdfe dlnquant_h_YoY brw l12.lnrSI l.dlnquant_h_YoY, a(group_id) vce(cluster group_id)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm_HS6,clear
+eststo quant_3: reghdfe dlnquant_h_YoY brw, a(group_id) vce(cluster group_id)
+eststo quant_4: reghdfe dlnquant_h_YoY brw l.lnrSI l.dlnquant_h_YoY, a(group_id) vce(cluster group_id)
+
+estfe value_* quant_*, labels(firm_id "Firm FE" group_id "Firm-Product FE")
+esttab value_* quant_* using tables_Dec2023\value_quant.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
