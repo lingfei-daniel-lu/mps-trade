@@ -235,12 +235,11 @@ gen rkap=FA/inv_deflator*100
 gen vc=rTOIPT+rCWP
 gen tc=rTOIPT+rCWP+0.15*rkap 
 */
-gen rSTOCK=STOCK/OutputDefl*100
-gen rTP=TP/OutputDefl*100
 * Calculate firm-level financial constraints from CIE
 gen Tang=FA/TA
 gen Invent=STOCK/SI
 gen Cash=(TWC-NAR-STOCK)/TA
+gen WC=TWC/TA
 gen Liquid=(TWC-CL)/TA
 gen Debt=TL/TA
 gen Arec=NAR/SI
@@ -251,7 +250,7 @@ gen FNoCL=FN/CL
 gen CWPoS=CWP/SI
 gen TOIPToS=TOIPT/SI
 * Construct industry-level financial constraints by CIC2
-local varlist "Tang Invent IEoL IEoCL FNoL FNoCL Debt Liquid Cash Arec"
+local varlist "Tang Invent IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec"
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys cic2: egen `var'_cic2 = median(`var')
@@ -272,7 +271,7 @@ rename f1 FPC_US
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
 * log sales and costs
-local varlist "rSI rSTOCK rTP"
+local varlist "rSI STOCK TP TL CL"
 foreach var of local varlist{
 gen ln`var'=ln(`var')
 }
@@ -513,7 +512,7 @@ save customs_matched\customs_monthly_exp_firm,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *_US ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
@@ -547,7 +546,7 @@ save samples\sample_matched_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp_HS6,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* IEo* FNo* Liquid Cash Arec ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
@@ -566,7 +565,7 @@ save samples\sample_matched_exp_firm_HS6,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp_firm,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* IEo* FNo* Liquid Cash Arec ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
@@ -683,7 +682,7 @@ save samples\sample_customs_exp_firm,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp,clear
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
@@ -712,7 +711,7 @@ save samples\sample_monthly_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp_HS6,clear
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 replace brw=0 if brw==.
@@ -737,7 +736,7 @@ use customs_matched\customs_monthly_exp_firm,clear
 by FRDM: gen price_index=1 if dlnprice_next==.
 by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. & price_index[_n-1]!=.
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 CWPoS TOIPToS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int Markup_High)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)

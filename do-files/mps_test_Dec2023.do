@@ -210,7 +210,126 @@ esttab FE_* cluster_* using tables_Dec2023\altFE.csv, replace b(3) se(3) noconst
 
 *-------------------------------------------------------------------------------
 
-* 4. Decomposition into markup and marginal cost
+* A5. USD price
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo USD_1: reghdfe dlnprice_USD_YoY brw, a(firm_id) vce(cluster firm_id)
+eststo USD_2: reghdfe dlnprice_USD_YoY brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo USD_3: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo USD_4: reghdfe dlnprice_USD_YoY brw l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+
+eststo USD_5: reghdfe dlnprice_USD brw, a(firm_id) vce(cluster firm_id)
+eststo USD_6: reghdfe dlnprice_USD brw l.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo USD_7: reghdfe dlnprice_USD brw l.dlnprice, a(firm_id) vce(cluster firm_id)
+eststo USD_8: reghdfe dlnprice_USD brw l.lnrSI l.dlnprice, a(firm_id) vce(cluster firm_id)
+
+estfe USD_*, labels(firm_id "Firm FE")
+esttab USD_* using tables_Dec2023\USD.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("monthly" "monthly" "monthly" "monthly" "annual" "annual" "annual" "annual")
+
+*-------------------------------------------------------------------------------
+
+* A6. Additional control variables
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+*-------------------------------------------------------------------------------
+
+* A6. Ownership type
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo SOE_1: reghdfe dlnprice_YoY brw if ownership=="SOE", a(firm_id) vce(cluster firm_id)
+eststo SOE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if ownership=="SOE", a(firm_id) vce(cluster firm_id)
+eststo MNE_1: reghdfe dlnprice_YoY brw if ownership=="MNE", a(firm_id) vce(cluster firm_id)
+eststo MNE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if ownership=="MNE", a(firm_id) vce(cluster firm_id)
+eststo DPE_1: reghdfe dlnprice_YoY brw if ownership=="DPE", a(firm_id) vce(cluster firm_id)
+eststo DPE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if ownership=="DPE", a(firm_id) vce(cluster firm_id)
+eststo JV_1: reghdfe dlnprice_YoY brw if ownership=="JV", a(firm_id) vce(cluster firm_id)
+eststo JV_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if ownership=="JV", a(firm_id) vce(cluster firm_id)
+
+estfe SOE_* DPE_* MNE_* JV_*, labels(firm_id "Firm FE")
+esttab SOE_* DPE_* MNE_* JV_* using tables_Dec2023\ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress mtitle("SOE" "SOE" "MNE" "MNE" "DPE" "DPE" "JV" "JV")
+
+*-------------------------------------------------------------------------------
+
+* FA2. Country heterogeneity
+
+cd "D:\Project E"
+use samples\sample_monthly_exp,clear
+keep if rank_exp<=21
+statsby _b _se n=(e(N)), by(coun_aim) clear: reghdfe dlnprice_YoY brw dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
+graph hbar (asis) _b_brw, over(coun_aim, label(labsize(*0.45)) sort(1)) ytitle("Export price responses to US monetary policy shocks") nofill
+graph export tables_Dec2023\brw_month_country_20.png, as(png) replace
+
+*-------------------------------------------------------------------------------
+
+* 4. Liquidity
+
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+keep if exp_int>0
+
+* Liquidity (first stage)
+eststo liquid_1: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_2: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_3: reghdfe D.WC brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_4: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe liquid_*, labels(firm_id "Firm FE")
+esttab liquid_* using tables_Dec2023\liquid_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+* Liquidity (interaction)
+eststo int_liquid_1: reghdfe dlnprice_YoY c.brw#c.l12.Liquid_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_liquid_2: reghdfe dlnprice_YoY c.brw#c.l12.Cash_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_liquid_3: reghdfe dlnprice_YoY c.brw#c.l12.WC_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_liquid_4: reghdfe dlnprice_YoY c.brw#c.l12.Arec_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+estfe int_liquid_*, labels(firm_id "Firm FE")
+esttab int_liquid_* using tables_Dec2023\liquid_B.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
+
+*-------------------------------------------------------------------------------
+
+* 5. Borrowing cost
+
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+keep if exp_int>0
+
+* Borrowing cost (first stage)
+eststo borrow_1: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_2: reghdfe D.IEoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_3: reghdfe D.FNoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_4: reghdfe D.FNoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+* Debt (first stage)
+eststo debt_1: reghdfe D.lnTL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo debt_2: reghdfe D.lnCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe borrow_* debt_*, labels(firm_id "Firm FE")
+esttab borrow_* debt_* using tables_Dec2023\borrow_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+* Borrowing cost (interaction)
+eststo int_borrow_1: reghdfe dlnprice_YoY c.brw#c.l12.IEoL_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_borrow_2: reghdfe dlnprice_YoY c.brw#c.l12.IEoCL_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_borrow_3: reghdfe dlnprice_YoY c.brw#c.l12.FNoL_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_borrow_4: reghdfe dlnprice_YoY c.brw#c.l12.FNoCL_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+*-------------------------------------------------------------------------------
+
+* A7. Decomposition into markup and marginal cost
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -233,52 +352,7 @@ esttab markup_* using tables_Dec2023\markup.csv, replace b(3) se(3) noconstant s
 
 *-------------------------------------------------------------------------------
 
-* 5. Borrowing cost and liquidity change
-
-* 5.1 Panel A: exporters
-
-cd "D:\Project E"
-use samples\cie_credit_brw,clear
-keep if exp_int>0
-
-* Borrowing cost
-eststo exp_borrow_1: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo exp_borrow_2: reghdfe D.IEoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo exp_borrow_3: reghdfe D.FNoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo exp_borrow_4: reghdfe D.FNoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-
-* Liquidity condition
-eststo exp_liquid_1: reghdfe D.WC brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo exp_liquid_2: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo exp_liquid_3: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo exp_liquid_4: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-
-estfe exp_borrow_* exp_liquid_*, labels(firm_id "Firm FE")
-esttab exp_borrow_* exp_liquid_* using tables_Dec2023\liquid_exp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
-
-* 5.2 Panel B: all firms
-
-cd "D:\Project E"
-use samples\cie_credit_brw,clear
-
-* Borrowing cost
-eststo borrow_1: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo borrow_2: reghdfe D.IEoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo borrow_3: reghdfe D.FNoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo borrow_4: reghdfe D.FNoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-
-* Liquidity condition
-eststo liquid_1: reghdfe D.WC brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo liquid_2: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo liquid_3: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo liquid_4: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-
-estfe borrow_* liquid_*, labels(firm_id "Firm FE")
-esttab borrow_* liquid_* using tables_Dec2023\liquid_all.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
-
-*-------------------------------------------------------------------------------
-
-* 6. Tests of other channels
+* A8. Tests of other channels
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
@@ -298,27 +372,7 @@ esttab material wage material_int wage_int imp_int using tables_Dec2023\other.cs
 
 *-------------------------------------------------------------------------------
 
-* 7. Borrowing cost and liquidity interaction
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-eststo borrow_int_1: reghdfe dlnprice_YoY brw c.brw#c.IEoL_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo borrow_int_2: reghdfe dlnprice_YoY brw c.brw#c.IEoCL_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo borrow_int_3: reghdfe dlnprice_YoY brw c.brw#c.FNoL_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo borrow_int_4: reghdfe dlnprice_YoY brw c.brw#c.FNoCL_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-
-eststo liquid_int_1: reghdfe dlnprice_YoY brw c.brw#c.WC_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo liquid_int_2: reghdfe dlnprice_YoY brw c.brw#c.Liquid_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo liquid_int_3: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo liquid_int_4: reghdfe dlnprice_YoY brw c.brw#c.Arec_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-
-estfe borrow_int_* liquid_int_*, labels(firm_id "Firm FE")
-esttab borrow_int_* liquid_int_* using tables_Dec2023\liquid_int.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw*)
-
-*-------------------------------------------------------------------------------
-
-* 8. Ordinary vs Processing
+* 7. Ordinary vs Processing
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -335,7 +389,7 @@ esttab ordinary_* process_* process_int_* using tables_Dec2023\process.csv, repl
 
 *-------------------------------------------------------------------------------
 
-* 9. Homogenous vs differentiated good
+* 8. Homogenous vs differentiated good
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -354,7 +408,7 @@ esttab Rauch_* using tables_Dec2023\Rauch.csv, replace b(3) se(3) noconstant sta
 
 *-------------------------------------------------------------------------------
 
-* 10. EU shocks
+* 9. EU shocks
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -366,8 +420,9 @@ replace eu_shock=0 if eu_shock==.
 xtset firm_id time
 
 eststo EU_1: reghdfe dlnprice_YoY eu_shock, a(firm_id) vce(cluster firm_id)
-eststo EU_2: reghdfe dlnprice_YoY eu_shock l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo EU_3: reghdfe dlnprice_YoY eu_shock l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo EU_2: reghdfe dlnprice_YoY eu_shock l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo EU_3: reghdfe dlnprice_YoY eu_shock l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo EU_4: reghdfe dlnprice_YoY eu_shock l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
@@ -378,48 +433,30 @@ rename mp_median_mpd eu_shock
 replace eu_shock=0 if eu_shock==.
 xtset firm_id year
 
-eststo EU_4: reghdfe dlnprice eu_shock, a(firm_id) vce(cluster firm_id)
-eststo EU_5: reghdfe dlnprice l.dlnprice eu_shock, a(firm_id) vce(cluster firm_id)
-eststo EU_6: reghdfe dlnprice eu_shock l.lnrSI l.dlnprice, a(firm_id) vce(cluster firm_id)
+eststo EU_5: reghdfe dlnprice eu_shock, a(firm_id) vce(cluster firm_id)
+eststo EU_6: reghdfe dlnprice eu_shock l.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo EU_7: reghdfe dlnprice eu_shock l.dlnprice, a(firm_id) vce(cluster firm_id)
+eststo EU_8: reghdfe dlnprice eu_shock l.lnrSI l.dlnprice, a(firm_id) vce(cluster firm_id)
 
 estfe EU_*, labels(firm_id "Firm FE")
-esttab EU_* using tables_Dec2023\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(eu_shock) 
+esttab EU_* using tables_Dec2023\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(eu_shock)
 
 *-------------------------------------------------------------------------------
 
-* 11. Fixed and floating regime
+* 10. Fixed and floating regime
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
 eststo fixed_1: reghdfe dlnprice_YoY brw if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo fixed_2: reghdfe dlnprice_YoY l.dlnprice_YoY brw if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo fixed_3: reghdfe dlnprice_YoY l12.lnrSI l.dlnprice_YoY brw if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_2: reghdfe dlnprice_YoY brw l12.lnrSI if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
 
 eststo float_1: reghdfe dlnprice_YoY brw if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo float_2: reghdfe dlnprice_YoY l.dlnprice_YoY brw if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo float_3: reghdfe dlnprice_YoY l12.lnrSI l.dlnprice_YoY brw if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_2: reghdfe dlnprice_YoY brw l12.lnrSI if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
 
 estfe fixed_* float_*, labels(firm_id "Firm FE")
-esttab fixed_* float_* using tables_Dec2023\regime.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("fixed" "fixed" "fixed" "floating" "floating" "floating")
-
-*-------------------------------------------------------------------------------
-
-* A5. USD price index
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-eststo USD_1: reghdfe dlnprice_USD_YoY brw, a(firm_id) vce(cluster firm_id)
-eststo USD_2: reghdfe dlnprice_USD_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
-eststo USD_3: reghdfe dlnprice_USD_YoY brw l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-
-cd "D:\Project E"
-use samples\sample_matched_exp_firm,clear
-
-eststo USD_4: reghdfe dlnprice_USD brw, a(firm_id) vce(cluster firm_id)
-eststo USD_5: reghdfe dlnprice_USD l.dlnprice brw, a(firm_id) vce(cluster firm_id)
-eststo USD_6: reghdfe dlnprice_USD brw l.lnrSI l.dlnprice, a(firm_id) vce(cluster firm_id)
-
-estfe USD_*, labels(firm_id "Firm FE")
-esttab USD_* using tables_Dec2023\USD.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("monthly" "monthly" "monthly" "annual" "annual" "annual")
+esttab fixed_* float_* using tables_Dec2023\regime.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("fixed" "fixed" "fixed" "fixed" "floating" "floating" "floating" "floating")
