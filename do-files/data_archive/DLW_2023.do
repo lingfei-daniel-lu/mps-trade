@@ -195,3 +195,12 @@ gen tfp_tld= y_output - betal1_tld*l- betak1_tld*k- betam1_tld*m -betal2_tld*l*l
  - betal3_tld*l*l*l - betak3_tld*k*k*k - betam3_tld*m*m*m - betal2k1_tld*l*l*k - betal2m1_tld*l*l*m - betal1k2_tld*l*k*k - betak2m1_tld*k*k*m - betal1m2_tld*l*m*m - betak1m2_tld*k*m*m - betalkm_tld*l*k*m 
 compress
 save cie9907markup.dta, replace
+
+cd "D:\Project E\markup"
+use cie9907markup.dta,clear
+sort FRDM year
+by FRDM: gen tfp_tld_1st=tfp_tld[1]
+by FRDM: gen Markup_DLWTLD_1st=Markup_DLWTLD[1]
+keep FRDM *_1st
+duplicates drop
+save cie9907markup_1st.dta,replace

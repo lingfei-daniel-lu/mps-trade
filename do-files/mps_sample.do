@@ -167,6 +167,30 @@ foreach code of local EME_code{
 cd "D:\Project E\country_X"
 save country_tag,replace
 
+* 2.5 Macro time series control of China
+
+cd "D:\Project E\control\china"
+
+use raw\China_cpi,clear
+rename (截止日期_End 居民消费价格指数CPI_当月同比上年同月100_CPI_Y) (date cpi_china)
+gen year=year(date)
+gen month=month(date)
+keep year month cpi_china
+save China_cpi,replace
+
+use raw\China_ppi,clear
+rename (截止日期_End 工业品出厂价格指数PPI上年100_累计同比_Indus) (date ppi_china)
+gen year=year(date)
+gen month=month(date)
+keep year month ppi_china
+save China_ppi,replace
+
+use raw\China_policy_rate,clear
+gen year=year(date)
+gen month=month(date)
+collapse (mean) ROO7, by (year month)
+save China_policy_rate,replace
+
 ********************************************************************************
 
 * 3. CIE data with credit constraints
@@ -221,10 +245,6 @@ keep if TA>TWC
 keep if TA>FA
 keep if SI>0
 keep if PERSENG>=10
-* Calculate firm-level markup from CIE
-merge 1:1 FRDM year using markup\cie9907markup, nogen keepus(Markup_DLWTLD tfp_tld) keep(matched master)
-winsor2 Markup_*, trim replace by(cic2)
-winsor2 tfp_*, trim replace by(cic2)
 * Calculate firm-level real sales and cost
 sort FRDM year 
 gen rSI=SI/OutputDefl*100
@@ -238,6 +258,7 @@ gen tc=rTOIPT+rCWP+0.15*rkap
 * Calculate firm-level financial constraints from CIE
 gen Tang=FA/TA
 gen Invent=STOCK/SI
+gen Turnover=1/Invent
 gen Cash=(TWC-NAR-STOCK)/TA
 gen WC=TWC/TA
 gen Liquid=(TWC-CL)/TA
@@ -250,10 +271,10 @@ gen FNoCL=FN/CL
 gen CWPoS=CWP/SI
 gen TOIPToS=TOIPT/SI
 * Construct industry-level financial constraints by CIC2
-local varlist "Tang Invent IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec"
+local varlist "Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec"
 foreach var of local varlist {
 	winsor2 `var', replace
-	bys cic2: egen `var'_cic2 = median(`var')
+	bys year cic2: egen `var'_cic2 = median(`var')
 }
 * Add FLL (2015) measures
 merge n:1 cic2 using "D:\Project C\credit\FLL_Appendix\FLL_Appendix_A1",nogen keep(matched) keepus(ExtFin)
@@ -281,6 +302,7 @@ cd "D:\Project E"
 use CIE\cie_credit_v2,clear
 * calculate trade intensity
 merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",nogen keep(master matched) keepus(twoway_trade export_sum import_sum)
+replace twoway_trade=0 if twoway_trade==. 
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 gen exp_int=export_sum*NER_US/(SI*1000)
 gen imp_int=import_sum*NER_US/(TOIPT*1000)
@@ -290,13 +312,34 @@ replace imp_int=0 if imp_int==.
 replace trade_int=0 if trade_int==.
 replace exp_int=1 if exp_int>=1
 replace imp_int=1 if imp_int>=1
-* High-Markup vs Low-Markup
-bys year cic2: egen Markup_median=median(Markup_DLWTLD)
-gen Markup_High=1 if Markup_DLWTLD > Markup_median
-replace Markup_High=0 if Markup_High==.
-keep FRDM year twoway_trade *_int Markup_High
+keep FRDM year twoway_trade *_int
 duplicates drop
 save CIE\cie_int,replace
+
+cd "D:\Project E"
+use CIE\cie_credit_v2,clear
+* Calculate firm-level markup from CIE
+merge 1:1 FRDM year using markup\cie9907markup, nogen keep(matched master) keepus(Markup_* tfp_*)
+merge n:1 FRDM using markup\cie9907markup_1st, nogen keep(matched master)
+winsor2 Markup_*, trim replace by(cic2)
+winsor2 tfp_*, trim replace by(cic2)
+keep FRDM year cic2 Markup_* tfp_*
+drop if Markup_DLWTLD_1st==. | tfp_tld_1st==.
+* High-Markup vs Low-Markup
+bys year cic2: egen Markup_median=median(Markup_DLWTLD)
+gen Markup_High=1 if Markup_DLWTLD!=. & Markup_DLWTLD > Markup_median
+replace Markup_High=0 if Markup_DLWTLD!=. & Markup_DLWTLD <= Markup_median
+bys year cic2: egen Markup_median_1st=median(Markup_DLWTLD_1st)
+gen Markup_High_1st=1 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st > Markup_median_1st
+replace Markup_High_1st=0 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st <= Markup_median_1st
+* High-TFP vs Low-TFP
+bys year cic2: egen tfp_median=median(tfp_tld)
+gen tfp_High=1 if tfp_tld!=. & tfp_tld > tfp_median
+replace tfp_High=0 if tfp_tld!=. & tfp_tld <= tfp_median
+bys year cic2: egen tfp_median_1st=median(tfp_tld_1st)
+gen tfp_High_1st=1 if tfp_tld_1st!=. & tfp_tld_1st > tfp_median_1st
+replace tfp_High_1st=0 if tfp_tld_1st!=. & tfp_tld_1st <= tfp_median_1st
+save CIE\cie_markup,replace
 
 cd "D:\Project E"
 use CIE\cie_credit_v2,clear
@@ -512,8 +555,9 @@ save customs_matched\customs_monthly_exp_firm,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
@@ -546,8 +590,9 @@ save samples\sample_matched_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp_HS6,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 replace brw=0 if brw==.
@@ -565,8 +610,9 @@ save samples\sample_matched_exp_firm_HS6,replace
 cd "D:\Project E"
 use customs_matched\customs_matched_exp_firm,replace
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 replace brw=0 if brw==.
@@ -682,7 +728,9 @@ save samples\sample_customs_exp_firm,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp,clear
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
@@ -711,7 +759,9 @@ save samples\sample_monthly_exp,replace
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp_HS6,clear
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 replace brw=0 if brw==.
@@ -719,7 +769,7 @@ replace brw=0 if brw==.
 gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * calculate value and quantity change
-xtset firm_id time
+xtset group_id time
 by group_id: gen dlnvalue_h_YoY=ln(value_RMB)-ln(L12.value_RMB)
 by group_id: gen dlnquant_h_YoY=ln(quantity)-ln(L12.quantity)
 * calculate marginal cost
@@ -736,8 +786,9 @@ use customs_matched\customs_monthly_exp_firm,clear
 by FRDM: gen price_index=1 if dlnprice_next==.
 by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. & price_index[_n-1]!=.
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 Markup_* *_cic2 *oS ln* ownership affiliate)
-merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int Markup_High)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 replace brw=0 if brw==.

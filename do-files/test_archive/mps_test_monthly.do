@@ -116,18 +116,18 @@ esttab month_*_brw  month_brw_Markup month_brw_MC using tables\month_markup.csv,
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo month_brw_IEoL: reghdfe dlnprice_YoY brw c.brw#c.IEoL_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_IEoCL: reghdfe dlnprice_YoY brw c.brw#c.IEoCL_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_FNoL: reghdfe dlnprice_YoY brw c.brw#c.FNoL_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_FNoCL: reghdfe dlnprice_YoY brw c.brw#c.FNoCL_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_borrow1: reghdfe dlnprice_YoY brw c.brw#c.l.IEoL_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_borrow2: reghdfe dlnprice_YoY brw c.brw#c.l.IEoCL_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_borrow3: reghdfe dlnprice_YoY brw c.brw#c.l.FNoL_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_borrow4: reghdfe dlnprice_YoY brw c.brw#c.l.FNoCL_cic2, a(firm_id) vce(cluster firm_id)
 
-eststo month_brw_WC: reghdfe dlnprice_YoY brw c.brw#c.WC_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_Liquid: reghdfe dlnprice_YoY brw c.brw#c.Liquid_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_Cash: reghdfe dlnprice_YoY brw c.brw#c.Cash_cic2, a(firm_id) vce(cluster firm_id)
-eststo month_brw_Arec: reghdfe dlnprice_YoY brw c.brw#c.Arec_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_liquid1: reghdfe dlnprice_YoY brw c.brw#c.l.Liquid_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_liquid2: reghdfe dlnprice_YoY brw c.brw#c.l.Cash_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_liquid3: reghdfe dlnprice_YoY brw c.brw#c.l.WC_cic2, a(firm_id) vce(cluster firm_id)
+eststo month_brw_liquid4: reghdfe dlnprice_YoY brw c.brw#c.l.Arec_cic2, a(firm_id) vce(cluster firm_id)
 
-estfe month_brw_*o*L month_brw_WC month_brw_Liquid month_brw_Cash month_brw_Arec, labels(firm_id "Firm FE")
-esttab month_brw_*o*L month_brw_WC month_brw_Liquid month_brw_Cash month_brw_Arec using tables\month_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+estfe month_brw_borrow* month_brw_liquid*, labels(firm_id "Firm FE")
+esttab month_brw_borrow* month_brw_liquid* using tables\month_liquid.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
@@ -143,7 +143,7 @@ eststo month_brw_Invent_US: reghdfe dlnprice_YoY brw c.brw#c.Invent_US, a(firm_i
 eststo month_brw_TrCredit_US: reghdfe dlnprice_YoY brw c.brw#c.TrCredit_US, a(firm_id) vce(cluster firm_id)
 
 estfe month_brw_*_US, labels(firm_id "Firm FE")
-esttab month_brw_*_US using tables\month_credit.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+esttab month_brw_*_US using tables\month_credit_US.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
@@ -338,3 +338,19 @@ eststo month_brw_up_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw>
 eststo month_brw_down_1: reghdfe dlnprice_YoY brw if brw<0, a(firm_id) vce(cluster firm_id)
 eststo month_brw_down_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY if brw<0, a(firm_id) vce(cluster firm_id)
 eststo month_brw_down_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw<0, a(firm_id) vce(cluster firm_id)
+
+*-------------------------------------------------------------------------------
+
+* 20. Firm heterogeneity: high markup vs low markup
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_Markup_1: reghdfe dlnprice_YoY brw c.brw#c.Markup_High l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Markup_2: reghdfe dlnprice_YoY brw c.brw#c.l.Markup_High l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Markup_3: reghdfe dlnprice_YoY brw c.brw#c.Markup_High_1st l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Markup_4: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Markup_5: reghdfe dlnprice_YoY brw c.brw#c.l.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_brw_Markup_6: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD_1st l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+eststo month_brw_dMarkup_1: reghdfe dlnprice_YoY brw c.brw#c.s12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
