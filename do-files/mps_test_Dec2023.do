@@ -109,8 +109,8 @@ twoway (rarea u d h if h<=12, fcolor(gs13) lcolor(gs13) lw(none) lpattern(solid)
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo value_1: reghdfe dlnvalue brw, a(firm_id) vce(cluster firm_id)
-eststo value_2: reghdfe dlnvalue brw l12.lnrSI l.dlnvalue, a(firm_id) vce(cluster firm_id)
+eststo value_1: reghdfe dlnvalue_YoY brw, a(firm_id) vce(cluster firm_id)
+eststo value_2: reghdfe dlnvalue_YoY brw l12.lnrSI l.dlnvalue_YoY, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
@@ -570,4 +570,18 @@ esttab up_* down_* using tables_Dec2023\asymmetry.csv, replace b(3) se(3) nocons
 
 *-------------------------------------------------------------------------------
 
-* A12. Interaction with China's domestic liquidity condition
+* A12. Firm heterogeneity: high markup vs low markup
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo Markup_1: reghdfe dlnprice_YoY brw c.brw#c.Markup_High l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo Markup_2: reghdfe dlnprice_YoY brw c.brw#c.l.Markup_High l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo Markup_3: reghdfe dlnprice_YoY brw c.brw#c.Markup_High_1st l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+eststo Markup_4: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo Markup_5: reghdfe dlnprice_YoY brw c.brw#c.l.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo Markup_6: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD_1st l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+estfe Markup_*, labels(firm_id "Firm FE")
+esttab Markup_* using tables_Dec2023\markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("dummy" "dummy" "dummy" "level" "level" "level") order(*brw*)

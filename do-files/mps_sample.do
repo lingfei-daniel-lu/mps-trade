@@ -331,7 +331,6 @@ merge n:1 FRDM using markup\cie9907markup_1st, nogen keep(matched master)
 winsor2 Markup_*, trim replace by(cic2)
 winsor2 tfp_*, trim replace by(cic2)
 keep FRDM year cic2 Markup_* tfp_*
-drop if Markup_DLWTLD_1st==. | tfp_tld_1st==.
 * High-Markup vs Low-Markup
 bys year cic2: egen Markup_median=median(Markup_DLWTLD)
 gen Markup_High=1 if Markup_DLWTLD!=. & Markup_DLWTLD > Markup_median
@@ -803,8 +802,8 @@ replace brw=0 if brw==.
 egen firm_id=group(FRDM)
 xtset firm_id time
 * calculate value change
-by firm_id: gen dlnvalue=ln(value_RMB)-ln(L12.value_RMB)
+by firm_id: gen dlnvalue_YoY=ln(value_RMB)-ln(L12.value_RMB)
 * calculate marginal cost
 by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup_DLWTLD
-winsor2 dlnprice_USD_YoY dlnprice_YoY dlnMC_YoY, trim replace
+winsor2 dlnprice_USD_YoY dlnprice_YoY dlnMC_YoY dlnvalue_YoY, trim replace
 save samples\sample_monthly_exp_firm,replace
