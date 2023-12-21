@@ -500,9 +500,9 @@ esttab Rauch_* using tables_Dec2023\Rauch.csv, replace b(3) se(3) noconstant sta
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-* add monetary policy shocks
-merge m:1 year month using MPS\monthly\eu_infoshock_monthly,nogen keep(matched master) keepus(mp_median_mpd)
-rename mp_median_mpd eu_shock
+* add monetary policy shocks (Miranda-Agrippino & Nenova)
+merge m:1 year month using MPS\monthly\eu_shock_monthly,nogen keep(matched)
+rename target_ea eu_shock
 replace eu_shock=0 if eu_shock==.
 xtset firm_id time
 
@@ -512,21 +512,21 @@ eststo EU_3: reghdfe dlnprice_YoY eu_shock l.dlnprice_YoY, a(firm_id) vce(cluste
 eststo EU_4: reghdfe dlnprice_YoY eu_shock l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
-use samples\sample_matched_exp_firm,clear
+use samples\sample_monthly_exp_firm,clear
 
-* add monetary policy shocks
-merge m:1 year using MPS\monthly\eu_infoshock_annual,nogen keep(matched master) keepus(mp_median_mpd)
+* add monetary policy shocks 
+merge m:1 year month using MPS\monthly\eu_infoshock_monthly,nogen keep(matched) keepus(mp_median_mpd)
 rename mp_median_mpd eu_shock
 replace eu_shock=0 if eu_shock==.
-xtset firm_id year
+xtset firm_id time
 
-eststo EU_5: reghdfe dlnprice eu_shock, a(firm_id) vce(cluster firm_id)
-eststo EU_6: reghdfe dlnprice eu_shock l.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo EU_7: reghdfe dlnprice eu_shock l.dlnprice, a(firm_id) vce(cluster firm_id)
-eststo EU_8: reghdfe dlnprice eu_shock l.lnrSI l.dlnprice, a(firm_id) vce(cluster firm_id)
+eststo EU_5: reghdfe dlnprice_YoY eu_shock, a(firm_id) vce(cluster firm_id)
+eststo EU_6: reghdfe dlnprice_YoY eu_shock l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo EU_7: reghdfe dlnprice_YoY eu_shock l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo EU_8: reghdfe dlnprice_YoY eu_shock l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
 estfe EU_*, labels(firm_id "Firm FE")
-esttab EU_* using tables_Dec2023\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(eu_shock)
+esttab EU_* using tables_Dec2023\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(eu_shock *lnrSI *dlnprice*)
 
 *-------------------------------------------------------------------------------
 
