@@ -78,7 +78,29 @@ esttab forward_* using tables_Dec2023\dynamic.csv, replace b(3) se(3) noconstant
 
 * FA1. Dynamic regression
 
-coefplot forward_*, keep(brw) vertical yline(0, lp(dash)) mcolor(black) ciopts(recast(rcap)) graphregion(color(white)) legend(off)
+gen b=0
+gen u=0
+gen d=0
+
+* Regression
+
+forv h = 0/12 {
+reghdfe f`h'.dlnprice_YoY l.dlnprice_YoY  brw l.lnrSI, a(firm_id) vce(cluster firm_id)
+replace b = _b[brw]                    if _n == `h'+1
+replace u = _b[brw] + 1.96* _se[brw]  if _n == `h'+1
+replace d = _b[brw] - 1.96* _se[brw]  if _n == `h'+1
+}
+
+*Plot
+
+gen h=_n-1
+gen Zero=0
+twoway (rarea u d h if h<=12, fcolor(gs13) lcolor(gs13) lw(none) lpattern(solid)) ///
+  (line b h if h<=12, lcolor(blue) lpattern(solid) lwidth(thick)) /// 
+  (line Zero h if h<=12, lcolor(black)), legend(off) ///
+  title("Dynamic responses in 12 months", color(black)) ///
+  ytitle("Price response", size(medsmall)) xtitle("Time horizon", size(medsmall)) xlabel(0 (1) 12) ///
+  graphregion(color(white)) plotregion(color(white))
 
 *-------------------------------------------------------------------------------
 
@@ -244,8 +266,10 @@ use samples\sample_monthly_exp_firm,clear
 
 merge n:1 year month using control\china\China_cpi,nogen keep(matched)
 gen cpi_cn=cpi_china/100-1
+merge n:1 year month using control\china\China_iva,nogen keep(matched)
+gen iva_cn=iva_china/100-1
 *merge n:1 year month using control\china\China_ppi,nogen keep(matched)
-*merge n:1 year month using control\china\China_policy_rate,nogen keep(matched)
+merge n:1 year month using control\china\China_policy_rate,nogen keep(matched)
 merge n:1 year month using control\US\US_CPI_monthly_unadjusted,nogen keep(matched)
 gen cpi_us=cpi_us_ua/100-1
 merge n:1 year month using control\US\US_PPI_monthly_unadjusted,nogen keep(matched)
@@ -259,19 +283,21 @@ gen lnpoil=ln(poilapsp)
 xtset firm_id time
 
 eststo control_1: reghdfe dlnprice_YoY brw l.cpi_cn l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo control_2: reghdfe dlnprice_YoY brw l.cpi_us l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo control_3: reghdfe dlnprice_YoY brw l.ppi_us l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo control_4: reghdfe dlnprice_YoY brw l.vix l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo control_5: reghdfe dlnprice_YoY brw l.s12.lnpindu l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo control_6: reghdfe dlnprice_YoY brw l.s12.lnpoil l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo control_7: reghdfe dlnprice_YoY brw l.cpi_cn l.cpi_us l.ppi_us l.vix l.s12.lnpindu l.s12.lnpoil l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo control_2: reghdfe dlnprice_YoY brw l.iva_cn l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+eststo control_3: reghdfe dlnprice_YoY brw l.cpi_us l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo control_4: reghdfe dlnprice_YoY brw l.ppi_us l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo control_5: reghdfe dlnprice_YoY brw l.lnvix l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo control_6: reghdfe dlnprice_YoY brw l.s12.lnpindu l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo control_7: reghdfe dlnprice_YoY brw l.s12.lnpoil l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo control_8: reghdfe dlnprice_YoY brw l.cpi_cn l.iva_cn l.cpi_us l.ppi_us l.lnvix l.s12.lnpindu l.s12.lnpoil l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
 estfe control_*, labels(firm_id "Firm FE")
-esttab control_* using tables_Dec2023\control.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("China CPI" "US CPI" "US PPI" "VIX" "Input Price" "Oil Price" "All") order(brw *cpi_* *ppi_* *vix *S12*)
+esttab control_* using tables_Dec2023\control.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("China CPI" "China Value Added" "US CPI" "US PPI" "VIX" "Input Price" "Oil Price" "All") order(brw *_cn *_us *vix *S12*)
 
 *-------------------------------------------------------------------------------
 
-* A6. Ownership type
+* A7. Ownership type
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -308,14 +334,13 @@ graph export tables_Dec2023\brw_month_country_20.png, as(png) replace
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
 keep if exp_int>0
-gen turnover=1/Invent
+
 
 * Liquidity (first stage)
 eststo liquid_1: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo liquid_2: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo liquid_3: reghdfe D.Turnover brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo liquid_4: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-
 
 estfe liquid_*, labels(firm_id "Firm FE")
 esttab liquid_* using tables_Dec2023\liquid_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
@@ -391,7 +416,7 @@ esttab exp_liquid_* exp_borrow_* using tables_Dec2023\exp_vs_non.csv, replace b(
 
 *-------------------------------------------------------------------------------
 
-* A7. Decomposition into markup and marginal cost
+* A8. Decomposition into markup and marginal cost
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -414,7 +439,7 @@ esttab decomp_* using tables_Dec2023\decomposition.csv, replace b(3) se(3) nocon
 
 *-------------------------------------------------------------------------------
 
-* A8. Tests of other channels
+* A9. Tests of other channels
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
@@ -522,3 +547,27 @@ eststo float_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if time>=month
 
 estfe fixed_* float_*, labels(firm_id "Firm FE")
 esttab fixed_* float_* using tables_Dec2023\regime.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("fixed" "fixed" "fixed" "fixed" "floating" "floating" "floating" "floating")
+
+*-------------------------------------------------------------------------------
+
+* A11. Asymmetric impact
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo up_1: reghdfe dlnprice_YoY brw if brw>0, a(firm_id) vce(cluster firm_id)
+eststo up_2: reghdfe dlnprice_YoY brw l12.lnrSI if brw>0, a(firm_id) vce(cluster firm_id)
+eststo up_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY if brw>0, a(firm_id) vce(cluster firm_id)
+eststo up_4: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw>0, a(firm_id) vce(cluster firm_id)
+
+eststo down_1: reghdfe dlnprice_YoY brw if brw<0, a(firm_id) vce(cluster firm_id)
+eststo down_2: reghdfe dlnprice_YoY brw l12.lnrSI if brw<0, a(firm_id) vce(cluster firm_id)
+eststo down_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY if brw<0, a(firm_id) vce(cluster firm_id)
+eststo down_4: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw<0, a(firm_id) vce(cluster firm_id)
+
+estfe up_* down_*, labels(firm_id "Firm FE")
+esttab up_* down_* using tables_Dec2023\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("tightening" "tightening" "tightening" "tightening" "easing" "easing" "easing" "easing")
+
+*-------------------------------------------------------------------------------
+
+* A12. Interaction with China's domestic liquidity condition

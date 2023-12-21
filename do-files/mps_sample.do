@@ -191,6 +191,13 @@ gen month=month(date)
 collapse (mean) ROO7, by (year month)
 save China_policy_rate,replace
 
+use raw\China_gdp,clear
+rename (截止日期_End 规模以上工业增加值_当月同比上年同月100_Anov) (date iva_china)
+gen year=year(date)
+gen month=month(date)
+keep year month iva_china
+save China_iva,replace
+
 ********************************************************************************
 
 * 3. CIE data with credit constraints
