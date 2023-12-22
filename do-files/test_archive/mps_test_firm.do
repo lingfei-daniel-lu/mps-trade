@@ -78,6 +78,28 @@ eststo Arec_brw: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_
 estfe IEo* FNo* WC_* Liquid_* Cash_* Arec_*, labels(firm_id "Firm FE")
 esttab IEo* FNo* WC_* Liquid_* Cash_* Arec_* using tables\firm_liquid_exp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
+* 1.3 Exporter vs Non-exporters
+
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+gen exp_d=1 if exp_int>0
+replace exp_d=0 if exp_d==.
+
+* Liquidity (first stage)
+eststo exp_liquid_1: reghdfe D.Liquid brw c.brw#c.exp_d L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo exp_liquid_2: reghdfe D.Cash brw c.brw#c.exp_d L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo exp_liquid_3: reghdfe D.Turnover brw c.brw#c.exp_d L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo exp_liquid_4: reghdfe D.Arec brw c.brw#c.exp_d L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+* Borrowing cost (first stage)
+eststo exp_borrow_1: reghdfe D.IEoL brw c.brw#c.exp_d L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo exp_borrow_2: reghdfe D.IEoCL brw c.brw#c.exp_d L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo exp_borrow_3: reghdfe D.FNoL brw c.brw#c.exp_d L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo exp_borrow_4: reghdfe D.FNoCL brw c.brw#c.exp_d L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe exp_liquid_* exp_borrow_*, labels(firm_id "Firm FE")
+esttab exp_liquid_* exp_borrow_* using tables\exp_vs_non.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
 *-------------------------------------------------------------------------------
 
 * 2. Firm performance
