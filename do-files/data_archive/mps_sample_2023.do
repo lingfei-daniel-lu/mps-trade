@@ -331,6 +331,7 @@ merge n:1 FRDM using markup\cie9907markup_1st, nogen keep(matched master)
 winsor2 Markup_*, trim replace by(cic2)
 winsor2 tfp_*, trim replace by(cic2)
 keep FRDM year cic2 Markup_* tfp_*
+drop if Markup_DLWTLD_1st==. | tfp_tld_1st==.
 * High-Markup vs Low-Markup
 bys year cic2: egen Markup_median=median(Markup_DLWTLD)
 gen Markup_High=1 if Markup_DLWTLD!=. & Markup_DLWTLD > Markup_median
@@ -387,12 +388,13 @@ use customs_matched\customs_matched_exp,clear
 collapse (sum) value_year quant_year (mean) process dist distw [aweight=value_year], by(FRDM HS6 year)
 * calculate RMB value and price
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
-gen price_RMB=value_year*NER_US/quant_year
+gen value_RMB=value_year*NER_US
+gen price_RMB=value_RMB/quant_year
 gen price_USD=value_year/quant_year
 egen group_id=group(FRDM HS6)
 xtset group_id year
-by group_id: gen dlnprice_h=ln(price_USD)-ln(L.price_USD)
-by group_id: gen dlnprice_h_RMB=ln(price_RMB)-ln(L.price_RMB)
+by group_id: gen dlnprice_h=ln(price_RMB)-ln(L.price_RMB)
+by group_id: gen dlnprice_h_USD=ln(price_USD)-ln(L.price_USD)
 save customs_matched\customs_matched_exp_HS6,replace
 
 cd "D:\Project E"
@@ -404,8 +406,8 @@ by group_id: gen share_bar=0.5*(share_it+L.share_it)
 replace share_bar=share_it if share_bar==.
 sort FRDM year
 by FRDM year: egen dlnprice=sum(dlnprice_h*share_bar), missing
-by FRDM year: egen dlnprice_RMB=sum(dlnprice_h_RMB*share_bar), missing
-collapse (sum) value=value_year (mean) process dist distw, by(FRDM year dlnprice dlnprice_RMB HS6_count)
+by FRDM year: egen dlnprice_USD=sum(dlnprice_h_USD*share_bar), missing
+collapse (sum) value_USD=value_year value_RMB (mean) process dist distw, by(FRDM year dlnprice dlnprice_USD HS6_count)
 save customs_matched\customs_matched_exp_firm,replace
 
 * Construct matching directory
@@ -440,21 +442,22 @@ use custom_0015\customs_00_15_exp,clear
 collapse (sum) value quant=quantity, by(party_id HS6 HS4 HS2 year)
 * calculate RMB value and price
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
-gen price_RMB=value*NER_US/quant
+gen value_RMB=value*NER_US
+gen price_RMB=value_RMB/quant
 gen price_USD=value/quant
 egen group_id=group(party_id HS6)
 xtset group_id year
-by group_id: gen dlnprice_h_RMB=ln(price_RMB)-ln(L.price_RMB)
-by group_id: gen dlnprice_h=ln(price_USD)-ln(L.price_USD)
+by group_id: gen dlnprice_h=ln(price_RMB)-ln(L.price_RMB)
+by group_id: gen dlnprice_h_USD=ln(price_USD)-ln(L.price_USD)
 bys party_id year: egen share_it=pc(value),prop
 by party_id year: egen HS6_count=nvals(HS6)
 sort group_id year
 by group_id: gen share_bar=0.5*(share_it+L.share_it)
 replace share_bar=share_it if share_bar==.
 sort party_id year
-by party_id year: egen dlnprice_RMB=sum(dlnprice_h_RMB*share_bar), missing
 by party_id year: egen dlnprice=sum(dlnprice_h*share_bar), missing
-collapse (sum) value value_RMB, by(party_id year dlnprice_RMB dlnprice HS6_count)
+by party_id year: egen dlnprice_USD=sum(dlnprice_h_USD*share_bar), missing
+collapse (sum) value_USD=value value_RMB, by(party_id year dlnprice dlnprice_USD HS6_count)
 save custom_0015\customs_00_15_exp_firm,replace
 
 *-------------------------------------------------------------------------------
@@ -508,7 +511,8 @@ collapse (sum) value quant, by (FRDM HS6 coun_aim year month process)
 merge m:1 HS6 using "Rauch classification\HS6_Rauch", nogen keep(matched master) keepus(Rauch_*)
 * calculate RMB value and price
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
-gen price_RMB=value*NER_US/quantity
+gen value_RMB=value*NER_US
+gen price_RMB=value_RMB/quantity
 gen price_USD=value/quantity
 gen time=monthly(string(year)+"-"+string(month),"YM")
 format time %tm
@@ -517,20 +521,20 @@ save customs_matched\customs_monthly_exp,replace
 
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp,clear
-collapse (sum) value quantity (mean) price_h=price_USD price_h_RMB=price_RMB process [aweight=value], by(FRDM time year month HS6 Rauch_*)
+collapse (sum) value_RMB value_USD=value quantity (mean) price_h=price_RMB price_h_USD=price_USD process [aweight=value], by(FRDM time year month HS6 Rauch_*)
 egen group_id=group(FRDM HS6)
 xtset group_id time
 by group_id: gen dlnprice_h_MoM=ln(price_h)-ln(L.price_h)
 by group_id: gen dlnprice_h_YoY=ln(price_h)-ln(L12.price_h)
 by group_id: gen dlnprice_h_next=ln(price_h)-ln(price_h[_n-1])
-by group_id: gen dlnprice_h_RMB_MoM=ln(price_h_RMB)-ln(L.price_h_RMB)
-by group_id: gen dlnprice_h_RMB_YoY=ln(price_h_RMB)-ln(L12.price_h_RMB)
-by group_id: gen dlnprice_h_RMB_next=ln(price_h_RMB)-ln(price_h_RMB[_n-1])
+by group_id: gen dlnprice_h_USD_MoM=ln(price_h_USD)-ln(L.price_h_USD)
+by group_id: gen dlnprice_h_USD_YoY=ln(price_h_USD)-ln(L12.price_h_USD)
+by group_id: gen dlnprice_h_USD_next=ln(price_h_USD)-ln(price_h_USD[_n-1])
 save customs_matched\customs_monthly_exp_HS6,replace
 
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp_HS6,clear
-bys FRDM time: egen share_it=pc(value),prop
+bys FRDM time: egen share_it=pc(value_RMB),prop
 by FRDM time: egen HS6_count=nvals(HS6)
 sort group_id time
 by group_id: gen share_bar_MoM=0.5*(share_it+L.share_it)
@@ -543,10 +547,10 @@ sort FRDM time
 by FRDM time: egen dlnprice_MoM=sum(dlnprice_h_MoM*share_bar_MoM), missing
 by FRDM time: egen dlnprice_YoY=sum(dlnprice_h_YoY*share_bar_YoY), missing
 by FRDM time: egen dlnprice_next=sum(dlnprice_h_next*share_bar_next), missing
-by FRDM time: egen dlnprice_RMB_MoM=sum(dlnprice_h_RMB_MoM*share_bar_MoM), missing
-by FRDM time: egen dlnprice_RMB_YoY=sum(dlnprice_h_RMB_YoY*share_bar_YoY), missing
-by FRDM time: egen dlnprice_RMB_next=sum(dlnprice_h_RMB_next*share_bar_next), missing
-collapse (sum) value (mean) process Rauch_*, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next dlnprice_RMB* HS6_count)
+by FRDM time: egen dlnprice_USD_MoM=sum(dlnprice_h_USD_MoM*share_bar_MoM), missing
+by FRDM time: egen dlnprice_USD_YoY=sum(dlnprice_h_USD_YoY*share_bar_YoY), missing
+by FRDM time: egen dlnprice_USD_next=sum(dlnprice_h_USD_next*share_bar_next), missing
+collapse (sum) value_RMB value_USD (mean) process Rauch_*, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next dlnprice_USD* HS6_count)
 save customs_matched\customs_monthly_exp_firm,replace
 
 ********************************************************************************
@@ -568,12 +572,12 @@ merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_U
 * calculate changes of price, quantity and marginal cost
 gen price_RMB=value_year*NER_US/quant_year
 gen price_USD=value_year/quant_year
-gen MC=price_USD/Markup_DLWTLD
+gen MC_RMB=price_RMB/Markup_DLWTLD
 sort FRDM HS6 coun_aim year
 by FRDM HS6 coun_aim: gen dlnquant=ln(quant_year)-ln(quant_year[_n-1]) if year==year[_n-1]+1
-by FRDM HS6 coun_aim: gen dlnprice=ln(price_USD)-ln(price_USD[_n-1]) if year==year[_n-1]+1
-by FRDM HS6 coun_aim: gen dlnprice_RMB=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
-by FRDM HS6 coun_aim: gen dlnMC=ln(MC)-ln(MC[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
+by FRDM HS6 coun_aim: gen dlnMC=ln(MC_RMB)-ln(MC_RMB[_n-1]) if year==year[_n-1]+1
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value_year),prop
 * add monetary policy shocks
@@ -604,7 +608,7 @@ gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * calculate value and quantity change
 xtset group_id year
-by group_id: gen dlnvalue_h_YoY=ln(value_year)-ln(L.value_year)
+by group_id: gen dlnvalue_h_YoY=ln(value_RMB)-ln(L.value_RMB)
 by group_id: gen dlnquant_h_YoY=ln(quant_year)-ln(L.quant_year)
 * drop outliers
 winsor2 dlnprice_h*, replace trim
@@ -623,7 +627,7 @@ replace brw=0 if brw==.
 egen firm_id=group(FRDM)
 xtset firm_id year
 * calculate value change
-by firm_id: gen dlnvalue=ln(value)-ln(L.value)
+by firm_id: gen dlnvalue=ln(value_RMB)-ln(L.value_RMB)
 * calculate marginal cost
 by firm_id: gen dlnMC=dlnprice-D.Markup_DLWTLD
 * drop outliers
@@ -698,8 +702,8 @@ gen price_RMB=value*NER_US/quant
 gen price_USD=value/quant
 sort party_id HS6 coun_aim year
 by party_id HS6 coun_aim: gen dlnquant=ln(quant)-ln(quant[_n-1]) if year==year[_n-1]+1
-by party_id HS6 coun_aim: gen dlnprice=ln(price_USD)-ln(price_USD[_n-1]) if year==year[_n-1]+1
-by party_id HS6 coun_aim: gen dlnprice_RMB=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
+by party_id HS6 coun_aim: gen dlnprice=ln(price_RMB)-ln(price_RMB[_n-1]) if year==year[_n-1]+1
+by party_id HS6 coun_aim: gen dlnprice_USD=ln(price_US)-ln(price_US[_n-1]) if year==year[_n-1]+1
 * calculate market shares
 bys HS6 coun_aim year: egen MS=pc(value),prop
 * add monetary policy shocks
@@ -749,12 +753,12 @@ drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 egen group_id=group(FRDM HS6 coun_aim process)
 xtset group_id time
 * calculate price change
-by group_id: gen dlnprice_YoY=ln(price_USD)-ln(L12.price_USD)
-by group_id: gen dlnprice_RMB_YoY=ln(price_RMB)-ln(L12.price_RMB)
+by group_id: gen dlnprice_YoY=ln(price_RMB)-ln(L12.price_RMB)
+by group_id: gen dlnprice_USD_YoY=ln(price_USD)-ln(L12.price_USD)
 * calculate marginal cost
-gen MC=price_USD/Markup_DLWTLD
-by group_id: gen dlnMC_YoY=ln(MC)-ln(MC)
-winsor2 dlnprice_YoY dlnprice_RMB_YoY dlnMC_YoY, trim replace
+gen MC_RMB=price_RMB/Markup_DLWTLD
+by group_id: gen dlnMC_YoY=ln(MC_RMB)-ln(MC_RMB)
+winsor2 dlnprice_YoY dlnprice_USD_YoY dlnMC_YoY, trim replace
 save samples\sample_monthly_exp,replace
 
 * 6.2 Firm-product level price
@@ -773,12 +777,12 @@ gen HS2=substr(HS6,1,2)
 drop if HS2=="93"|HS2=="97"|HS2=="98"|HS2=="99"
 * calculate value and quantity change
 xtset group_id time
-by group_id: gen dlnvalue_h_YoY=ln(value)-ln(L12.value)
+by group_id: gen dlnvalue_h_YoY=ln(value_RMB)-ln(L12.value_RMB)
 by group_id: gen dlnquant_h_YoY=ln(quantity)-ln(L12.quantity)
 * calculate marginal cost
 gen MC_h=price_h/Markup_DLWTLD
 by group_id: gen dlnMC_h_YoY=ln(MC_h)-ln(L12.MC_h)
-winsor2 dlnprice_h_YoY dlnprice_h_RMB_YoY dlnMC_h_YoY dlnvalue_h_YoY dlnquant_h_YoY, trim replace
+winsor2 dlnprice_h_YoY dlnprice_h_USD_YoY dlnMC_h_YoY dlnvalue_h_YoY dlnquant_h_YoY, trim replace
 save samples\sample_monthly_exp_firm_HS6, replace
 
 * 6.3 Firm-level price index
@@ -799,8 +803,8 @@ replace brw=0 if brw==.
 egen firm_id=group(FRDM)
 xtset firm_id time
 * calculate value change
-by firm_id: gen dlnvalue_YoY=ln(value_RMB)-ln(L12.value_RMB)
+by firm_id: gen dlnvalue=ln(value_RMB)-ln(L12.value_RMB)
 * calculate marginal cost
 by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup_DLWTLD
-winsor2 dlnprice_USD_YoY dlnprice_YoY dlnMC_YoY dlnvalue_YoY, trim replace
+winsor2 dlnprice_USD_YoY dlnprice_YoY dlnMC_YoY, trim replace
 save samples\sample_monthly_exp_firm,replace
