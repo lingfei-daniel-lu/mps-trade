@@ -94,6 +94,11 @@ rename NER NER_US
 gen dlnNER_US=ln(NER_US)-ln(NER_US[_n-1]) if year==year[_n-1]+1
 save US_NER_99_19.dta,replace
 
+cd "D:\Project E\ER"
+use NER_US_month,clear
+gen dlnNER_US=ln(NER_US)-ln(NER_US[_n-12])
+save NER_US_month.dta,replace
+
 * 2.2 Bank credit
 
 cd "D:\Project E\Almanac"
@@ -208,14 +213,16 @@ use cie1998.dta,clear
 keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL CWP FN IE CFS CFC CFL CFI CPHMT CFF)
 append using cie1999,keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL CWP FN IE TP CFS CFC CFL CFI CPHMT CFF)
 rename CPHMT CFHMT
-forv i = 2000/2004{
+forv i = 2000/2003{
 append using cie`i',keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL CWP FN IE TP CFS CFC CFL CFI CFHMT CFF)
 }
+append using cie2004,keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL CWP FN IE TP CFS CFC CFL CFI CFHMT F389)
 forv i = 2005/2006{
-append using cie`i',keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL F334 CWP FN IE TP CFS CFC CFL CFI CFHMT CFF)
+append using cie`i',keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL F334 CWP FN IE TP CFS CFC CFL CFI CFHMT CFF F389)
 }
 rename F334 RND
-append using cie2007,keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL RND CWP FN IE TP CFS CFC CFL CFI CFHMT CFF)
+rename F389 AP
+append using cie2007,keep(FRDM EN year INDTYPE REGTYPE GIOV_CR PERSENG TOIPT SI TWC NAR STOCK FA TA CL TL RND CWP FN IE TP CFS CFC CFL CFI CFHMT CFF AP)
 bys FRDM: egen EN_adj=mode(EN),maxmode
 bys FRDM: egen REGTYPE_adj=mode(REGTYPE),maxmode
 drop EN REGTYPE
@@ -271,6 +278,7 @@ gen WC=TWC/TA
 gen Liquid=(TWC-CL)/TA
 gen Debt=TL/TA
 gen Arec=NAR/SI
+gen Apay=AP/SI
 gen IEoL=IE/TL
 gen IEoCL=IE/CL
 gen FNoL=FN/TL
@@ -282,6 +290,11 @@ local varlist "Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Ar
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys year cic2: egen `var'_cic2 = median(`var')
+}
+local varlist2 "Apay"
+foreach var of local varlist2 {
+	winsor2 `var', replace
+	bys cic2: egen `var'_cic2 = median(`var')
 }
 * Add FLL (2015) measures
 merge n:1 cic2 using "D:\Project C\credit\FLL_Appendix\FLL_Appendix_A1",nogen keep(matched) keepus(ExtFin)
@@ -619,6 +632,7 @@ merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 replace brw=0 if brw==.
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
 * construct firm id
 egen firm_id=group(FRDM)
 xtset firm_id year
@@ -795,12 +809,13 @@ merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 replace brw=0 if brw==.
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 * construct firm id
 egen firm_id=group(FRDM)
 xtset firm_id time
 * calculate value change
-by firm_id: gen dlnvalue_YoY=ln(value_RMB)-ln(L12.value_RMB)
+by firm_id: gen dlnvalue_YoY=ln(value)-ln(L12.value)
 * calculate marginal cost
 by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup_DLWTLD
-winsor2 dlnprice_USD_YoY dlnprice_YoY dlnMC_YoY dlnvalue_YoY, trim replace
+winsor2 dlnprice_YoY dlnprice_RMB_YoY dlnMC_YoY dlnvalue_YoY, trim replace
 save samples\sample_monthly_exp_firm,replace
