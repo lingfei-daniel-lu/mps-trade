@@ -334,6 +334,7 @@ graph hbar (asis) _b_brw, over(countrycode, label(labsize(*0.45)) sort(1)) ytitl
 
 graph export tables_Dec2023_v2\brw_month_country_20.png, as(png) replace
 
+/*
 egen rank = rank(-_b_brw)
 gen lower_bound = _b_brw - 1.645 * _se_brw
 gen upper_bound = _b_brw + 1.645 * _se_brw
@@ -344,6 +345,7 @@ sort rank
 twoway (bar _b_brw rank, horizontal) ///
        (rcap lower_bound upper_bound rank, horizontal) ///
        , ytitle("Country Code") xtitle("Export price responses to US monetary policy shocks")
+*/
 	   
 *-------------------------------------------------------------------------------
 
@@ -353,10 +355,14 @@ cd "D:\Project E"
 use samples\cie_credit_brw,clear
 keep if exp_int>0
 
+* Liquidity (first stage)
 eststo liquid_1: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo liquid_2: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo liquid_3: reghdfe D.Turnover brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+* Trade credit (first stage)
 eststo liquid_4: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_5: reghdfe D.Apay brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 estfe liquid_*, labels(firm_id "Firm FE")
 esttab liquid_* using tables_Dec2023_v2\liquid_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
@@ -368,12 +374,16 @@ esttab liquid_* using tables_Dec2023_v2\liquid_A.csv, replace b(3) se(3) noconst
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo int_liquid_1: reghdfe dlnprice_YoY c.brw#c.l12.Liquid_cic2 l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id time) vce(cluster firm_id)
-eststo int_liquid_2: reghdfe dlnprice_YoY c.brw#c.l12.Cash_cic2 l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id time) vce(cluster firm_id)
-eststo int_liquid_3: reghdfe dlnprice_YoY c.brw#c.l12.Turnover_cic2 l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id time) vce(cluster firm_id)
-eststo int_liquid_4: reghdfe dlnprice_YoY c.brw#c.l12.Arec_cic2 l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id time) vce(cluster firm_id)
+* Liquidity (interaction)
+eststo int_liquid_1: reghdfe dlnprice_YoY c.brw#c.l12.Liquid_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_liquid_2: reghdfe dlnprice_YoY c.brw#c.l12.Cash_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_liquid_3: reghdfe dlnprice_YoY c.brw#c.l12.Turnover_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
 
-estfe int_liquid_*, labels(firm_id "Firm FE")
+* Trade credit (interaction)
+eststo int_liquid_4: reghdfe dlnprice_YoY c.brw#c.l12.Arec_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_liquid_5: reghdfe dlnprice_YoY c.brw#c.Apay_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+estfe int_liquid_*, labels(firm_id "Firm FE" time "Year-month FE")
 esttab int_liquid_* using tables_Dec2023_v2\liquid_B.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
 
 *-------------------------------------------------------------------------------
