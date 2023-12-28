@@ -4,7 +4,7 @@
 
 \begin{document}
 
-\title{Global Monetary Policy Shock, Financial Friction and Export Price}
+\title{Global Monetary Policy Shocks, Financial Frictions and Export Prices}
 \author[Yao Amber LI, Lingfei LU and Jingbo YAO]{Yao Amber LI, Lingfei LU, Jingbo YAO}
 \institute{\small HKUST}
 \date{Dec 1, 2023}
@@ -16,58 +16,98 @@
 HKUST Research Postgraduate Student Workshop
 \end{frame}
 
-\begin{frame}
-\frametitle{Outline}
-\tableofcontents
-\end{frame}
+\AtBeginSection[]
+{
+    \begin{frame}{Outline}
+    \transfade
+    \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
+    \addtocounter{framenumber}{-1}
+    \end{frame}
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{I. Introduction}
 
 \begin{frame}{Motivation}
+    \begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.7\columnwidth]{latex/drafts/pic/concepts.png}
+	\label{fig.concept}
+    \end{figure}
+    
 \begin{itemize}
-    \item How export price responds to global shocks is essential in international economics
+    \item Financial frictions affect firms' exporting behavior (\citealp{manova2013credit}).
     \medskip
-    \item Financial friction affects firms' exporting behavior
+    \item Global monetary shocks (especially the US shock) are the main driver of the global financial cycle (\citealp{miranda2020us}).
     \medskip
-    \item International monetary shocks are the main driver of the global financial cycle
-    \medskip
-    \item  In an era of growing global financial and trade integration, understanding how global monetary shocks affect export prices by affecting firms' financial conditions is quite important
-    \medskip
+    \item Question: how do global monetary shocks affect firms' export behavior (especially pricing) through the financial friction channel?
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Motivating fact}
+    \begin{itemize}
+        \item A tightening \textbf{US Fed} monetary policy shock will \textbf{increase} the average export price of Chinese firms.
+        \begin{columns}
+    	\column{0.5\columnwidth}
+    	\begin{figure}[htbp]
+                \centering
+                \includegraphics[width=1.1\columnwidth]{latex/slides/pic_Nov2023/brw_monthly.png}
+                \label{fig.US_shock}
+    	\end{figure}
+    	\column{0.5\columnwidth}
+    	\begin{figure}[htbp]
+                \centering
+                \includegraphics[width=1.1\columnwidth]{latex/slides/pic_Nov2023/brw_annual.png}
+                \label{fig.EU_shock}
+    	\end{figure}
+        \end{columns}
+    \end{itemize}
+\end{frame}
+
 \begin{frame}{This paper}
+
 \begin{itemize}
-    \item Using high-frequency exogenous monetary shocks, monthly custom transaction records, and comprehensive firm-level balance sheet data
+    \item \textit{Main result}: 
+        \begin{itemize}
+        \item Tightening US shock increases China's export prices.
+        \end{itemize}
     \medskip
-    \item  A tightening US monetary policy shock significantly increases China's export prices through both the borrowing cost and liquidity channels.
+    \item \textit{Channels}: 
+    \begin{itemize}
+        \item Shocks mainly affect marginal costs rather than markups
+        \item Borrowing cost change is the main driver of marginal cost shifts
+        \item Monetary tightening also deteriorates firms' liquidity conditions
+        \item The impact is bigger for firms facing higher borrowing costs and tighter liquidity conditions. 
+    \end{itemize}
     \medskip
-    \item This impact is more pronounced for firms facing higher borrowing costs and tighter liquidity conditions. 
-    \medskip
-    \item A classical trade model that incorporates financial friction and external monetary policy shocks.
+    \item \textit{Model}: 
+        \begin{itemize}
+        \item We build a classical trade model augmented with credit constraints and external monetary shocks.
+        \end{itemize}
+        
 \end{itemize}
 \end{frame}
 
 
 \begin{frame}{Literature}
 \begin{itemize}
-    \item Financial friction and international trade
+    \item Financial frictions and international trade: 
     \begin{itemize}
-        \item Sector-specific and time-invariant constraint: \cite{manova2013credit}, \cite{lin2018international}
-        \item \textcolor{red}{This paper: firm-level time-variant constraint and the role of global monetary shocks}
+       \item The effect of credit constraints on firms' exports: e.g., \cite{manova2013credit}, \cite{manova2015firm}, etc.
+        \item Sectoral-level export value responses: \cite{lin2018international}
+        \item \textcolor{red}{This paper: how global monetary shocks affect export price through financial friction mechanism}
     \end{itemize}
     \item Determinants of export prices
         \begin{itemize}
-        \item Exchange rate shocks: \cite{amiti2014importers}, \cite{auer2018quality}.
-        \item Firm characteristics, destinations, and trade liberalization: \cite{manova2012export}, \cite{fan2015trade}, etc.
+        \item Exchange rate shocks: e.g., \cite{amiti2014importers}, \cite{auer2018quality}, etc.
+        \item Firm characteristics, destinations, and trade liberalization: e.g., \cite{manova2012export}, \cite{fan2015trade}, etc.
         \item \textcolor{red}{This paper: global monetary policy shocks}
     \end{itemize}
     \item Global monetary policy spillover
         \begin{itemize}
-        \item Real economy: \cite{bluedorn2011open}, \cite{di2023impact}
-        \item Asset prices: \cite{rogers2014evaluating}, \cite{miranda2020us}.
+        \item Real economy: e.g., \cite{bluedorn2011open}, \cite{di2023impact}, etc.
+        \item Asset prices: e.g., \cite{rogers2014evaluating}, \cite{miranda2020us}, etc.
         \item \textcolor{red}{This paper: exporter pricing behaviors}
     \end{itemize}
 \end{itemize}
@@ -76,22 +116,22 @@ HKUST Research Postgraduate Student Workshop
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{II. Data}
+\section{II. Data and Measurements}
 
 \begin{frame}{Data: Monetary Policy Shock}
     \begin{itemize}
-        \item Our US monetary policy shocks refer to \cite{bu2021unified}.
+        \item \cite{bu2021unified}.
         \begin{itemize}
-            \item This measure uses \cite{fama1973risk} two-step partial-least squares estimation using FOMC announcements.
+            \item It uses \cite{fama1973risk} two-step partial-least squares estimation using FOMC announcements.
         \end{itemize}
-        \item This measure has several advantages:
+        \item Advantages:
         \begin{enumerate}
             \item Unpredictable from past available information (exogenous);
             \item No significant information effect (pure policy shock);
             \item Bridge conventional and unconventional monetary policy regimes
         \end{enumerate}
-        \item We also use alternative measures for monetary policy shocks from \cite{nakamura2018high}, \cite{guraynak2005actions}, and \cite{jarocinski2020deconstructing}.
-        \item The whole series is from 1994 to 2022, but we will focus on the period from 2000 to 2006 (84 months) within the matched sample.
+        \item Other: \cite{nakamura2018high}, \cite{guraynak2005actions}, and \cite{jarocinski2020deconstructing}.
+        \item Sample: 2000 to 2006 (84 months).
     \end{itemize}
 \end{frame}
 
@@ -105,18 +145,16 @@ HKUST Research Postgraduate Student Workshop
 
 \begin{frame}{Data: Firm-level and Customs data}
     \begin{itemize}
-	\item First, we use annual surveys of Chinese manufacturing firms conducted by the National Bureau of Statistics of China (NBSC).
+	\item Annual surveys of Chinese manufacturing firms from the National Bureau of Statistics of China
 	\begin{itemize}
-		\item This dataset covers all state-owned enterprises and above-scale firms with annual sales of more than 5 million RMB from 1999 to 2007. 
+		\item Sample: state-owned enterprises and above-scale firms ($>$5 million RMB), 1999 to 2007 
+            \item Information: balance sheet variables, especially borrowing cost and liquidity conditions
 	\end{itemize}
-        \item Our research will focus on the variables related to two aspects:
-        \begin{enumerate}
-            \item Production costs and sales, including total wage payment, total operation inputs, sales income, etc.
-            \item Financial costs and liquidity, including financial expense and interest payment, total and net working capital, and cash holding.
-        \end{enumerate}
-        \item Then, we use monthly trade transaction records from the General Administration of Customs of China (GACC) from 2000-2006.
+        \medskip
+        \item Monthly customs data of China
         \begin{itemize}
-            \item This dataset provides universal information on Chinese trade transactions, including import and export values, quantities, product names and codes, source and destination countries, and firm types.
+            \item Sample: all exporting firms (except whole-sellers), 2000-2006
+            \item Information: import and export values, quantities, product names and codes, source and destination countries, and firm types
 	\end{itemize}
          
     \end{itemize}
@@ -158,43 +196,43 @@ HKUST Research Postgraduate Student Workshop
 
 \begin{frame}{Export price index}
     \begin{itemize}
-	\item We compute the unit values of each firm-product-country-year observation as the proxy of export prices:
+	\item We compute the unit values of each firm-product-country observation as the proxy of export prices:
         $$
-        P_{chit}=\frac{V_{chit}\cdot NER_{US,t}}{Q_{chit}}
+        P_{ihct}=\frac{V_{ihct}\cdot NER_{US,t}}{Q_{ihct}}
         $$
-        \item We construct the firm-level Tornqvist price index as in \cite{smeets2013estimating}:
+        \item We construct the firm-level Tornqvist price index:
         \begin{itemize}
-            \item First, we aggregate the unit value to the firm-product level price, $P_{hit}=\sum_c s_{c,hit} P_{chit}$, where the value share is $s_{c,hit}=V_{chit}/V_{hit}$.
-            \item Second, we calculate the weighted average firm-product level price growth rate $\Delta_n \ln P_{hit} = \ln P_{hit}- \ln P_{hi(t-n)}$ across $n$ periods.
-            \item Then, we calculate the firm-level price change as: 
+            \item [1] The firm-product-level price, $P_{iht}=\sum_c s_{c,iht} P_{ihct}$.
+            \item [2] The firm-product-level price change: $\Delta_n \ln P_{iht} = \ln P_{iht}-\ln P_{ih(t-n)}$.
+            \item [3] The firm-level price index change:
             $$
-            \Delta_n \ln P_{it} = \sum _{h} \frac{s_{h,i(t-n)}+s_{h,it}}{2} \Delta_n \ln P_{hit}
+            \Delta_n \ln P_{it} = \sum _{h} \frac{s_{h,i(t-n)}+s_{h,it}}{2} \Delta_n \ln P_{iht}
             $$
-            where the product-specific value share is $s_{h,it}=V_{hit}/V_{it}$.
-            \item In the monthly regression, we set the time gap $n$ as 12 months.
+            where $s_{c,iht}=V_{ihct}/V_{iht}$ and $s_{h,it}=V_{iht}/V_{it}$.
+            \item In monthly regressions, the time gap $n=12$ means 12 months, 
+            \item In annual regressions, the time gap $n=1$ means 1 year.
         \end{itemize}
     \end{itemize}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{III. Empirical Results}
+\section{III. Results}
 
 \begin{frame}{Benchmark specification}
     \begin{itemize}
-        \item Our primary target is to study the impacts of monetary policy shocks on export prices.
-        \item In our benchmark empirical analysis, we use the below specifications:
-            \begin{equation}
-                \Delta \ln P_{it} = \alpha+\beta \cdot m_{t}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{it}
-            \end{equation}
+        \item We study the impacts of monetary policy shocks on export prices.
+        \item The baseline monthly price specification:
+        \begin{equation}
+            \Delta \ln P_{it} = \alpha+\beta \cdot m_{t}+ \Gamma \cdot \textbf{Z}_{it-n}+\xi_{i}+\varepsilon_{it}
+         \end{equation}
         \begin{itemize}
             \item $\Delta \ln P_{it}$: the year-over-year export price index change;
             \item $m_t$: the unexpected monetary policy shock at time $t$;
-            \item $\textbf{Z}_{it-1}$: firm-level (time-variant) lagged control terms;
-            \item $\xi_{i}$: firm-level (time-invariant) fixed effects.
-            \item $\beta$: the average export price response to the concurrent monetary policy surprises.
+            \item $\textbf{Z}_{it-n}$: a vector of firm-level lagged control terms (n=1 or 12);
+            \item $\xi_{i}$: firm-level (time-invariant) fixed effects;
+            \item $\beta$: coefficient of interest, the average export price response to the concurrent monetary policy surprises.
         \end{itemize}
-        
     \end{itemize}
 \end{frame}
 
@@ -230,7 +268,7 @@ HKUST Research Postgraduate Student Workshop
     \end{table}
 \end{frame}
 
-\begin{frame}{Robustness checks: Alternative monetary policy shocks}
+\begin{frame}{Robustness: Alternative shocks}
     \begin{table}[htbp]
         \centering
         \caption{Alternative monetary policy shocks}
@@ -270,7 +308,7 @@ HKUST Research Postgraduate Student Workshop
     \end{table}
 \end{frame}
 
-\begin{frame}[label=robustness_other]{Robustness checks: Other tests}
+\begin{frame}[label=robustness_other]{Other robustness}
     In addition, we also adopt other robustness tests:
     \medskip
     \begin{enumerate}
@@ -288,22 +326,23 @@ HKUST Research Postgraduate Student Workshop
 
 \begin{frame}{Decomposition of prices: markup vs marginal cost}
     \begin{itemize}
-        \item To study why prices adjust with monetary policy shocks, we further decompose export prices into markups and marginal costs.
+        \item Components: markups and marginal costs
         \begin{itemize}
-            \item The markup is estimated as the ratio of an input factor's output elasticity to its firm-specific factor payment share $\mu_{t}=\theta_{t}^{X}\left(\alpha_{t}^{X}\right)^{-1}$
-            \item We the structural assumptions of \cite{deloecker2012markups} and the GMM estimation by \cite{brooks2021agglomeration}.
+            \item Markup: the ratio of an input factor's output elasticity to its firm-specific factor payment share $\mu_{t}=\theta_{t}^{X}\left(\alpha_{t}^{X}\right)^{-1}$
+            \item Literature: \cite{deloecker2012markups} and \cite{brooks2021agglomeration}.
         \end{itemize}
-        \item We replace the price changes with the markup and marginal cost changes or add markups into the control terms. 
+        \item Specification: 
         \begin{equation}
-            \Delta \mu_{it} = \alpha +\beta \cdot brw_{t}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{it} \label{reg.markup}
+            \Delta \mu_{it} = \alpha +\beta \cdot m_{t}+ \Gamma \cdot \textbf{Z}_{it-n}+\xi_{i}+\varepsilon_{it} \label{reg.markup}
         \end{equation}
         \begin{equation}
-            \Delta \ln P_{it} = \alpha+\beta \cdot brw_{t}+ \gamma \cdot \Delta \mu_{it}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{i t} \label{reg.markup_int}
+            \Delta \ln P_{it} = \alpha+\beta \cdot m_{t}+ \gamma \cdot \Delta \mu_{it}+ \Gamma \cdot \textbf{Z}_{it-n}+\xi_{i}+\varepsilon_{i t} \label{reg.markup_int}
         \end{equation}
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Decomposition of prices: markup vs marginal cost}
+\begin{frame}{Price changes mainly driven by marginal costs}
+    
 \begin{table}[htbp]
     \centering
     \caption{Decomposition of prices: markup vs marginal cost}
@@ -311,8 +350,8 @@ HKUST Research Postgraduate Student Workshop
     \begin{threeparttable}
     \begin{tabular}{lcccccccc}
         \toprule
-        & (1)   & (2)   & (3)   & (4)   & (5)   & (6) & (7)   & (8) \\
         & \multicolumn{4}{c}{Monthly sample} & \multicolumn{4}{c}{Annual sample}  \\
+        & (1)   & (2)   & (3)   & (4)   & (5)   & (6) & (7)   & (8) \\
         \cline{2-5}  \cline{6-9}
         & $\Delta Markup_{it}$ & $\Delta ln(MC)_{it}$ & \multicolumn{2}{c}{$\Delta ln P_{it}$}  & $\Delta Markup_{it}$ & $\Delta MC_{it}$ & \multicolumn{2}{c}{$\Delta ln P_{it}$}\\
         \midrule
@@ -338,24 +377,30 @@ HKUST Research Postgraduate Student Workshop
     \end{threeparttable}
     }
     \label{tab.markup}
+
 \end{table}
 \end{frame}
 
 \begin{frame}{Borrowing cost and liquidity conditions}
     \begin{itemize}
-        \item Two hypotheses about the mechanism of monetary policy effects:
+        \item Hypotheses for mechanism:
         \begin{enumerate}
-            \item \textbf{Global borrowing cost channel}. A tightening US monetary shock deteriorates the financing environment and increases the borrowing cost of firms, forcing them to offset this cost by lifting export prices.
-            \item \textbf{Global liquidity channel}. A contractionary US monetary shock aggregates firms' liquidity conditions, which induces firms to raise prices to alleviate liquidity constraints.
+            \item \textbf{Borrowing cost channel}. A tightening shock increases the borrowing cost of firms
+            \item \textbf{Liquidity channel}. A contractionary US monetary shock aggravates firms' liquidity conditions
         \end{enumerate}
-        \item We will check whether and how borrowing costs and liquidity conditions of firms change with the monetary policy shocks:
+        \item Specification:
         \begin{equation}
-            \Delta F_{it} = \alpha +\beta \cdot brw_{t}+ \Gamma \cdot \textbf{Z}_{it-1}+\xi_{i}+\varepsilon_{it} \label{reg.liquid}
+            \Delta F_{it} = \alpha +\beta \cdot m_{t}+ \Gamma \cdot \textbf{Z}_{it-n}+\xi_{i}+\varepsilon_{it} \label{reg.liquid}
         \end{equation}
+        \item $F_{it}$ include:
+        \begin{itemize}
+            \item Borrowing costs: interest expense and financial cost over total liability and current liability.
+            \item Liquidity conditions: working capital, net liquid asset, cash over total assets, and accounts receivable over total sales.
+        \end{itemize}
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Borrowing cost and liquidity conditions}
+\begin{frame}{Borrowing cost rises and liquidity worsens}
     \begin{table}[htbp]
         \centering
         \caption{Borrowing cost channel and liquidity channel}
@@ -363,6 +408,7 @@ HKUST Research Postgraduate Student Workshop
         \begin{threeparttable}
         \begin{tabular}{lcccccccc}
             \toprule
+            &\multicolumn{4}{c}{Borrowing costs} & \multicolumn{4}{c}{Liquidity conditions} \\
             & (1)   & (2)   & (3)   & (4)   & (5)   & (6) & (7)   & (8) \\
             & $\Delta IE/L$ & $\Delta IE/CL$ & $\Delta FN/L$ & $\Delta FN/CL$ & $\Delta WC$  & $\Delta Liquid$ & $\Delta Cash$ & $\Delta Arec$ \\
             \midrule
@@ -387,51 +433,11 @@ HKUST Research Postgraduate Student Workshop
     \end{table}
 \end{frame}
 
-\begin{frame}{Confounding effects of other production costs}
+\begin{frame}{Bigger impacts with higher costs and tighter liquidity}
     \begin{table}[htbp]
         \centering
-        \caption{Discussion about other production costs}
-        \resizebox{0.9\columnwidth}{!}{
-        \begin{threeparttable}
-        \begin{tabular}{lccccc}
-            \toprule
-            & (1)   & (2)   & (3)   & (4)   & (5) \\
-            & $\Delta Input/Sales$ & $\Delta Wage/Sales$ & \multicolumn{3}{c}{$\Delta ln P_{it}$}\\
-            \midrule
-            $brw_t$   & 0.403 & -0.164 & 0.142*** & 0.159*** & 0.154*** \\
-                  & (0.263) & (0.135) & (0.011) & (0.013) & (0.014) \\
-            $brw_t \times Input/Sales $ &       &       & 0.007 &       &       \\
-                  &       &       & (0.005) &       &      \\
-            $brw_t \times Wage/Sales $ &       &       &       & -0.108 &         \\
-                  &       &       &       & (0.078) &     \\
-            $brw_t \times \phi^{imp}_t$ &       &       &       &       & -0.027  \\
-                  &       &       &       &       & (0.032)  \\
-            $Debt_{it_1}$ & 0.436** & 0.241 &       &       &       \\
-                  & (0.180) & (0.162) &       &       &    \\
-            $\Delta ln P_{it-1}$ &       &       & 0.299*** & 0.299*** & 0.299***  \\
-                  &       &       & (0.003) & (0.003) & (0.003)  \\
-            $Sales_{it-1}$ &  1.075*** & -0.044   & -0.004*** & -0.004*** & -0.004*** \\
-                  &  (0.262) & (0.187) & (0.001) & (0.001) & (0.001) \\
-            \midrule
-            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes \\
-            N     & 1090620 & 1090620 & 917435 & 917435 & 917435 \\
-            \bottomrule
-        \end{tabular}
-            \begin{tablenotes}
-                \footnotesize
-                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(2) are changes in intermediate input cost over sales ratio and wage expense over sales ratio, respectively. The dependent variables in columns (3)-(7) are changes in monthly price. All regressions include firm fixed effects.
-    	\end{tablenotes}
-        \end{threeparttable}
-        }
-        \label{tab.other}
-    \end{table}
-\end{frame}
-
-\begin{frame}{Non-linear effects of borrowing cost and liquidity}
-    \begin{table}[htbp]
-        \centering
-        \caption{Non-linearity of borrowing cost channel and liquidity channel}
-        \resizebox{0.85\columnwidth}{!}{
+        \caption{Interactions with borrowing cost and liquidity}
+        \resizebox{0.78\columnwidth}{!}{
         \begin{threeparttable}
         \begin{tabular}{lcccccccc}
             \toprule
@@ -471,12 +477,52 @@ HKUST Research Postgraduate Student Workshop
         \end{threeparttable}
         }
         \label{tab.non-linearity}
-    \end{table}    
+    \end{table}
 \end{frame}
 
-\begin{frame}{Ordinary trade vs processing trade}
+\begin{frame}{Other production costs responses are insignificant}
+    \begin{table}[htbp]
+        \centering
+        \caption{Discussion about other production costs}
+        \resizebox{0.9\columnwidth}{!}{
+        \begin{threeparttable}
+        \begin{tabular}{lccccc}
+            \toprule
+            & (1)   & (2)   & (3)   & (4)   & (5) \\
+            & $\Delta Input/Sales$ & $\Delta Wage/Sales$ & \multicolumn{3}{c}{$\Delta ln P_{it}$}\\
+            \midrule
+            $brw_t$   & 0.403 & -0.164 & 0.142*** & 0.159*** & 0.154*** \\
+                  & (0.263) & (0.135) & (0.011) & (0.013) & (0.014) \\
+            $brw_t \times Input/Sales $ &       &       & 0.007 &       &       \\
+                  &       &       & (0.005) &       &      \\
+            $brw_t \times Wage/Sales $ &       &       &       & -0.108 &         \\
+                  &       &       &       & (0.078) &     \\
+            $brw_t \times \phi^{imp}_t$ &       &       &       &       & -0.027  \\
+                  &       &       &       &       & (0.032)  \\
+            $Debt_{it_1}$ & 0.436** & 0.241 &       &       &       \\
+                  & (0.180) & (0.162) &       &       &    \\
+            $\Delta ln P_{it-1}$ &       &       & 0.299*** & 0.299*** & 0.299***  \\
+                  &       &       & (0.003) & (0.003) & (0.003)  \\
+            $Sales_{it-1}$ &  1.075*** & -0.044   & -0.004*** & -0.004*** & -0.004*** \\
+                  &  (0.262) & (0.187) & (0.001) & (0.001) & (0.001) \\
+            \midrule
+            Firm FE & Yes   & Yes   & Yes   & Yes   & Yes \\
+            N     & 1090620 & 1090620 & 917435 & 917435 & 917435 \\
+            \bottomrule
+        \end{tabular}
+            \begin{tablenotes}
+                \footnotesize
+                \item Notes: Robust standard errors clustered at the firm level;  *, **, and *** indicate significance at 10\%, 5\%, and 1\% levels. The dependent variables in columns (1)-(2) are changes in intermediate input cost over sales ratio and wage expense over sales ratio, respectively. The dependent variables in columns (3)-(7) are changes in monthly price. All regressions include firm fixed effects.
+    	\end{tablenotes}
+        \end{threeparttable}
+        }
+        \label{tab.other}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Verification: processing trade responses are weaker}
     \begin{itemize}
-        \item \textbf{Processing trade}: a firm imports raw materials and intermediate inputs from a foreign firm for domestic processing and re-exports to the same firm. It is less dependent on external financing.
+        \item \textbf{Processing trade}: imports raw materials and intermediate inputs from a foreign firm for processing and re-exports to the same firm. It is less dependent on external financing (\cite{manova2016firms}).
     \end{itemize}
     \begin{table}[h]
         \centering
@@ -512,15 +558,14 @@ HKUST Research Postgraduate Student Workshop
 
 \begin{frame}{Alternative explanations}
     \begin{itemize}
-        \item \textbf{Demand shift}: Will global demand shift to Chinese goods in the global recession caused by tightening global monetary shock because of the lower quality?
+        \item \textbf{Demand shift}: Will global demand shift to Chinese goods in the global recession because of their lower quality?
         \begin{itemize}
             \item \textbf{Homogeneous}: reference priced or traded on an organized exchange.
-            \item \textbf{Differentiated}: each firm sets a different price for its product.
         \end{itemize}
     \end{itemize}
     \begin{table}[htbp]
         \centering
-        \caption{Homogeneous good vs differentiated good}
+        \caption{Price response for homogeneous goods}
         \resizebox{0.9\columnwidth}{!}{
         \begin{threeparttable}
         \begin{tabular}{lcccccccc}
@@ -555,12 +600,12 @@ HKUST Research Postgraduate Student Workshop
 
 \begin{frame}[label=alt_erpt]{Alternative explanations}
     \begin{itemize}
-        \item \textbf{Exchange rate pass-through}: A tightening US monetary shock will induce the depreciation of RMB, which will increase export prices denominated in RMB.
-        \item However, this explanation is not likely to be the main reason:
+        \item \textbf{Exchange rate pass-through}: Is the export price increase driven by RMB depreciation?
+        \item Refutation:
         \begin{enumerate}
-            \item In most of the sample period, China's exchange rate regime is fixed to the US dollar. US tightening will cause the RMB to depreciate against other third-country currencies.
-            \item We control the change of bilateral real exchange rate in the annual firm-product-country level regression, and the results are consistent. \hyperlink{appendix_tab.altagg}{\beamergotobutton{Alternative aggregation}}
-            \item The average export exchange rate pass-through of Chinese firms is near complete (about 95\%), as in \cite{li2015exchange}.
+            \item Control the change of bilateral real exchange rate. \hyperlink{appendix_tab.altagg}{\beamergotobutton{Alternative aggregation}}
+            \item Complete export exchange rate pass-through (about 95\%), as in \cite{li2015exchange}.
+            \item Most samples are in the fixed regime. US tightening shock will cause the RMB to appreciate vs third-country currencies.
         \end{enumerate}
         
     \end{itemize}
@@ -571,11 +616,11 @@ HKUST Research Postgraduate Student Workshop
 
 \section{V. More Discussion}
 
-\begin{frame}{EU monetary policy shocks}
-    \begin{itemize}
-        \item The European Central Bank (ECB) is another major central bank.
-        \item What if we replace US Fed shocks with ECB shocks?
-    \end{itemize}
+\begin{frame}{EU shocks produce weaker effects}
+\begin{itemize}
+    \item Special role of US policy as a main driver of the global financial cycle.
+\end{itemize}
+    
     \begin{table}[htbp]
         \centering
         \caption{Export price responses to EU monetary policy shocks}
@@ -605,16 +650,11 @@ HKUST Research Postgraduate Student Workshop
         }
         \label{tab.EU}
     \end{table}
-    \begin{itemize}
-        \item This indicates the special role of US policy as a main driver of the global financial cycle.
-    \end{itemize}
+
 \end{frame}
 
-\begin{frame}{Exchange rate regime shift: fixed VS floating}
-    \begin{itemize}
-        \item After July 2005, China's exchange rate regime shifted from the US dollar peg to targeting a basket of currencies (semi-floating).
-        \item Floating exchange rate regime acts as a buffer to alleviate adverse shock.
-    \end{itemize}
+\begin{frame}{Floating exchange rate regime is a buffer}
+
     \begin{table}[htbp]
         \centering
         \caption{Exchange rate regime shift: before and after July 2005}
@@ -650,11 +690,9 @@ HKUST Research Postgraduate Student Workshop
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{VI. Model}
 
-\begin{frame}{Preferences and demand}
+\begin{frame}{Preference}
 
-We introduce a general trade model as Meliz (2003) and Manova (2012). \\
-
-The source and destination countries are denoted by $i$ and $j$, respectively. Consumers in the country $j$ can access a set of goods $X_j$. \\
+Follow Meliz (2003) and Manova (2012). The source and destination countries are denoted by $i$ and $j$, respectively. Consumers in the country $j$ can access a set of goods $X_j$. \\
 \medskip
 A representative consumer in country $j$ has a constant elasticity of substitution (CES) utility:
 
@@ -668,7 +706,7 @@ where $\chi_{ij}$ is country $j$’s quantity consumed of variety $\omega$ origi
 
 
 
-\begin{frame}{Preferences and demand}
+\begin{frame}{Demand}
 
 Consumer optimization yields the following demand function for variety $\omega$:
 
@@ -677,9 +715,9 @@ Consumer optimization yields the following demand function for variety $\omega$:
 \end{equation}
 
 
-where $p_{ij}(\omega)$ is the price of variety $\omega$, $P_j=(\int_{\omega \in \Omega_j} [p_{ij}(\omega)]^{1-\sigma} d \omega)^{\frac{1}{1-\sigma}}$ is an aggregate price index in country $j$, and $Y_j$ represents the total expenditure of country $j$. \\
-
-We assume that it is affected by global monetary shocks $m$ (e.g., US shock): $Y_j=\bar{Y_j}+\rho_{Y}^j m+\epsilon_Y$, where $\bar{Y_j}$ is a trend component of $Y_j$, $\rho_{Y}^j<0$, $\epsilon_Y$ is a random error, and a positive $m$ means a tightening shock.
+where $p_{ij}(\omega)$ is the price of variety $\omega$, $P_j=(\int_{\omega \in \Omega_j} [p_{ij}(\omega)]^{1-\sigma} d \omega)^{\frac{1}{1-\sigma}}$ is an aggregate price index in country $j$, and $Y_j$ represents the total expenditure of country $j$.
+\vfill
+Assumption: $Y_j=\bar{Y_j}+\rho_{Y}^j m+\epsilon_Y$, where $\bar{Y_j}$ is a trend component of $Y_j$, $\rho_{Y}^j<0$, $\epsilon_Y$ is a random error, and a positive $m$ means a tightening shock.
 
 \end{frame}
 
@@ -690,13 +728,20 @@ We assume that it is affected by global monetary shocks $m$ (e.g., US shock): $Y
 \textbf{Assumption}: working capital constraint
 \vfill
 
-A fraction $\delta_i$ of the input costs should be borrowed from outside financial institutions and paid in advance. Here $\delta_i$ $\in$ [0, 1] and is a decreasing function of the firm's liquidity condition and trade credit: 
+A fraction $\delta_i$ ($\in$ [0, 1]) of the input costs should be borrowed from outside financial institutions and paid in advance.
 
 $$
 \delta_i \equiv 1-c_i^\gamma-\zeta_i
 $$
 
-where $c_i$ $\in$ [0, 1] and is the liquidity condition (bigger value means better situation), $\gamma$ is a positive constant and reflects the elasticity of borrowing fraction with respect to liquidity condition, $\zeta_i$ is the fraction of input costs that are supported by trade credit which is assumed to be affected by global monetary shocks $c_i=\bar{c_i}+\rho_c^i m+\epsilon_c^i$, $\rho_c^i<0$, $\zeta_i=\bar{\zeta_i}+\rho_\zeta^i m+\epsilon_t^i$,  $\rho_\zeta^i<0$. These impacts are supported by literature and our empirical evidence.
+where $c_i$ $\in$ [0, 1] is the liquidity condition, $\gamma>0$ reflects the elasticity, and $\zeta_i$ $\in$ [0, 1] is trade credit. We assume:
+
+$$
+c_i=\bar{c_i}+\rho_c^i m+\epsilon_c^i,\ \rho_c^i<0
+$$
+$$
+\zeta_i=\bar{\zeta_i}+\rho_\zeta^i m+\epsilon_t^i,\ \rho_\zeta^i<0
+$$.
 
 \end{frame}
 
@@ -718,14 +763,15 @@ $$
 C_{ij}=\frac{w_i(1-\delta_i+\delta_i R_i)}{\phi_i} \frac{p_{ij}(\omega)^{-\sigma}}{P_j^{-\sigma}} Y_j
 $$ 
 
-$w_i$ is the price of input and $R_i$ is the gross borrowing interest rate in country $i$. We explicitly assume $R_i=\bar{R_i}+\rho_R^i m+\epsilon_R^i$, $\rho_R^i>0$. To capture the demand side effect, we allow the input price to fluctuate in response to global monetary shocks: $w_i=\bar{w_i}+\rho_w^i m + \epsilon_w^i$, $\rho_w^i<0$.
+$w_i$ is the price of input and $R_i$ is the gross borrowing interest rate in country $i$. We assume $R_i=\bar{R_i}+\rho_R^i m+\epsilon_R^i$, $\rho_R^i>0$. To capture the demand side effect, we allow the input price to fluctuate in response to global monetary shocks: $w_i=\bar{w_i}+\rho_w^i m + \epsilon_w^i$, $\rho_w^i<0$.
 
 \end{frame}
 
 
 \begin{frame}{Firm's problem}
 
-We also assume that firms cannot borrow more than a fraction $\theta$ of the expected cash flow from exporting, and it is smaller when $R$ is higher. The intuition behind this is that higher interest rates imply higher risk, and access to credit should be lower. Without loss of generality, we can assume $\theta=R^{-\nu}$, where $\nu$ is $>0$ and reflects the elasticity of financial credit access with respect to the interest rate. The optimization problem of the firm is 
+\textbf{Assumption}: firms cannot borrow more than a fraction $\theta$ of the expected cash flow from exporting, and it is smaller when $R$ is higher (higher interest rates imply higher risk).$\theta=R^{-\nu}$, where $\nu>0$.
+\vfill 
 
 $$
 \max_{p} \ (p- \frac{\tau w(1-\delta+\delta R^\alpha)}{\phi}) \frac{p^{-\sigma}}{P^{-\sigma}} Y
@@ -743,7 +789,7 @@ $$
 
 \textbf{Case 1: borrowing constraint is binding: }
 
-If $\theta\leq\bar{\theta}$, where $\bar{\theta}$ is a threshold, the borrowing constraint is binding and we can rewrite the borrowing constraint as 
+If $\theta\leq\bar{\theta}$, where $\bar{\theta}$ is a threshold, the borrowing constraint is binding, and we can rewrite the borrowing constraint as 
 
 \begin{equation}
 p=[(1-R^{\nu})\zeta+(1-c^\gamma)R^{\nu}] \frac{\tau w}{\phi}
@@ -757,40 +803,19 @@ If $\theta>\bar{\theta}$, the borrowing constraint is not binding. Solving the u
 p=\frac{\sigma}{\sigma-1}\frac{\tau w [c^\gamma+\zeta+(1-c^\gamma-\zeta) R^\alpha]}{\phi}
 \end{equation}
 
-This reduces to $p=\frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}$ if $c$=0 and $R$=1, which is similar to \cite{melitz2003impact} 
+This reduces to $p=\frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}$ if $c$=0 and $R$=1, similar to \cite{melitz2003impact} 
 
 \end{frame}
 
 
-\begin{frame}{Proposition}
+\begin{frame}[label=Proposition]{Proposition}
 
 \textbf{Proposition 1.} The export price increases with the borrowing rate and decreases with liquidity condition and trade credit: $\frac{\partial p}{\partial R}>0$, $\frac{\partial p}{\partial c}<0$ $\frac{\partial p}{\partial \zeta}<0$
 \vfill
 \textbf{Proposition 2.} The export price increases after a tightening shock (i.e. $\frac{\partial p}{\partial m}>0$) if the supply side effect dominates.
+\hyperlink{proof}{\beamergotobutton{Proof}}
 \vfill
 \textbf{Proposition 3.} The impact of monetary shock on export price (i.e. $\frac{\partial p}{\partial m}$) is non-linear. Conditional on the value of specific parameters, it is bigger when $R$ is larger and $c$ (or $\zeta$) is smaller.
-
-\end{frame}
-
-\begin{frame}{Proposition}
-
-\textbf{Proof of Proposition 2}
-
-If the borrowing constraint is binding:
-
-\begin{align*} 
-\frac{\partial p}{\partial m} =&\frac{\partial p}{\partial R}\frac{\partial R}{\partial m}+\frac{\partial p}{\partial c}\frac{\partial c}{\partial m}+\frac{\partial p}{\partial \zeta}\frac{\partial \zeta}{\partial m}+\frac{\partial p}{\partial w}\frac{\partial w}{\partial m}  \\
-=& \frac{\tau w}{\phi}(1-c^\gamma-\zeta)\nu R^{\nu-1} \rho_R+ \frac{\tau w}{\phi} R^\nu(-1)\gamma c^{\gamma-1} \rho_c +\\  
-& \frac{\tau w}{\phi}(1-R^\nu) \rho_t+\frac{\tau}{\phi}[(1-R^\nu)\zeta+(1-c^\gamma)R^\nu] \rho_w
-\end{align*} 
-
-If the borrowing constraint is not binding:
-
-\begin{align*} 
-\frac{\partial p}{\partial m} =&\frac{\partial p}{\partial R}\frac{\partial R}{\partial m}+\frac{\partial p}{\partial c}\frac{\partial c}{\partial m}+\frac{\partial p}{\partial \zeta}\frac{\partial \zeta}{\partial m}+\frac{\partial p}{\partial w}\frac{\partial w}{\partial m}  \\
-=& \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}[\alpha(1-c^\gamma-\zeta)R^{\alpha-1}] \rho_R + \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}\gamma(1-R^\alpha)c^{\gamma-1} \rho_c + \\
-& \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi} (1-R^\alpha) \rho_\zeta + \frac{\sigma}{\sigma-1}\frac{\tau}{\phi}[c^\gamma+\zeta+(1-c^\gamma-\zeta)R^\alpha] \rho_w
-\end{align*} 
 
 \end{frame}
 
@@ -829,11 +854,12 @@ Our conclusion is robust to:
 \begin{frame}{Conclusion}
 
 \begin{itemize}
-\item This paper studies the impact of the US monetary policy shocks on China's export prices using exogenous monetary policy shocks and detailed monthly customs data. 
-\item A tightening US monetary policy shock significantly increases China's export prices through both the borrowing cost and liquidity channels.
-\item Although we focus on the response of exporter behaviors, the finding may also provide enlightenment for other topics such as:
+
+\item A tightening US monetary policy shock significantly increases China's export prices through both borrowing cost and liquidity channels.
+\medskip
+\item Enlightenment for other topics:
     \begin{itemize}
-        \item The global monetary policy spillover on the real economy and asset prices through trade channels;
+        \item The global monetary policy spillover through trade channels;
         \item The impact of international monetary shocks on global inflation in the presence of cross-border trade linkages;
         \item The optimal domestic policy and international coordination in response to adverse global shocks under financial friction.
     \end{itemize}
@@ -848,13 +874,10 @@ Our conclusion is robust to:
    Thank You
 \end{frame}
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Appendix}
-
-\subsection{Extra Tables}
+\section*{Appendix}
 
 \begin{frame}[label=appendix_tab.altagg]{Alternative aggregation levels of export prices}
 \begin{table}[htbp]
@@ -1078,6 +1101,28 @@ When interest rate $R$ increases, liquidity condition $c$ and trade credit $\zet
          \caption{\small Both variable and fixed costs are paid in advance}
          \label{fig: fixed_cost}
 \end{figure}
+
+\end{frame}
+
+\begin{frame}[label=proof]{Proof of Proposition 2}
+
+If the borrowing constraint is binding:
+
+\begin{align*} 
+\frac{\partial p}{\partial m} =&\frac{\partial p}{\partial R}\frac{\partial R}{\partial m}+\frac{\partial p}{\partial c}\frac{\partial c}{\partial m}+\frac{\partial p}{\partial \zeta}\frac{\partial \zeta}{\partial m}+\frac{\partial p}{\partial w}\frac{\partial w}{\partial m}  \\
+=& \frac{\tau w}{\phi}(1-c^\gamma-\zeta)\nu R^{\nu-1} \rho_R+ \frac{\tau w}{\phi} R^\nu(-1)\gamma c^{\gamma-1} \rho_c +\\  
+& \frac{\tau w}{\phi}(1-R^\nu) \rho_t+\frac{\tau}{\phi}[(1-R^\nu)\zeta+(1-c^\gamma)R^\nu] \rho_w
+\end{align*} 
+
+If the borrowing constraint is not binding:
+
+\begin{align*} 
+\frac{\partial p}{\partial m} =&\frac{\partial p}{\partial R}\frac{\partial R}{\partial m}+\frac{\partial p}{\partial c}\frac{\partial c}{\partial m}+\frac{\partial p}{\partial \zeta}\frac{\partial \zeta}{\partial m}+\frac{\partial p}{\partial w}\frac{\partial w}{\partial m}  \\
+=& \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}[\alpha(1-c^\gamma-\zeta)R^{\alpha-1}] \rho_R + \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi}\gamma(1-R^\alpha)c^{\gamma-1} \rho_c + \\
+& \frac{\sigma}{\sigma-1}\frac{\tau w}{\phi} (1-R^\alpha) \rho_\zeta + \frac{\sigma}{\sigma-1}\frac{\tau}{\phi}[c^\gamma+\zeta+(1-c^\gamma-\zeta)R^\alpha] \rho_w
+\end{align*} \\
+\hyperlink{Proposition}{\beamergotobutton{Back}}
+
 
 \end{frame}
 
