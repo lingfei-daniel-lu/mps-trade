@@ -39,17 +39,17 @@ esttab month_brw_HS6_* using tables\month_HS6.csv, replace b(3) se(3) noconstant
 
 *-------------------------------------------------------------------------------
 
-* 3. USD price index
+* 3. RMB price index
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo month_brw_firm_USD_1: reghdfe dlnprice_USD_YoY brw, a(firm_id) vce(cluster firm_id)
-eststo month_brw_firm_USD_2: reghdfe dlnprice_USD_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
-eststo month_brw_firm_USD_3: reghdfe dlnprice_USD_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo month_brw_firm_RMB_1: reghdfe dlnprice_RMB_YoY brw, a(firm_id) vce(cluster firm_id)
+eststo month_brw_firm_RMB_2: reghdfe dlnprice_RMB_YoY l.dlnprice_YoY brw, a(firm_id) vce(cluster firm_id)
+eststo month_brw_firm_RMB_3: reghdfe dlnprice_RMB_YoY brw l.dlnprice_YoY l12.lnrSI, a(firm_id) vce(cluster firm_id)
 
-estfe month_brw_firm_USD_*, labels(firm_id "Firm FE")
-esttab month_brw_firm_USD_* using tables\month_USD.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
+estfe month_brw_firm_RMB_*, labels(firm_id "Firm FE")
+esttab month_brw_firm_RMB_* using tables\month_RMB.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress
 
 *-------------------------------------------------------------------------------
 
@@ -229,17 +229,20 @@ esttab month_brw_*_int using tables\month_trade_int.csv, replace b(3) se(3) noco
 
 * 14. Country heterogeneity
 
-* 14.1 Subsamples
+* 14.1 Country group
 
 use samples\sample_monthly_exp,clear
 gen USA=1 if coun_aim=="美国"
+replace USA=0 if USA==.
 
 eststo month_brw_USA: reghdfe dlnprice_YoY c.brw#c.USA dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
 eststo month_brw_EU: reghdfe dlnprice_YoY c.brw#c.EU dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
 eststo month_brw_OECD: reghdfe dlnprice_YoY c.brw#c.OECD dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
 eststo month_brw_EME: reghdfe dlnprice_YoY c.brw#c.EME dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
+eststo month_brw_peg: reghdfe dlnprice_YoY c.brw#c.peg_USD dlnRER dlnrgdp, a(group_id) vce(cluster FRDM)
 
-esttab month_brw_USA month_brw_EU month_brw_OECD month_brw_EME using tables\month_brw_country.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
+estfe month_brw_USA month_brw_EU month_brw_OECD month_brw_EME month_brw_peg, labels(group_id "Firm-Product-Country FE")
+esttab month_brw_USA month_brw_EU month_brw_OECD month_brw_EME month_brw_peg using tables\month_brw_country.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(*brw* dlnRER dlnrgdp)
 
 * 14.2 Top partners
 
@@ -354,3 +357,21 @@ eststo month_brw_Markup_5: reghdfe dlnprice_YoY brw c.brw#c.l.Markup_DLWTLD l12.
 eststo month_brw_Markup_6: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD_1st l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
 eststo month_brw_dMarkup_1: reghdfe dlnprice_YoY brw c.brw#c.s12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+*-------------------------------------------------------------------------------
+
+* 21. Market-specific exposure
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
+xtset firm_id time
+
+eststo month_exposure_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_US lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_exposure_EU: reghdfe dlnprice_YoY brw c.brw#c.exposure_EU lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_exposure_OECD: reghdfe dlnprice_YoY brw c.brw#c.exposure_OECD lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo month_exposure_peg_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_peg_US lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+estfe month_exposure_*, labels(firm_id "Firm FE")
+esttab month_exposure_* using tables\month_exposure.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw *brw*)
