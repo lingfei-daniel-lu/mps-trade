@@ -116,3 +116,28 @@ eststo CWPoP_brw: reghdfe D.lnCWPoP brw lnrSI, a(firm_id) vce(cluster firm_id)
 
 * Total profit to sales income
 eststo TPoS_brw: reghdfe D.TPoS brw lnrSI, a(firm_id) vce(cluster firm_id)
+
+*-------------------------------------------------------------------------------
+
+* 3. Liquidity/Borrowing cost and markup
+
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched)
+keep if exp_int>0
+xtset firm_id year
+
+* Liquidity (first stage)
+eststo markup_liquid_1: reghdfe D.Liquid brw c.brw#c.l.Markup_High L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo markup_liquid_2: reghdfe D.Cash brw c.brw#c.l.Markup_High L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo markup_liquid_3: reghdfe D.Turnover brw c.brw#c.l.Markup_High L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo markup_liquid_4: reghdfe D.Arec brw c.brw#c.l.Markup_High L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+* Borrowing cost (first stage)
+eststo markup_borrow_1: reghdfe D.IEoL brw c.brw#c.l.Markup_High L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo markup_borrow_2: reghdfe D.IEoCL brw c.brw#c.l.Markup_High L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo markup_borrow_3: reghdfe D.FNoL brw c.brw#c.l.Markup_High L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo markup_borrow_4: reghdfe D.FNoCL brw c.brw#c.l.Markup_High L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe markup_liquid_* markup_borrow_*, labels(firm_id "Firm FE")
+esttab markup_liquid_* markup_borrow_* using tables\firm_liquid_markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps

@@ -337,18 +337,14 @@ graph hbar (asis) _b_brw, over(countrycode, label(labsize(*0.45)) sort(rank_exp)
 
 graph export tables_Dec2023_v2\brw_month_country_20.png, as(png) replace
 
-/*
-egen rank = rank(-_b_brw)
+drop if _b_brw==.
 gen lower_bound = _b_brw - 1.645 * _se_brw
 gen upper_bound = _b_brw + 1.645 * _se_brw
 
-keep countrycode _b_brw _se_brw lower_bound upper_bound rank
-sort rank
+keep countrycode _b_brw _se_brw lower_bound upper_bound rank_exp
+sort rank_exp
 
-twoway (bar _b_brw rank, horizontal) ///
-       (rcap lower_bound upper_bound rank, horizontal) ///
-       , ytitle("Country Code") xtitle("Export price responses to US monetary policy shocks")
-*/
+twoway (bar _b_brw rank_exp, horizontal) (rcap lower_bound upper_bound rank_exp, horizontal), ytitle("Country Code") xtitle("Export price responses to US monetary policy shocks")
 	   
 *-------------------------------------------------------------------------------
 
@@ -588,11 +584,11 @@ cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
 eststo Markup_1: reghdfe dlnprice_YoY brw c.brw#c.Markup_High l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo Markup_2: reghdfe dlnprice_YoY brw c.brw#c.l.Markup_High l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo Markup_2: reghdfe dlnprice_YoY brw c.brw#c.l12.Markup_High l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo Markup_3: reghdfe dlnprice_YoY brw c.brw#c.Markup_High_1st l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 eststo Markup_4: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo Markup_5: reghdfe dlnprice_YoY brw c.brw#c.l.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo Markup_5: reghdfe dlnprice_YoY brw c.brw#c.l12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo Markup_6: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD_1st l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe Markup_*, labels(firm_id "Firm FE")

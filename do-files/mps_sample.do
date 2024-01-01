@@ -341,8 +341,8 @@ use CIE\cie_credit_v2,clear
 * Calculate firm-level markup from CIE
 merge 1:1 FRDM year using markup\cie9907markup, nogen keep(matched master) keepus(Markup_* tfp_*)
 merge n:1 FRDM using markup\cie9907markup_1st, nogen keep(matched master)
-winsor2 Markup_*, trim replace by(cic2)
-winsor2 tfp_*, trim replace by(cic2)
+winsor2 Markup_*, trim replace
+winsor2 tfp_*, trim replace
 keep FRDM year cic2 Markup_* tfp_*
 * High-Markup vs Low-Markup
 bys year cic2: egen Markup_median=median(Markup_DLWTLD)
@@ -364,6 +364,7 @@ cd "D:\Project E"
 use CIE\cie_credit_v2,clear
 merge n:1 year using MPS\brw\brw_94_22, nogen keep(matched)
 merge n:1 FRDM year using CIE\cie_int, nogen keep(matched master)
+merge n:1 FRDM year using customs_matched\customs_matched_exposure, nogen keep(matched master)
 egen firm_id=group(FRDM)
 xtset firm_id year
 save samples\cie_credit_brw,replace
