@@ -302,12 +302,20 @@ rename ExtFin ExtFin_cic2
 * Add MWZ (2015) measures
 merge n:1 cic_adj using "D:\Project C\credit\CIC_MWZ",nogen keep(matched)
 * (PCA) FPC is the first principal component of external finance dependence and asset tangibility
+* Manova FPC
 pca Tang_US ExtFin_US
 factor Tang_US ExtFin_US,pcf
 factortest Tang_US ExtFin_US
 rotate, promax(3) factors(1)
 predict f1
 rename f1 FPC_US
+* LLWY FPC
+pca Liquid_cic2 Cash_cic2
+factor Liquid_cic2 Cash_cic2,pcf
+factortest Liquid_cic2 Cash_cic2
+rotate, promax(3) factors(1)
+predict f1
+rename f1 FPC_cic2
 * Match affiliation info
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
@@ -782,7 +790,7 @@ merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
-merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
+merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnNER dlnRER dlnrgdp inflation)
 merge n:1 coun_aim using country_X\country_tag, nogen keep(matched) keepus(peg_USD OECD EU EME)
 merge n:1 coun_aim using "D:\Project C\sample_matched\customs_matched_top_partners",nogen keep(matched) keepus(rank_exp)
 * add monetary policy shocks
