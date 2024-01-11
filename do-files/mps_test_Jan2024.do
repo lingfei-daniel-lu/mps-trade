@@ -250,7 +250,26 @@ esttab single_* using tables_Jan2024\single.csv, replace b(3) se(3) noconstant s
 
 *-------------------------------------------------------------------------------
 
-* A7. Alternative FE and cluster
+* A7. Ownership type
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo SOE_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="SOE", a(firm_id) vce(cluster firm_id)
+eststo SOE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="SOE", a(firm_id) vce(cluster firm_id)
+eststo MNE_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="MNE", a(firm_id) vce(cluster firm_id)
+eststo MNE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="MNE", a(firm_id) vce(cluster firm_id)
+eststo DPE_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="DPE", a(firm_id) vce(cluster firm_id)
+eststo DPE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="DPE", a(firm_id) vce(cluster firm_id)
+eststo JV_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="JV", a(firm_id) vce(cluster firm_id)
+eststo JV_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="JV", a(firm_id) vce(cluster firm_id)
+
+estfe SOE_* DPE_* MNE_* JV_*, labels(firm_id "Firm FE")
+esttab SOE_* DPE_* MNE_* JV_* using tables_Jan2024\ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("SOE" "SOE" "DPE" "DPE" "MNE" "MNE"  "JV" "JV")
+
+*-------------------------------------------------------------------------------
+
+* A8. Alternative FE and cluster
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -275,7 +294,7 @@ esttab FE_* cluster_* using tables_Jan2024\altFE.csv, replace b(3) se(3) noconst
 
 *-------------------------------------------------------------------------------
 
-* A8. RMB price
+* A9. RMB price
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -298,7 +317,7 @@ esttab RMB_* using tables_Jan2024\RMB.csv, replace b(3) se(3) noconstant star(* 
 
 *-------------------------------------------------------------------------------
 
-* A9. Additional control variables
+* A10. Additional control variables
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -323,7 +342,6 @@ xtset firm_id time
 
 eststo control_1: reghdfe dlnprice_YoY brw l.cpi_cn l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo control_2: reghdfe dlnprice_YoY brw l.iva_cn l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
 eststo control_3: reghdfe dlnprice_YoY brw l.cpi_us l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo control_4: reghdfe dlnprice_YoY brw l.ppi_us l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo control_5: reghdfe dlnprice_YoY brw l.lnvix l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
@@ -336,48 +354,24 @@ esttab control_* using tables_Jan2024\control.csv, replace b(3) se(3) noconstant
 
 *-------------------------------------------------------------------------------
 
-* A10. Ownership type
+* A11. Approximate time match
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo SOE_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="SOE", a(firm_id) vce(cluster firm_id)
-eststo SOE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="SOE", a(firm_id) vce(cluster firm_id)
-eststo MNE_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="MNE", a(firm_id) vce(cluster firm_id)
-eststo MNE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="MNE", a(firm_id) vce(cluster firm_id)
-eststo DPE_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="DPE", a(firm_id) vce(cluster firm_id)
-eststo DPE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="DPE", a(firm_id) vce(cluster firm_id)
-eststo JV_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="JV", a(firm_id) vce(cluster firm_id)
-eststo JV_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="JV", a(firm_id) vce(cluster firm_id)
+eststo app1_1: reghdfe dlnprice_YoY_app1 brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo app1_2: reghdfe dlnprice_YoY_app1 brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo app1_3: reghdfe dlnprice_YoY_app1 brw l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo app1_4: reghdfe dlnprice_YoY_app1 brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
-estfe SOE_* DPE_* MNE_* JV_*, labels(firm_id "Firm FE")
-esttab SOE_* DPE_* MNE_* JV_* using tables_Jan2024\ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("SOE" "SOE" "DPE" "DPE" "MNE" "MNE"  "JV" "JV")
+eststo app2_1: reghdfe dlnprice_YoY_app2 brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo app2_2: reghdfe dlnprice_YoY_app2 brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo app2_3: reghdfe dlnprice_YoY_app2 brw l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo app2_4: reghdfe dlnprice_YoY_app2 brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
-*-------------------------------------------------------------------------------
+estfe app1_* app2_*, labels(firm_id "Firm FE")
+esttab app1_* app2_* using tables_Jan2024\approximate.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("+- 1 month" "+- 1 month" "+- 1 month" "+- 1 month" "+- 2 months" "+- 2 months" "+- 2 months" "+- 2 months")
 
-* FA2. Country heterogeneity
-
-cd "D:\Project E"
-use samples\sample_monthly_exp,clear
-merge n:1 coun_aim using country_X\country_tag, nogen keep(matched)
-keep if rank_exp<=21
-merge n:1 year month using ER\NER_US_month,nogen keep(matched)
-xtset group_id time
-
-statsby _b _se n=(e(N)), by(countrycode rank_exp) clear: reghdfe dlnprice_YoY brw dlnRER dlnrgdp dlnNER_US, a(group_id) vce(cluster group_id)
-
-graph hbar (asis) _b_brw, over(countrycode, label(labsize(*0.45)) sort(rank_exp)) ytitle("Export price responses to US monetary policy shocks") nofill
-
-graph export tables_Jan2024\brw_month_country_20.png, as(png) replace
-
-drop if _b_brw==.
-gen lower_bound = _b_brw - 1.645 * _se_brw
-gen upper_bound = _b_brw + 1.645 * _se_brw
-
-keep countrycode _b_brw _se_brw lower_bound upper_bound rank_exp
-sort rank_exp
-
-twoway (bar _b_brw rank_exp, horizontal) (rcap lower_bound upper_bound rank_exp, horizontal), ytitle("Country Code") xtitle("Export price responses to US monetary policy shocks")
 	   
 *-------------------------------------------------------------------------------
 
@@ -586,6 +580,7 @@ esttab Rauch_* using tables_Jan2024\Rauch.csv, replace b(3) se(3) noconstant sta
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
 
 eststo Markup_1: reghdfe dlnprice_YoY brw c.brw#c.Markup_High l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo Markup_2: reghdfe dlnprice_YoY brw c.brw#c.l12.Markup_High l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
@@ -594,16 +589,6 @@ eststo Markup_3: reghdfe dlnprice_YoY brw c.brw#c.Markup_High_1st l12.lnrSI l.dl
 eststo Markup_4: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo Markup_5: reghdfe dlnprice_YoY brw c.brw#c.l12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo Markup_6: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD_1st l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-estfe Markup_*, labels(firm_id "Firm FE")
-esttab Markup_* using tables_Jan2024\markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("dummy" "dummy" "dummy" "level" "level" "level") order(*brw*)
-
-*-------------------------------------------------------------------------------
-
-* B7. Markup across sector
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
 
 estfe Markup_*, labels(firm_id "Firm FE")
 esttab Markup_* using tables_Jan2024\markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("dummy" "dummy" "dummy" "level" "level" "level") order(*brw*)
@@ -706,3 +691,50 @@ eststo updown_2: reghdfe dlnprice_YoY brw c.brw#c.real_increase c.brw#c.real_dec
 
 estfe up_* down_* updown_*, labels(firm_id "Firm FE")
 esttab up_* down_* updown_* using tables_Jan2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("tightening" "tightening" "easing" "easing" "any change" "any change") order(brw c.brw*)
+
+*-------------------------------------------------------------------------------
+
+* C2. Market-specific exposure
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
+xtset firm_id time
+
+eststo exposure_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_US l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_EU: reghdfe dlnprice_YoY brw c.brw#c.exposure_EU l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_OECD: reghdfe dlnprice_YoY brw c.brw#c.exposure_OECD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_peg_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_peg_US l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_all_1: reghdfe dlnprice_YoY brw c.brw#c.exposure_US c.brw#c.exposure_EU c.brw#c.exposure_OECD c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_all_2: reghdfe dlnprice_YoY brw c.brw#c.exposure_peg_US c.brw#c.exposure_EU c.brw#c.exposure_OECD c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+estfe exposure_*, labels(firm_id "Firm FE")
+esttab exposure_* using tables_Jan2024\exposure.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw *brw*)
+
+*-------------------------------------------------------------------------------
+
+* CF1. Country heterogeneity
+
+cd "D:\Project E"
+use samples\sample_monthly_exp,clear
+merge n:1 coun_aim using country_X\country_tag, nogen keep(matched)
+keep if rank_exp<=21
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+xtset group_id time
+
+statsby _b _se n=(e(N)), by(countrycode rank_exp) clear: reghdfe dlnprice_YoY brw dlnRER dlnrgdp dlnNER_US, a(group_id) vce(cluster group_id)
+
+graph hbar (asis) _b_brw, over(countrycode, label(labsize(*0.45)) sort(rank_exp)) ytitle("Export price responses to US monetary policy shocks") nofill
+
+graph export tables_Jan2024\brw_month_country_20.png, as(png) replace
+
+drop if _b_brw==.
+gen lower_bound = _b_brw - 1.645 * _se_brw
+gen upper_bound = _b_brw + 1.645 * _se_brw
+
+keep countrycode _b_brw _se_brw lower_bound upper_bound rank_exp
+drop rank_exp
+sort rank_exp
+
+twoway (bar _b_brw rank_exp, horizontal) (rcap lower_bound upper_bound rank_exp, horizontal), ytitle("Country Code") xtitle("Export price responses to US monetary policy shocks")

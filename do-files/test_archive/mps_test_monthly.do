@@ -382,3 +382,23 @@ eststo month_exposure_peg_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_peg_US l
 
 estfe month_exposure_*, labels(firm_id "Firm FE")
 esttab month_exposure_* using tables\month_exposure.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw *brw*)
+
+*-------------------------------------------------------------------------------
+
+* 22. EU shocks with interaction with export-to-EU exposure
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+merge m:1 year month using MPS\monthly\eu_shock_monthly,nogen keep(matched master)
+replace target_ea=0 if target_ea==.
+replace path_ea=0 if path_ea==.
+merge m:1 year month using MPS\monthly\eu_infoshock_monthly,nogen keep(matched master)
+rename (mp_median_mpd cbi_median_mpd) (mp_eu cbi_eu)
+replace mp_eu=0 if mp_eu==.
+replace cbi_eu=0 if cbi_eu==.
+merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
+xtset firm_id time
+
+eststo EU_exposure_1: reghdfe dlnprice_YoY target_ea path_ea c.target_ea#c.exposure_EU c.path_ea#c.exposure_EU l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo EU_exposure_2: reghdfe dlnprice_YoY mp_eu cbi_eu c.mp_eu#c.exposure_EU c.cbi_eu#c.exposure_EU l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)

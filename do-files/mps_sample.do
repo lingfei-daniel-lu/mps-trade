@@ -351,21 +351,23 @@ merge 1:1 FRDM year using markup\cie9907markup, nogen keep(matched master) keepu
 merge n:1 FRDM using markup\cie9907markup_1st, nogen keep(matched master)
 winsor2 Markup_*, trim replace
 winsor2 tfp_*, trim replace
-keep FRDM year cic2 Markup_* tfp_*
+keep FRDM year cic_adj cic2 Markup_* tfp_*
 * High-Markup vs Low-Markup
-bys year cic2: egen Markup_median=median(Markup_DLWTLD)
-gen Markup_High=1 if Markup_DLWTLD!=. & Markup_DLWTLD > Markup_median
-replace Markup_High=0 if Markup_DLWTLD!=. & Markup_DLWTLD <= Markup_median
-bys year cic2: egen Markup_median_1st=median(Markup_DLWTLD_1st)
-gen Markup_High_1st=1 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st > Markup_median_1st
-replace Markup_High_1st=0 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st <= Markup_median_1st
+bys year cic_adj: egen Markup_cic4=median(Markup_DLWTLD)
+bys year cic2: egen Markup_cic2=median(Markup_DLWTLD)
+gen Markup_High=1 if Markup_DLWTLD!=. & Markup_DLWTLD > Markup_cic2
+replace Markup_High=0 if Markup_DLWTLD!=. & Markup_DLWTLD <= Markup_cic2
+bys year cic2: egen Markup_cic2_1st=median(Markup_DLWTLD_1st)
+gen Markup_High_1st=1 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st > Markup_cic2_1st
+replace Markup_High_1st=0 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st <= Markup_cic2_1st
 * High-TFP vs Low-TFP
-bys year cic2: egen tfp_median=median(tfp_tld)
-gen tfp_High=1 if tfp_tld!=. & tfp_tld > tfp_median
-replace tfp_High=0 if tfp_tld!=. & tfp_tld <= tfp_median
-bys year cic2: egen tfp_median_1st=median(tfp_tld_1st)
-gen tfp_High_1st=1 if tfp_tld_1st!=. & tfp_tld_1st > tfp_median_1st
-replace tfp_High_1st=0 if tfp_tld_1st!=. & tfp_tld_1st <= tfp_median_1st
+bys year cic_adj: egen tfp_cic4=median(tfp_tld)
+bys year cic2: egen tfp_cic2=median(tfp_tld)
+gen tfp_High=1 if tfp_tld!=. & tfp_tld > tfp_cic2
+replace tfp_High=0 if tfp_tld!=. & tfp_tld <= tfp_cic2
+bys year cic2: egen tfp_cic2_1st=median(tfp_tld_1st)
+gen tfp_High_1st=1 if tfp_tld_1st!=. & tfp_tld_1st > tfp_cic2_1st
+replace tfp_High_1st=0 if tfp_tld_1st!=. & tfp_tld_1st <= tfp_cic2_1st
 save CIE\cie_markup,replace
 
 cd "D:\Project E"
@@ -552,6 +554,8 @@ drop if HS6=="" | FRDM=="" | quant==0 | value==0
 * mark processing or assembly trade
 gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
 replace process=0 if process==.
+/*gen assembly = 1 if shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
+replace assembly=0 if assembly==.*/
 * drop trade service firms
 foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
 	drop if strmatch(EN, "*`key'*") 
@@ -576,6 +580,12 @@ xtset group_id time
 by group_id: gen dlnprice_h_MoM=ln(price_h)-ln(L.price_h)
 by group_id: gen dlnprice_h_YoY=ln(price_h)-ln(L12.price_h)
 by group_id: gen dlnprice_h_next=ln(price_h)-ln(price_h[_n-1])
+by group_id: gen dlnprice_h_YoY_app1=dlnprice_h_YoY
+replace dlnprice_h_YoY_app1=ln(price_h)-ln(L11.price_h) if dlnprice_h_YoY_app1==.
+replace dlnprice_h_YoY_app1=ln(price_h)-ln(L13.price_h) if dlnprice_h_YoY_app1==.
+by group_id: gen dlnprice_h_YoY_app2=dlnprice_h_YoY_app1
+replace dlnprice_h_YoY_app2=ln(price_h)-ln(L10.price_h) if dlnprice_h_YoY_app2==.
+replace dlnprice_h_YoY_app2=ln(price_h)-ln(L14.price_h) if dlnprice_h_YoY_app2==.
 by group_id: gen dlnprice_h_RMB_MoM=ln(price_h_RMB)-ln(L.price_h_RMB)
 by group_id: gen dlnprice_h_RMB_YoY=ln(price_h_RMB)-ln(L12.price_h_RMB)
 by group_id: gen dlnprice_h_RMB_next=ln(price_h_RMB)-ln(price_h_RMB[_n-1])
@@ -592,14 +602,24 @@ by group_id: gen share_bar_YoY=0.5*(share_it+L12.share_it)
 replace share_bar_YoY=share_it if share_bar_YoY==.
 by group_id: gen share_bar_next=0.5*(share_it+share_it[_n-1])
 replace share_bar_next=share_it if share_bar_next==.
+by group_id: gen share_bar_YoY_app1=share_bar_YoY
+replace share_bar_YoY_app1=0.5*(share_it+L11.share_it) if share_bar_YoY_app1==.
+replace share_bar_YoY_app1=0.5*(share_it+L13.share_it) if share_bar_YoY_app1==.
+by group_id: gen share_bar_YoY_app2=share_bar_YoY_app1
+replace share_bar_YoY_app2=0.5*(share_it+L10.share_it) if share_bar_YoY_app1==.
+replace share_bar_YoY_app2=0.5*(share_it+L14.share_it) if share_bar_YoY_app1==.
+replace share_bar_YoY_app1=share_it if share_bar_YoY_app1==.
+replace share_bar_YoY_app2=share_it if share_bar_YoY_app2==.
 sort FRDM time
 by FRDM time: egen dlnprice_MoM=sum(dlnprice_h_MoM*share_bar_MoM), missing
 by FRDM time: egen dlnprice_YoY=sum(dlnprice_h_YoY*share_bar_YoY), missing
 by FRDM time: egen dlnprice_next=sum(dlnprice_h_next*share_bar_next), missing
+by FRDM time: egen dlnprice_YoY_app1=sum(dlnprice_h_YoY_app1*share_bar_YoY_app1), missing
+by FRDM time: egen dlnprice_YoY_app2=sum(dlnprice_h_YoY_app1*share_bar_YoY_app2), missing
 by FRDM time: egen dlnprice_RMB_MoM=sum(dlnprice_h_RMB_MoM*share_bar_MoM), missing
 by FRDM time: egen dlnprice_RMB_YoY=sum(dlnprice_h_RMB_YoY*share_bar_YoY), missing
 by FRDM time: egen dlnprice_RMB_next=sum(dlnprice_h_RMB_next*share_bar_next), missing
-collapse (sum) value (mean) process Rauch_*, by(FRDM time year month dlnprice_MoM dlnprice_YoY dlnprice_next dlnprice_RMB* HS6_count)
+collapse (sum) value (mean) process Rauch_*, by(FRDM time year month dlnprice_MoM dlnprice_YoY* dlnprice_next dlnprice_RMB* HS6_count)
 save customs_matched\customs_monthly_exp_firm,replace
 
 ********************************************************************************
@@ -613,7 +633,7 @@ use customs_matched\customs_matched_exp,replace
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
-merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnRER dlnrgdp inflation)
@@ -648,7 +668,7 @@ use customs_matched\customs_matched_exp_HS6,replace
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
-merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 replace brw=0 if brw==.
@@ -668,7 +688,7 @@ use customs_matched\customs_matched_exp_firm,replace
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
-merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 replace brw=0 if brw==.
@@ -787,7 +807,7 @@ use customs_matched\customs_monthly_exp,clear
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
-merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
 * add exchange rates and other macro variables
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US)
 merge n:1 year coun_aim using ER\RER_99_19,nogen keep(matched) keepus(NER RER dlnNER dlnRER dlnrgdp inflation)
@@ -818,7 +838,7 @@ use customs_matched\customs_monthly_exp_HS6,clear
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
-merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 replace brw=0 if brw==.
@@ -845,7 +865,7 @@ by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. &
 * merge with CIE data
 merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
-merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
 * add monetary policy shocks
 merge m:1 year month using MPS\brw\brw_month,nogen keep(matched master) keepus(brw)
 replace brw=0 if brw==.
