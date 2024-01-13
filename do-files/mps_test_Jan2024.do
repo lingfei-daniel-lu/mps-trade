@@ -135,36 +135,7 @@ esttab value_* quant_* using tables_Jan2024\value_quant.csv, replace b(3) se(3) 
 
 *-------------------------------------------------------------------------------
 
-* 3. Alternative monetary policy shock measures
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-merge m:1 year month using MPS\monthly\NS_shock,nogen keep(matched master) keepus(*_shock)
-merge m:1 year month using MPS\monthly\target_path_ns,nogen keep(matched master) keepus(target path)
-merge m:1 year month using MPS\monthly\us_infoshock_monthly,nogen keep(matched master) keepus(mp_median cbi_median)
-replace NS_shock=0 if NS_shock==.
-replace ffr_shock=0 if ffr_shock==.
-replace target=0 if target==.
-replace path=0 if path==.
-replace mp_median=0 if mp_median==.
-xtset firm_id time
-
-eststo altmps_1: reghdfe dlnprice_YoY ffr_shock dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo altmps_2: reghdfe dlnprice_YoY ffr_shock l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo altmps_3: reghdfe dlnprice_YoY NS_shock dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo altmps_4: reghdfe dlnprice_YoY NS_shock l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo altmps_5: reghdfe dlnprice_YoY target path dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo altmps_6: reghdfe dlnprice_YoY target path l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo altmps_7: reghdfe dlnprice_YoY mp_median cbi_median dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo altmps_8: reghdfe dlnprice_YoY mp_median cbi_median l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-estfe altmps_*, labels(firm_id "Firm FE")
-esttab altmps_* using tables_Jan2024\altmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS"  "Acosta" "Acosta" "JK" "JK") order(*_shock target path mp_* cbi_*)
-
-*-------------------------------------------------------------------------------
-
-* A3. Rescaled monetary policy shock measures
+* 3. Rescaled monetary policy shock measures
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -172,18 +143,21 @@ use samples\sample_monthly_exp_firm,clear
 merge m:1 year month using MPS\monthly\US_shock_scaled,nogen keep(matched master)
 xtset firm_id time
 
-eststo scaledmps_1: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo scaledmps_1: reghdfe dlnprice_YoY ffr_shock dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo scaledmps_2: reghdfe dlnprice_YoY ffr_shock l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_3: reghdfe dlnprice_YoY ns l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_4: reghdfe dlnprice_YoY target path l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_5: reghdfe dlnprice_YoY mp cbi l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo scaledmps_3: reghdfe dlnprice_YoY ns dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo scaledmps_4: reghdfe dlnprice_YoY ns l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo scaledmps_5: reghdfe dlnprice_YoY target path dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo scaledmps_6: reghdfe dlnprice_YoY target path l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo scaledmps_7: reghdfe dlnprice_YoY mp cbi dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo scaledmps_8: reghdfe dlnprice_YoY mp cbi l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
-estfe scaledmps_1 scaledmps_2 scaledmps_3 scaledmps_4 scaledmps_5, labels(firm_id "Firm FE")
-esttab scaledmps_1 scaledmps_2 scaledmps_3 scaledmps_4 scaledmps_5 using tables_Jan2024\scaledmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("BRW" "FFR" "NS" "Acosta" "JK") order(brw ffr_shock ns target path mp cbi)
+estfe scaledmps_*, labels(firm_id "Firm FE")
+esttab scaledmps_* using tables_Jan2024\scaledmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS" "Acosta" "Acosta" "JK" "JK") order(ffr_shock ns target path mp cbi)
 
 *-------------------------------------------------------------------------------
 
-* A4. Pair-wise correlation between different shock measure
+* 3+. Pair-wise correlation between different shock measures
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -197,7 +171,7 @@ esttab matrix(C) using tables_Jan2024/correlation_matrix.csv, replace compress b
 
 *-------------------------------------------------------------------------------
 
-* A5. Alternative aggregation
+* A3. Alternative aggregation
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_HS6,clear
@@ -225,7 +199,7 @@ esttab altagg_* using tables_Jan2024\altagg.csv, replace b(3) se(3) noconstant s
 
 *-------------------------------------------------------------------------------
 
-* A6. Single product firm
+* A4. Single product firm
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -250,7 +224,7 @@ esttab single_* using tables_Jan2024\single.csv, replace b(3) se(3) noconstant s
 
 *-------------------------------------------------------------------------------
 
-* A7. Ownership type
+* A5. Ownership type
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -269,7 +243,7 @@ esttab SOE_* DPE_* MNE_* JV_* using tables_Jan2024\ownership.csv, replace b(3) s
 
 *-------------------------------------------------------------------------------
 
-* A8. Alternative FE and cluster
+* A6. Alternative FE and cluster
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -294,7 +268,7 @@ esttab FE_* cluster_* using tables_Jan2024\altFE.csv, replace b(3) se(3) noconst
 
 *-------------------------------------------------------------------------------
 
-* A9. RMB price
+* A7. RMB price
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -317,7 +291,7 @@ esttab RMB_* using tables_Jan2024\RMB.csv, replace b(3) se(3) noconstant star(* 
 
 *-------------------------------------------------------------------------------
 
-* A10. Additional control variables
+* A8. Additional control variables
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -354,7 +328,7 @@ esttab control_* using tables_Jan2024\control.csv, replace b(3) se(3) noconstant
 
 *-------------------------------------------------------------------------------
 
-* A11. Approximate time match
+* A9. Approximate time match
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -372,7 +346,35 @@ eststo app2_4: reghdfe dlnprice_YoY_app2 brw l12.lnrSI l.dlnprice_YoY dlnNER_US,
 estfe app1_* app2_*, labels(firm_id "Firm FE")
 esttab app1_* app2_* using tables_Jan2024\approximate.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("+- 1 month" "+- 1 month" "+- 1 month" "+- 1 month" "+- 2 months" "+- 2 months" "+- 2 months" "+- 2 months")
 
-	   
+*-------------------------------------------------------------------------------
+
+* FA2. Country heterogeneity
+
+cd "D:\Project E"
+use samples\sample_monthly_exp,clear
+merge n:1 coun_aim using country_X\country_tag, nogen keep(matched)
+keep if rank_exp<=21
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+xtset group_id time
+
+statsby _b _se n=(e(N)), by(countrycode rank_exp) clear: reghdfe dlnprice_YoY brw dlnRER dlnrgdp dlnNER_US, a(group_id) vce(cluster group_id)
+
+graph hbar (asis) _b_brw, over(countrycode, label(labsize(*0.45)) sort(rank_exp)) ytitle("Export price responses to US monetary policy shocks") nofill
+
+graph export tables_Jan2024\brw_month_country_20.png, as(png) replace
+
+/*
+drop if _b_brw==.
+gen lower_bound = _b_brw - 1.645 * _se_brw
+gen upper_bound = _b_brw + 1.645 * _se_brw
+
+keep countrycode _b_brw _se_brw lower_bound upper_bound rank_exp
+drop rank_exp
+sort rank_exp
+
+twoway (bar _b_brw rank_exp, horizontal) (rcap lower_bound upper_bound rank_exp, horizontal), ytitle("Country Code") xtitle("Export price responses to US monetary policy shocks")
+*/
+   
 *-------------------------------------------------------------------------------
 
 * 4. Liquidity (first stage)
@@ -466,7 +468,7 @@ keep if exp_int>0
 eststo lag_borrow_1: reghdfe D.IEoL brw c.brw#c.l.IEoL L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo lag_borrow_2: reghdfe D.IEoCL brw c.brw#c.l.IEoCL L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo lag_borrow_3: reghdfe D.FNoL brw c.brw#c.l.FNoL L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo lag_borrow_4: reghdfe D.FNoCL brw c.brw#c.l.IEoL L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo lag_borrow_4: reghdfe D.FNoCL brw c.brw#c.l.FNoCL L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 * Debt (first stage)
 eststo lag_debt_1: reghdfe D.lnTL brw c.brw#c.l.lnTL L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
@@ -576,7 +578,25 @@ esttab Rauch_* using tables_Jan2024\Rauch.csv, replace b(3) se(3) noconstant sta
 
 *-------------------------------------------------------------------------------
 
-* B6. Markup within sector
+* 10. Market-specific exposure
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
+xtset firm_id time
+
+eststo exposure_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_US l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_EU: reghdfe dlnprice_YoY brw c.brw#c.exposure_EU l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_OECD: reghdfe dlnprice_YoY brw c.brw#c.exposure_OECD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_all: reghdfe dlnprice_YoY brw c.brw#c.exposure_US c.brw#c.exposure_EU c.brw#c.exposure_OECD c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+estfe exposure_*, labels(firm_id "Firm FE")
+esttab exposure_* using tables_Jan2024\exposure.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw *brw*)
+
+*-------------------------------------------------------------------------------
+
+* ?. Markup within sector
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -595,43 +615,7 @@ esttab Markup_* using tables_Jan2024\markup.csv, replace b(3) se(3) noconstant s
 
 *-------------------------------------------------------------------------------
 
-* 10. EU shocks
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-* add monetary policy shocks (Miranda-Agrippino & Nenova)
-merge m:1 year month using MPS\monthly\eu_shock_monthly,nogen keep(matched master)
-replace target_ea=0 if target_ea==.
-replace path_ea=0 if path_ea==.
-xtset firm_id time
-
-eststo EU_1: reghdfe dlnprice_YoY target_ea path_ea dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo EU_2: reghdfe dlnprice_YoY target_ea path_ea l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo EU_3: reghdfe dlnprice_YoY target_ea path_ea l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo EU_4: reghdfe dlnprice_YoY target_ea path_ea l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-* add monetary policy shocks (Jarocinski & Karadi)
-merge m:1 year month using MPS\monthly\eu_infoshock_monthly,nogen keep(matched master)
-rename (mp_median_mpd cbi_median_mpd) (mp_eu cbi_eu)
-replace mp_eu=0 if mp_eu==.
-replace cbi_eu=0 if cbi_eu==.
-xtset firm_id time
-
-eststo EU_5: reghdfe dlnprice_YoY mp_eu cbi_eu dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo EU_6: reghdfe dlnprice_YoY mp_eu cbi_eu l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo EU_7: reghdfe dlnprice_YoY mp_eu cbi_eu l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo EU_8: reghdfe dlnprice_YoY mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-estfe EU_*, labels(firm_id "Firm FE")
-esttab EU_* using tables_Jan2024\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(*_ea *_eu *lnrSI *dlnprice*)
-
-*-------------------------------------------------------------------------------
-
-* C1. Standardized EU shocks and compare with brw
+* 11. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -642,17 +626,19 @@ xtset firm_id time
 
 eststo std_brw_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo std_brw_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+* Miranda-Agrippino & Nenova
 eststo std_EU_1: reghdfe dlnprice_YoY target_eu path_eu dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo std_EU_2: reghdfe dlnprice_YoY target_eu path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+* Jarocinski & Karadi
 eststo std_EU_3: reghdfe dlnprice_YoY mp_eu cbi_eu dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo std_EU_4: reghdfe dlnprice_YoY mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe std_*, labels(firm_id "Firm FE")
-esttab std_* using tables_Jan2024\shock_std.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw *_eu *lnrSI *dlnprice*)
+esttab std_* using tables_Jan2024\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw *_eu *lnrSI *dlnprice*)
 
 *-------------------------------------------------------------------------------
 
-* 11. Fixed and floating regime
+* 12. Fixed and floating regime
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -672,7 +658,7 @@ esttab fixed_* float_* using tables_Jan2024\regime.csv, replace b(3) se(3) nocon
 
 *-------------------------------------------------------------------------------
 
-* 12. Asymmetric impact
+* 13. Asymmetric impact
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -691,50 +677,3 @@ eststo updown_2: reghdfe dlnprice_YoY brw c.brw#c.real_increase c.brw#c.real_dec
 
 estfe up_* down_* updown_*, labels(firm_id "Firm FE")
 esttab up_* down_* updown_* using tables_Jan2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("tightening" "tightening" "easing" "easing" "any change" "any change") order(brw c.brw*)
-
-*-------------------------------------------------------------------------------
-
-* C2. Market-specific exposure
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
-xtset firm_id time
-
-eststo exposure_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_US l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_EU: reghdfe dlnprice_YoY brw c.brw#c.exposure_EU l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_OECD: reghdfe dlnprice_YoY brw c.brw#c.exposure_OECD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_peg_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_peg_US l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_all_1: reghdfe dlnprice_YoY brw c.brw#c.exposure_US c.brw#c.exposure_EU c.brw#c.exposure_OECD c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_all_2: reghdfe dlnprice_YoY brw c.brw#c.exposure_peg_US c.brw#c.exposure_EU c.brw#c.exposure_OECD c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-
-estfe exposure_*, labels(firm_id "Firm FE")
-esttab exposure_* using tables_Jan2024\exposure.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw *brw*)
-
-*-------------------------------------------------------------------------------
-
-* CF1. Country heterogeneity
-
-cd "D:\Project E"
-use samples\sample_monthly_exp,clear
-merge n:1 coun_aim using country_X\country_tag, nogen keep(matched)
-keep if rank_exp<=21
-merge n:1 year month using ER\NER_US_month,nogen keep(matched)
-xtset group_id time
-
-statsby _b _se n=(e(N)), by(countrycode rank_exp) clear: reghdfe dlnprice_YoY brw dlnRER dlnrgdp dlnNER_US, a(group_id) vce(cluster group_id)
-
-graph hbar (asis) _b_brw, over(countrycode, label(labsize(*0.45)) sort(rank_exp)) ytitle("Export price responses to US monetary policy shocks") nofill
-
-graph export tables_Jan2024\brw_month_country_20.png, as(png) replace
-
-drop if _b_brw==.
-gen lower_bound = _b_brw - 1.645 * _se_brw
-gen upper_bound = _b_brw + 1.645 * _se_brw
-
-keep countrycode _b_brw _se_brw lower_bound upper_bound rank_exp
-drop rank_exp
-sort rank_exp
-
-twoway (bar _b_brw rank_exp, horizontal) (rcap lower_bound upper_bound rank_exp, horizontal), ytitle("Country Code") xtitle("Export price responses to US monetary policy shocks")

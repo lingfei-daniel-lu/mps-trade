@@ -606,8 +606,8 @@ by group_id: gen share_bar_YoY_app1=share_bar_YoY
 replace share_bar_YoY_app1=0.5*(share_it+L11.share_it) if share_bar_YoY_app1==.
 replace share_bar_YoY_app1=0.5*(share_it+L13.share_it) if share_bar_YoY_app1==.
 by group_id: gen share_bar_YoY_app2=share_bar_YoY_app1
-replace share_bar_YoY_app2=0.5*(share_it+L10.share_it) if share_bar_YoY_app1==.
-replace share_bar_YoY_app2=0.5*(share_it+L14.share_it) if share_bar_YoY_app1==.
+replace share_bar_YoY_app2=0.5*(share_it+L10.share_it) if share_bar_YoY_app2==.
+replace share_bar_YoY_app2=0.5*(share_it+L14.share_it) if share_bar_YoY_app2==.
 replace share_bar_YoY_app1=share_it if share_bar_YoY_app1==.
 replace share_bar_YoY_app2=share_it if share_bar_YoY_app2==.
 sort FRDM time
@@ -615,7 +615,7 @@ by FRDM time: egen dlnprice_MoM=sum(dlnprice_h_MoM*share_bar_MoM), missing
 by FRDM time: egen dlnprice_YoY=sum(dlnprice_h_YoY*share_bar_YoY), missing
 by FRDM time: egen dlnprice_next=sum(dlnprice_h_next*share_bar_next), missing
 by FRDM time: egen dlnprice_YoY_app1=sum(dlnprice_h_YoY_app1*share_bar_YoY_app1), missing
-by FRDM time: egen dlnprice_YoY_app2=sum(dlnprice_h_YoY_app1*share_bar_YoY_app2), missing
+by FRDM time: egen dlnprice_YoY_app2=sum(dlnprice_h_YoY_app2*share_bar_YoY_app2), missing
 by FRDM time: egen dlnprice_RMB_MoM=sum(dlnprice_h_RMB_MoM*share_bar_MoM), missing
 by FRDM time: egen dlnprice_RMB_YoY=sum(dlnprice_h_RMB_YoY*share_bar_YoY), missing
 by FRDM time: egen dlnprice_RMB_next=sum(dlnprice_h_RMB_next*share_bar_next), missing
