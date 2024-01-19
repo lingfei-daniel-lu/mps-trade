@@ -43,6 +43,29 @@ use eu_infoshock_monthly,replace
 collapse (sum) *_mpd, by(year)
 save eu_infoshock_annual,replace
 
+* real interest rate
+
+cd "D:\Project E\MPS\monthly"
+use ffr, clear
+rename date time
+gen year=year(time)
+gen month=month(time)
+gen day=day(time)
+collapse (mean) ffr, by(year month)
+label variable ffr "monthly average federal fund rate"
+egen time_id=group(year month)
+tsset time_id
+gen d_ffr=d.ffr
+label variable d_ffr "difference of monthly average federal fund rate"
+gen real_increase=0
+replace real_increase=1 if d_ffr>0 & d_ffr !=.
+label variable real_increase "dummy, =1 if average ffr increase relative to last month"
+gen real_decrease=0
+replace real_decrease=1 if d_ffr<0 & d_ffr !=.
+label variable real_decrease "dummy, =1 if average ffr decrease relative to last month"
+save ffr_monthly,replace
+
+
 ********************************************************************************
 
 * 2. Exchange rates and macro variables
@@ -310,12 +333,18 @@ rotate, promax(3) factors(1)
 predict f1
 rename f1 FPC_US
 * LLWY FPC
+pca Liquid Cash
+factor Liquid Cash,pcf
+factortest Liquid Cash
+rotate, promax(3) factors(1)
+predict f1
+rename f1 FPC_liquid
 pca Liquid_cic2 Cash_cic2
 factor Liquid_cic2 Cash_cic2,pcf
 factortest Liquid_cic2 Cash_cic2
 rotate, promax(3) factors(1)
 predict f1
-rename f1 FPC_cic2
+rename f1 FPC_liquid_cic2
 * Match affiliation info
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
@@ -353,19 +382,29 @@ winsor2 Markup_*, trim replace
 winsor2 tfp_*, trim replace
 keep FRDM year cic_adj cic2 Markup_* tfp_*
 * High-Markup vs Low-Markup
+** across sector
 bys year cic_adj: egen Markup_cic4=median(Markup_DLWTLD)
+bys year cic_adj: egen Markup_cic4_1st=median(Markup_DLWTLD_1st)
 bys year cic2: egen Markup_cic2=median(Markup_DLWTLD)
-gen Markup_High=1 if Markup_DLWTLD!=. & Markup_DLWTLD > Markup_cic2
-replace Markup_High=0 if Markup_DLWTLD!=. & Markup_DLWTLD <= Markup_cic2
 bys year cic2: egen Markup_cic2_1st=median(Markup_DLWTLD_1st)
-gen Markup_High_1st=1 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st > Markup_cic2_1st
-replace Markup_High_1st=0 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st <= Markup_cic2_1st
+** within sector
+gen Markup_cic2_High=1 if Markup_DLWTLD!=. & Markup_DLWTLD > Markup_cic2
+replace Markup_cic2_High=0 if Markup_DLWTLD!=. & Markup_DLWTLD <= Markup_cic2
+gen Markup_cic2_High_1st=1 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st > Markup_cic2_1st
+replace Markup_cic2_High_1st=0 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st <= Markup_cic2_1st
+gen Markup_cic4_High=1 if Markup_DLWTLD!=. & Markup_DLWTLD > Markup_cic4
+replace Markup_cic4_High=0 if Markup_DLWTLD!=. & Markup_DLWTLD <= Markup_cic4
+gen Markup_cic4_High_1st=1 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st > Markup_cic4_1st
+replace Markup_cic4_High_1st=0 if Markup_DLWTLD_1st!=. & Markup_DLWTLD_1st <= Markup_cic4_1st
 * High-TFP vs Low-TFP
+** across sector
 bys year cic_adj: egen tfp_cic4=median(tfp_tld)
+bys year cic_adj: egen tfp_cic4_1st=median(tfp_tld_1st)
 bys year cic2: egen tfp_cic2=median(tfp_tld)
+bys year cic2: egen tfp_cic2_1st=median(tfp_tld_1st)
+** within sector
 gen tfp_High=1 if tfp_tld!=. & tfp_tld > tfp_cic2
 replace tfp_High=0 if tfp_tld!=. & tfp_tld <= tfp_cic2
-bys year cic2: egen tfp_cic2_1st=median(tfp_tld_1st)
 gen tfp_High_1st=1 if tfp_tld_1st!=. & tfp_tld_1st > tfp_cic2_1st
 replace tfp_High_1st=0 if tfp_tld_1st!=. & tfp_tld_1st <= tfp_cic2_1st
 save CIE\cie_markup,replace

@@ -390,13 +390,14 @@ use samples\cie_credit_brw,clear
 keep if exp_int>0
 
 * Liquidity (first stage)
-eststo liquid_1: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo liquid_2: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo liquid_3: reghdfe D.Turnover brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_1: reghdfe D.FPC_liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_2: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_3: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_4: reghdfe D.Turnover brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 * Trade credit (first stage)
-eststo liquid_4: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo liquid_5: reghdfe D.Apay brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_5: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo liquid_6: reghdfe D.Apay brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 estfe liquid_*, labels(firm_id "Firm FE")
 esttab liquid_* using tables_Jan2024\liquid_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
@@ -410,16 +411,17 @@ use samples\cie_credit_brw,clear
 keep if exp_int>0
 
 * Liquidity (first stage)
-eststo lag_liquid_1: reghdfe D.Liquid c.brw#c.l.Liquid L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
-eststo lag_liquid_2: reghdfe D.Cash c.brw#c.l.Cash L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
-eststo lag_liquid_3: reghdfe D.Turnover c.brw#c.l.Turnover L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+eststo lag_liquid_1: reghdfe D.FPC_liquid c.brw#c.l.FPC_liquid L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+eststo lag_liquid_2: reghdfe D.Liquid c.brw#c.l.Liquid L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+eststo lag_liquid_3: reghdfe D.Cash c.brw#c.l.Cash L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+eststo lag_liquid_4: reghdfe D.Turnover c.brw#c.l.Turnover L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 
 * Trade credit (first stage)
-eststo lag_liquid_4: reghdfe D.Arec c.brw#c.l.Arec L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
-eststo lag_liquid_5: reghdfe D.Apay c.brw#c.l.Apay L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+eststo lag_liquid_5: reghdfe D.Arec c.brw#c.l.Arec L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+eststo lag_liquid_6: reghdfe D.Apay c.brw#c.l.Apay L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 
 estfe lag_liquid_*, labels(firm_id "Firm FE" year "Year FE")
-esttab lag_liquid_* using tables_Jan2024\liquid_lag_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+esttab lag_liquid_* using tables_Jan2024\liquid_lag_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(*brw*)
 
 *-------------------------------------------------------------------------------
 
@@ -528,7 +530,31 @@ esttab decomp_* using tables_Jan2024\decomposition.csv, replace b(3) se(3) nocon
 
 *-------------------------------------------------------------------------------
 
-* B5. Tests of other channels
+* B5. Within-sector and across-sector markup
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_*)
+xtset firm_id time
+
+eststo firm_markup_1: reghdfe dlnprice_YoY c.brw#c.l12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo firm_markup_2: reghdfe dlnprice_YoY c.brw#c.Markup_DLWTLD_1st l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+eststo within_markup_1: reghdfe dlnprice_YoY c.brw#c.Markup_cic2_High_1st l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo within_markup_2: reghdfe dlnprice_YoY c.brw#c.Markup_cic4_High_1st l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+eststo across_markup_1: reghdfe dlnprice_YoY c.brw#c.l12.Markup_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo across_markup_2: reghdfe dlnprice_YoY c.brw#c.Markup_cic2_1st l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+eststo across_markup_3: reghdfe dlnprice_YoY c.brw#c.l12.Markup_cic4 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo across_markup_4: reghdfe dlnprice_YoY c.brw#c.Markup_cic4_1st l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+estfe firm_markup_2 within_markup_* across_markup_*, labels(firm_id "Firm FE" time "Time FE")
+esttab firm_markup_2 within_markup_* across_markup_* using tables_Jan2024\markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(*brw*)
+
+*-------------------------------------------------------------------------------
+
+* B6. Tests of other channels
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
@@ -602,45 +628,31 @@ esttab exposure_* using tables_Jan2024\exposure.csv, replace b(3) se(3) noconsta
 
 *-------------------------------------------------------------------------------
 
-* ?. Markup within sector
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_* tfp_*)
-
-eststo Markup_1: reghdfe dlnprice_YoY brw c.brw#c.Markup_High l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo Markup_2: reghdfe dlnprice_YoY brw c.brw#c.l12.Markup_High l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo Markup_3: reghdfe dlnprice_YoY brw c.brw#c.Markup_High_1st l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-eststo Markup_4: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo Markup_5: reghdfe dlnprice_YoY brw c.brw#c.l12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo Markup_6: reghdfe dlnprice_YoY brw c.brw#c.Markup_DLWTLD_1st l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-estfe Markup_*, labels(firm_id "Firm FE")
-esttab Markup_* using tables_Jan2024\markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("dummy" "dummy" "dummy" "level" "level" "level") order(*brw*)
-
-*-------------------------------------------------------------------------------
-
 * 11. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 merge m:1 year month using MPS\monthly\shock_std,nogen keep(matched master)
-replace mp_eu=0 if mp_eu==.
-replace cbi_eu=0 if cbi_eu==.
+local std_shock "brw_std target_eu path_eu mp_eu cbi_eu"
+foreach var of local std_shock{
+	replace `var'=0 if `var'==.
+}
 xtset firm_id time
 
-eststo std_brw_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo std_brw_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo std_brw: reghdfe dlnprice_YoY brw_std l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+
 * Miranda-Agrippino & Nenova
-eststo std_EU_1: reghdfe dlnprice_YoY target_eu path_eu dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo std_EU_2: reghdfe dlnprice_YoY target_eu path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo std_EU_MAN_1: reghdfe dlnprice_YoY target_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo std_EU_MAN_2: reghdfe dlnprice_YoY path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo std_EU_MAN_3: reghdfe dlnprice_YoY target_eu path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+
 * Jarocinski & Karadi
-eststo std_EU_3: reghdfe dlnprice_YoY mp_eu cbi_eu dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo std_EU_4: reghdfe dlnprice_YoY mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo std_EU_JK_1: reghdfe dlnprice_YoY mp_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo std_EU_JK_2: reghdfe dlnprice_YoY cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo std_EU_JK_3: reghdfe dlnprice_YoY mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe std_*, labels(firm_id "Firm FE")
-esttab std_* using tables_Jan2024\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw *_eu *lnrSI *dlnprice*)
+esttab std_* using tables_Jan2024\EU.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw_std *_eu *lnrSI *dlnprice*)
 
 *-------------------------------------------------------------------------------
 
@@ -668,9 +680,7 @@ esttab fixed_* float_* using tables_Jan2024\regime.csv, replace b(3) se(3) nocon
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
-merge m:1 year month using MPS\monthly\US_shock_scaled,nogen keep(matched master) keepus(real_increase real_decrease)
-replace real_increase=0 if real_increase==.
-replace real_decrease=0 if real_decrease==.
+merge m:1 year month using MPS\monthly\ffr_monthly,nogen keep(matched master)
 xtset firm_id time
 
 eststo up_1: reghdfe dlnprice_YoY brw c.brw#c.real_increase dlnNER_US, a(firm_id) vce(cluster firm_id)
@@ -678,8 +688,5 @@ eststo up_2: reghdfe dlnprice_YoY brw c.brw#c.real_increase l.dlnprice_YoY l12.l
 eststo down_1: reghdfe dlnprice_YoY brw c.brw#c.real_decrease dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo down_2: reghdfe dlnprice_YoY brw c.brw#c.real_decrease l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
 
-eststo updown_1: reghdfe dlnprice_YoY brw c.brw#c.real_increase c.brw#c.real_decrease dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo updown_2: reghdfe dlnprice_YoY brw c.brw#c.real_increase c.brw#c.real_decrease l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-estfe up_* down_* updown_*, labels(firm_id "Firm FE")
-esttab up_* down_* updown_* using tables_Jan2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("tightening" "tightening" "easing" "easing" "any change" "any change") order(brw c.brw*)
+estfe up_* down_*, labels(firm_id "Firm FE")
+esttab up_* down_* using tables_Jan2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("tightening" "tightening" "easing" "easing" "any change" "any change") order(brw c.brw*)
