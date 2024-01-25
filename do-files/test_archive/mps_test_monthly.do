@@ -333,14 +333,25 @@ eststo month_brw_MoM_5: reghdfe dlnprice_MoM brw l.brw l2.brw, a(firm_id month) 
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
+merge m:1 year month using MPS\monthly\ffr_monthly,nogen keep(matched master)
+xtset firm_id time
 
-eststo month_brw_up_1: reghdfe dlnprice_YoY brw if brw>0, a(firm_id) vce(cluster firm_id)
-eststo month_brw_up_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY if brw>0, a(firm_id) vce(cluster firm_id)
-eststo month_brw_up_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw>0, a(firm_id) vce(cluster firm_id)
+eststo up_1: reghdfe dlnprice_YoY brw c.brw#c.real_increase dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo up_2: reghdfe dlnprice_YoY brw c.brw#c.real_increase l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo down_1: reghdfe dlnprice_YoY brw c.brw#c.real_decrease dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo down_2: reghdfe dlnprice_YoY brw c.brw#c.real_decrease l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
 
-eststo month_brw_down_1: reghdfe dlnprice_YoY brw if brw<0, a(firm_id) vce(cluster firm_id)
-eststo month_brw_down_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY if brw<0, a(firm_id) vce(cluster firm_id)
-eststo month_brw_down_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw<0, a(firm_id) vce(cluster firm_id)
+estfe up_* down_*, labels(firm_id "Firm FE")
+esttab up_* down_* using tables_Jan2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("tightening" "tightening" "easing" "easing") order(brw c.brw*)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo month_brw_up_1: reghdfe dlnprice_YoY brw dlnNER_US if brw>=0, a(firm_id) vce(cluster firm_id)
+eststo month_brw_up_2: reghdfe dlnprice_YoY brw l.dlnprice_YoY l12.lnrSI if brw>=0, a(firm_id) vce(cluster firm_id)
+
+eststo month_brw_down_1: reghdfe dlnprice_YoY brw dlnNER_US if brw<=0, a(firm_id) vce(cluster firm_id)
+eststo month_brw_down_2: reghdfe dlnprice_YoY brw dlnNER_US l.dlnprice_YoY l12.lnrSI if brw<=0, a(firm_id) vce(cluster firm_id)
 
 *-------------------------------------------------------------------------------
 

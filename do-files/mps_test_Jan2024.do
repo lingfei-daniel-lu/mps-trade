@@ -583,11 +583,15 @@ eststo ordinary_1: reghdfe dlnprice_YoY brw dlnNER_US if process==0, a(firm_id) 
 eststo ordinary_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US l.dlnprice_YoY if process==0, a(firm_id) vce(cluster firm_id)
 eststo process_1: reghdfe dlnprice_YoY brw dlnNER_US if process==1, a(firm_id) vce(cluster firm_id)
 eststo process_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if process==1, a(firm_id) vce(cluster firm_id)
-eststo process_int_1: reghdfe dlnprice_YoY brw c.brw#c.process dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo process_int_2: reghdfe dlnprice_YoY brw c.brw#c.process l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo processint_1: reghdfe dlnprice_YoY brw c.brw#c.process dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo processint_2: reghdfe dlnprice_YoY brw c.brw#c.process l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo assembly_1: reghdfe dlnprice_YoY brw dlnNER_US if assembly==1, a(firm_id) vce(cluster firm_id)
+eststo assembly_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if assembly==1, a(firm_id) vce(cluster firm_id)
+eststo assemblyint_1: reghdfe dlnprice_YoY brw c.brw#c.assembly dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo assemblyint_2: reghdfe dlnprice_YoY brw c.brw#c.assembly l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
-estfe ordinary_* process_* process_int_*, labels(firm_id "Firm FE")
-esttab ordinary_* process_* process_int_* using tables_Jan2024\process.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("ordinary" "ordinary" "processing" "processing" "comparison" "comparison")
+estfe ordinary_* process_* processint_* assembly_* assemblyint_*, labels(firm_id "Firm FE")
+esttab ordinary_* process_* processint_* assembly_* assemblyint_* using tables_Jan2024\process.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("Ordinary" "Ordinary" "Processing" "Processing" "Processing" "Processing" "Assembly" "Assembly" "Assembly" "Assembly")
 
 *-------------------------------------------------------------------------------
 
@@ -676,17 +680,19 @@ esttab fixed_* float_* using tables_Jan2024\regime.csv, replace b(3) se(3) nocon
 
 *-------------------------------------------------------------------------------
 
-* 13. Asymmetric impact
+* 13. monetary tightness in China
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
-merge m:1 year month using MPS\monthly\ffr_monthly,nogen keep(matched master)
+merge m:1 year month using control\china\China_m2g,nogen keep(matched master)
 xtset firm_id time
+gen tight_YoY=-m2g_YoY
+gen tight_MoM=-m2g_MoM
 
-eststo up_1: reghdfe dlnprice_YoY brw c.brw#c.real_increase dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo up_2: reghdfe dlnprice_YoY brw c.brw#c.real_increase l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo down_1: reghdfe dlnprice_YoY brw c.brw#c.real_decrease dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo down_2: reghdfe dlnprice_YoY brw c.brw#c.real_decrease l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo tight_1: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo tight_2: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo tight_3: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo tight_4: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
 
-estfe up_* down_*, labels(firm_id "Firm FE")
-esttab up_* down_* using tables_Jan2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("tightening" "tightening" "easing" "easing" "any change" "any change") order(brw c.brw*)
+estfe tight_*, labels(firm_id "Firm FE")
+esttab tight_* using tables_Jan2024\tightness.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("YoY" "YoY" "MoM" "MoM") order(brw c.brw* tight*)

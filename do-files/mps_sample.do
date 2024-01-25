@@ -226,6 +226,18 @@ gen month=month(date)
 keep year month iva_china
 save China_iva,replace
 
+use raw\China_central_bank,clear
+rename (截止日期_End 货币和准货币广义货币M2_MonAndQuaMon) (date m2_china)
+gen year=year(date)
+gen month=month(date)
+collapse (mean) m2_china, by(year month)
+gen time=monthly(string(year)+"-"+string(month),"YM")
+format time %tm
+tsset time
+gen m2g_YoY=(m2_china-l12.m2_china)/l12.m2_china
+gen m2g_MoM=(m2_china-l.m2_china)/l.m2_china
+save China_m2g,replace
+
 ********************************************************************************
 
 * 3. CIE data with credit constraints
@@ -593,8 +605,8 @@ drop if HS6=="" | FRDM=="" | quant==0 | value==0
 * mark processing or assembly trade
 gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
 replace process=0 if process==.
-/*gen assembly = 1 if shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
-replace assembly=0 if assembly==.*/
+gen assembly = 1 if shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
+replace assembly=0 if assembly==.
 * drop trade service firms
 foreach key in 贸易 外贸 经贸 工贸 科贸 商贸 边贸 技贸 进出口 进口 出口 物流 仓储 采购 供应链 货运{
 	drop if strmatch(EN, "*`key'*") 
