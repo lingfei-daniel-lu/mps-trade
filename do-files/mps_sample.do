@@ -297,6 +297,7 @@ keep if PERSENG>=10
 * Calculate firm-level real sales and cost
 sort FRDM year 
 gen rSI=SI/OutputDefl*100
+gen CoS=(CWP+TOIPT)/SI
 /*
 gen rTOIPT=TOIPT/InputDefl*100
 gen rCWP=CWP/InputDefl*100
@@ -321,7 +322,7 @@ gen FNoCL=FN/CL
 gen CWPoS=CWP/SI
 gen TOIPToS=TOIPT/SI
 * Construct industry-level financial constraints by CIC2
-local varlist "Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec"
+local varlist "CoS Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec"
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys year cic2: egen `var'_cic2 = median(`var')
@@ -445,7 +446,7 @@ drop exp_imp
 gen process = 1 if shipment=="进料加工贸易" | shipment=="来料加工装配贸易" | shipment=="来料加工装配进口的设备"
 replace process=0 if process==.
 collapse (sum) value_year quant_year, by(FRDM EN year coun_aim HS6 process)
-* add other firm-level variables
+* add other country-level variables
 merge n:1 coun_aim using customs_matched_top_partners,nogen keep(matched) keepus(rank_*)
 merge n:1 coun_aim using "D:\Project C\gravity\distance_CHN",nogen keep(matched)
 replace dist=dist/1000
