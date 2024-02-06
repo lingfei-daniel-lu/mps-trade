@@ -354,6 +354,28 @@ esttab app1_* app2_* using tables_Jan2024\approximate.csv, replace b(3) se(3) no
 
 *-------------------------------------------------------------------------------
 
+* A10. Asymmetric impact
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+gen brw_increase=1 if brw>0
+replace brw_increase=0 if brw_increase==.
+gen brw_decrease=1 if brw<0
+replace brw_decrease=0 if brw_decrease==.
+
+eststo asymmetry_1: reghdfe dlnprice_YoY c.brw#c.brw_increase dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo asymmetry_2: reghdfe dlnprice_YoY c.brw#c.brw_increase l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo asymmetry_3: reghdfe dlnprice_YoY c.brw#c.brw_decrease dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo asymmetry_4: reghdfe dlnprice_YoY c.brw#c.brw_decrease l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo asymmetry_5: reghdfe dlnprice_YoY c.brw#c.brw_increase c.brw#c.brw_decrease dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo asymmetry_6: reghdfe dlnprice_YoY c.brw#c.brw_increase c.brw#c.brw_decrease l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+estfe asymmetry_*, labels(firm_id "Firm FE")
+esttab asymmetry_* using tables_Jan2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle(">0" ">0" "<0" "<0" ">0 vs <0" ">0 vs <0") order(*brw*)
+
+*-------------------------------------------------------------------------------
+
 * FA2. Country heterogeneity
 
 cd "D:\Project E"
