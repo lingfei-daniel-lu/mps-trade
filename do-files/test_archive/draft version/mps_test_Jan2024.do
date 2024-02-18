@@ -76,6 +76,26 @@ eststo forward_`i': reghdfe f`i'.dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY f`i'.
 estfe forward_*, labels(firm_id "Firm FE")
 esttab forward_* using tables_Jan2024\dynamic.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
+* A1+. Multi-lag regression
+
+eststo lag_1: reghdfe dlnprice_YoY brw l.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_2: reghdfe dlnprice_YoY brw l.brw l2.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_3: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_4: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_5: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_6: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_7: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_8: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_9: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l9.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_10: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l9.brw l10.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_11: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l9.brw l10.brw l11.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo lag_12: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw l7.brw l8.brw l9.brw l10.brw l11.brw l12.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+estfe lag_*, labels(firm_id "Firm FE")
+esttab lag_* using tables_Jan2024\multilag.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw L*brw)
+
+*-------------------------------------------------------------------------------
+
 * FA1. Dynamic regression
 
 cd "D:\Project E"
@@ -244,8 +264,14 @@ eststo DPE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if own
 eststo JV_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="JV", a(firm_id) vce(cluster firm_id)
 eststo JV_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="JV", a(firm_id) vce(cluster firm_id)
 
-estfe SOE_* DPE_* MNE_* JV_*, labels(firm_id "Firm FE")
-esttab SOE_* DPE_* MNE_* JV_* using tables_Jan2024\ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("SOE" "SOE" "DPE" "DPE" "MNE" "MNE"  "JV" "JV")
+gen foreign=1 if ownership=="MNE" | ownership=="JV"
+replace foreign=0 if ownership=="SOE" | ownership=="DPE"
+
+eststo foreign_1: reghdfe dlnprice_YoY brw c.brw#c.foreign dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo foreign_2: reghdfe dlnprice_YoY brw c.brw#c.foreign dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+estfe SOE_* DPE_* MNE_* JV_* foreign_*, labels(firm_id "Firm FE")
+esttab SOE_* DPE_* MNE_* JV_* foreign_* using tables_Jan2024\ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("SOE" "SOE" "DPE" "DPE" "MNE" "MNE"  "JV" "JV" "Foreign" "Foreign")
 
 *-------------------------------------------------------------------------------
 
@@ -274,7 +300,25 @@ esttab FE_* cluster_* using tables_Jan2024\altFE.csv, replace b(3) se(3) noconst
 
 *-------------------------------------------------------------------------------
 
-* A7. RMB price
+* A7. Market-specific exposure
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
+xtset firm_id time
+
+eststo exposure_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_US l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_EU: reghdfe dlnprice_YoY brw c.brw#c.exposure_EU l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_OECD: reghdfe dlnprice_YoY brw c.brw#c.exposure_OECD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_all: reghdfe dlnprice_YoY brw c.brw#c.exposure_US c.brw#c.exposure_EU c.brw#c.exposure_OECD c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+estfe exposure_*, labels(firm_id "Firm FE")
+esttab exposure_* using tables_Jan2024\exposure.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw *brw*)
+
+*-------------------------------------------------------------------------------
+
+* A8. RMB price
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -297,7 +341,7 @@ esttab RMB_* using tables_Jan2024\RMB.csv, replace b(3) se(3) noconstant star(* 
 
 *-------------------------------------------------------------------------------
 
-* A8. Additional control variables
+* A9. Additional control variables
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -308,6 +352,7 @@ merge n:1 year month using control\china\China_iva,nogen keep(matched)
 gen iva_cn=iva_china/100-1
 *merge n:1 year month using control\china\China_ppi,nogen keep(matched)
 merge n:1 year month using control\china\China_policy_rate,nogen keep(matched)
+merge m:1 year month using control\china\China_m2g,nogen keep(matched master)
 merge n:1 year month using control\US\US_CPI_monthly_unadjusted,nogen keep(matched)
 gen cpi_us=cpi_us_ua/100-1
 merge n:1 year month using control\US\US_PPI_monthly_unadjusted,nogen keep(matched)
@@ -322,19 +367,20 @@ xtset firm_id time
 
 eststo control_1: reghdfe dlnprice_YoY brw l.cpi_cn l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo control_2: reghdfe dlnprice_YoY brw l.iva_cn l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo control_3: reghdfe dlnprice_YoY brw l.cpi_us l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo control_4: reghdfe dlnprice_YoY brw l.ppi_us l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo control_5: reghdfe dlnprice_YoY brw l.lnvix l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo control_6: reghdfe dlnprice_YoY brw l.s12.lnpindu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo control_7: reghdfe dlnprice_YoY brw l.s12.lnpoil l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo control_8: reghdfe dlnprice_YoY brw l.cpi_cn l.iva_cn l.cpi_us l.ppi_us l.lnvix l.s12.lnpindu l.s12.lnpoil l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo control_3: reghdfe dlnprice_YoY brw l.m2g_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo control_4: reghdfe dlnprice_YoY brw l.cpi_us l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo control_5: reghdfe dlnprice_YoY brw l.ppi_us l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo control_6: reghdfe dlnprice_YoY brw l.lnvix l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo control_7: reghdfe dlnprice_YoY brw l.s12.lnpindu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo control_8: reghdfe dlnprice_YoY brw l.s12.lnpoil l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo control_9: reghdfe dlnprice_YoY brw l.cpi_cn l.iva_cn l.m2g_YoY l.cpi_us l.ppi_us l.lnvix l.s12.lnpindu l.s12.lnpoil l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe control_*, labels(firm_id "Firm FE")
-esttab control_* using tables_Jan2024\control.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("China CPI" "China Value Added" "US CPI" "US PPI" "VIX" "Input Price" "Oil Price" "All") order(brw *_cn *_us *vix *S12*)
+esttab control_* using tables_Jan2024\control.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("CN CPI" "CN Value Added" "CN M2 growth" "US CPI" "US PPI" "VIX" "Input Price" "Oil Price" "All") order(brw *_cn m2g* *_us *vix *S12*)
 
 *-------------------------------------------------------------------------------
 
-* A9. Approximate time match
+* A10. Approximate time match
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -354,7 +400,7 @@ esttab app1_* app2_* using tables_Jan2024\approximate.csv, replace b(3) se(3) no
 
 *-------------------------------------------------------------------------------
 
-* A10. Asymmetric impact
+* ?. Asymmetric impact
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -636,25 +682,7 @@ esttab Rauch_* using tables_Jan2024\Rauch.csv, replace b(3) se(3) noconstant sta
 
 *-------------------------------------------------------------------------------
 
-* 10. Market-specific exposure
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
-xtset firm_id time
-
-eststo exposure_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_US l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_EU: reghdfe dlnprice_YoY brw c.brw#c.exposure_EU l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_OECD: reghdfe dlnprice_YoY brw c.brw#c.exposure_OECD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_all: reghdfe dlnprice_YoY brw c.brw#c.exposure_US c.brw#c.exposure_EU c.brw#c.exposure_OECD c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-
-estfe exposure_*, labels(firm_id "Firm FE")
-esttab exposure_* using tables_Jan2024\exposure.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw *brw*)
-
-*-------------------------------------------------------------------------------
-
-* 11. Standardized EU shocks and comparison with brw
+* 10. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -682,7 +710,7 @@ esttab std_* using tables_Jan2024\EU.csv, replace b(4) se(4) noconstant star(* 0
 
 *-------------------------------------------------------------------------------
 
-* 12. Fixed and floating regime
+* 11. Fixed and floating regime
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -702,14 +730,21 @@ esttab fixed_* float_* using tables_Jan2024\regime.csv, replace b(3) se(3) nocon
 
 *-------------------------------------------------------------------------------
 
-* 13. monetary tightness in China
+* 12. Monetary tightness in China
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 merge m:1 year month using control\china\China_m2g,nogen keep(matched master)
+
+bys firm_id: egen m2g_YoY_mean = mean(m2g_YoY) 
+by firm_id: egen m2g_YoY_sd  = sd(m2g_YoY)
+gen tight_YoY = -(m2g_YoY - m2g_YoY_mean) / m2g_YoY_sd
+
+bys firm_id: egen m2g_MoM_mean = mean(m2g_MoM) 
+by firm_id: egen m2g_MoM_sd  = sd(m2g_MoM)
+gen tight_MoM = -(m2g_MoM - m2g_MoM_mean) / m2g_MoM_sd
+
 xtset firm_id time
-gen tight_YoY=-m2g_YoY
-gen tight_MoM=-m2g_MoM
 
 eststo tight_1: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo tight_2: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
