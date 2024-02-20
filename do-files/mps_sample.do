@@ -850,6 +850,7 @@ xtset firm_id time
 * calculate value change
 by firm_id: gen dlnvalue_YoY=ln(value)-ln(L12.value)
 * calculate marginal cost
-by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.Markup_DLWTLD
+gen lnMarkup=ln(Markup_DLWTLD)
+by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.lnMarkup
 winsor2 dlnprice_YoY dlnprice_RMB_YoY dlnMC_YoY dlnvalue_YoY, trim replace
 save samples\sample_monthly_exp_firm,replace
