@@ -264,14 +264,8 @@ eststo DPE_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if own
 eststo JV_1: reghdfe dlnprice_YoY brw dlnNER_US if ownership=="JV", a(firm_id) vce(cluster firm_id)
 eststo JV_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if ownership=="JV", a(firm_id) vce(cluster firm_id)
 
-gen foreign=1 if ownership=="MNE" | ownership=="JV"
-replace foreign=0 if ownership=="SOE" | ownership=="DPE"
-
-eststo foreign_1: reghdfe dlnprice_YoY brw c.brw#c.foreign dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo foreign_2: reghdfe dlnprice_YoY brw c.brw#c.foreign dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-estfe SOE_* DPE_* MNE_* JV_* foreign_*, labels(firm_id "Firm FE")
-esttab SOE_* DPE_* MNE_* JV_* foreign_* using tables\tables_Feb2024\ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("SOE" "SOE" "DPE" "DPE" "MNE" "MNE"  "JV" "JV" "Foreign" "Foreign")
+estfe SOE_* DPE_* MNE_* JV_*, labels(firm_id "Firm FE")
+esttab SOE_* DPE_* MNE_* JV_* using tables\tables_Feb2024\ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("SOE" "SOE" "DPE" "DPE" "MNE" "MNE"  "JV" "JV")
 
 *-------------------------------------------------------------------------------
 
@@ -400,28 +394,6 @@ esttab app1_* app2_* using tables\tables_Feb2024\approximate.csv, replace b(3) s
 
 *-------------------------------------------------------------------------------
 
-* ?. Asymmetric impact
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-gen brw_increase=1 if brw>0
-replace brw_increase=0 if brw_increase==.
-gen brw_decrease=1 if brw<0
-replace brw_decrease=0 if brw_decrease==.
-
-eststo asymmetry_1: reghdfe dlnprice_YoY c.brw#c.brw_increase dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo asymmetry_2: reghdfe dlnprice_YoY c.brw#c.brw_increase l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo asymmetry_3: reghdfe dlnprice_YoY c.brw#c.brw_decrease dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo asymmetry_4: reghdfe dlnprice_YoY c.brw#c.brw_decrease l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo asymmetry_5: reghdfe dlnprice_YoY c.brw#c.brw_increase c.brw#c.brw_decrease dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo asymmetry_6: reghdfe dlnprice_YoY c.brw#c.brw_increase c.brw#c.brw_decrease l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-estfe asymmetry_*, labels(firm_id "Firm FE")
-esttab asymmetry_* using tables\tables_Feb2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle(">0" ">0" "<0" "<0" ">0 vs <0" ">0 vs <0") order(*brw*)
-
-*-------------------------------------------------------------------------------
-
 * FA2. Country heterogeneity
 
 cd "D:\Project E"
@@ -448,10 +420,64 @@ sort rank_exp
 
 twoway (bar _b_brw rank_exp, horizontal) (rcap lower_bound upper_bound rank_exp, horizontal), ytitle("Country Code") xtitle("Export price responses to US monetary policy shocks")
 */
-   
+
 *-------------------------------------------------------------------------------
 
-* 4. Liquidity (first stage)
+* 4. Trade credit (first stage)
+
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+keep if exp_int>0
+
+* Trade credit (first stage)
+eststo Apay: reghdfe D.Apay brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Arec: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo NArec: reghdfe D.NArec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe Apay Arec NArec, labels(firm_id "Firm FE")
+esttab Apay Arec NArec using tables\tables_Feb2024\TrCredit_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+*-------------------------------------------------------------------------------
+
+* B1. Trade credit (lag)
+
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+keep if exp_int>0
+
+* Trade credit (lag)
+eststo lag_Apay: reghdfe D.Apay c.brw#c.l.Apay L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+eststo lag_Arec: reghdfe D.Arec c.brw#c.l.Arec L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+eststo lag_NArec: reghdfe D.NArec c.brw#c.l.NArec L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
+
+estfe lag_Apay lag_Arec lag_NArec, labels(firm_id "Firm FE" year "Year FE")
+esttab lag_Apay lag_Arec lag_NArec using tables\tables_Feb2024\TrCreditlag.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(*brw*)
+
+*-------------------------------------------------------------------------------
+
+* 5. Trade credit (interaction)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+* Trade credit (interaction)
+eststo int_Apay_1: reghdfe dlnprice_YoY c.brw#c.l12.Apay_cic2, a(firm_id time) vce(cluster firm_id)
+eststo int_Apay_2: reghdfe dlnprice_YoY c.brw#c.l12.Apay_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo int_Arec_1: reghdfe dlnprice_YoY c.brw#c.l12.Arec_cic2, a(firm_id time) vce(cluster firm_id)
+eststo int_Arec_2: reghdfe dlnprice_YoY c.brw#c.l12.Arec_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+gen foreign=1 if ownership=="MNE" | ownership=="JV"
+replace foreign=0 if ownership=="SOE" | ownership=="DPE"
+
+eststo foreign_1: reghdfe dlnprice_YoY c.brw#c.foreign, a(firm_id time) vce(cluster firm_id)
+eststo foreign_2: reghdfe dlnprice_YoY c.brw#c.foreign l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+estfe int_Apay_* int_Arec_* foreign_*, labels(firm_id "Firm FE" time "Year-month FE")
+esttab int_Apay_* int_Arec_* foreign_* using tables\tables_Feb2024\TrCredit_B.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
+
+*-------------------------------------------------------------------------------
+
+* 6. Liquidity (first stage)
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
@@ -463,37 +489,29 @@ eststo liquid_2: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster fir
 eststo liquid_3: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo liquid_4: reghdfe D.Turnover brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
-* Trade credit (first stage)
-eststo liquid_5: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo liquid_6: reghdfe D.Apay brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-
 estfe liquid_*, labels(firm_id "Firm FE")
 esttab liquid_* using tables\tables_Feb2024\liquid_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
-* B1. Liquidity with lag level (first stage)
+* B2. Liquidity (lag)
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
 keep if exp_int>0
 
-* Liquidity (first stage)
+* Liquidity (lag)
 eststo lag_liquid_1: reghdfe D.FPC_liquid c.brw#c.l.FPC_liquid L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_liquid_2: reghdfe D.Liquid c.brw#c.l.Liquid L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_liquid_3: reghdfe D.Cash c.brw#c.l.Cash L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_liquid_4: reghdfe D.Turnover c.brw#c.l.Turnover L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 
-* Trade credit (first stage)
-eststo lag_liquid_5: reghdfe D.Arec c.brw#c.l.Arec L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
-eststo lag_liquid_6: reghdfe D.Apay c.brw#c.l.Apay L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
-
 estfe lag_liquid_*, labels(firm_id "Firm FE" year "Year FE")
-esttab lag_liquid_* using tables\tables_Feb2024\liquid_lag_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(*brw*)
+esttab lag_liquid_* using tables\tables_Feb2024\liquid_lag.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(*brw*)
 
 *-------------------------------------------------------------------------------
 
-* 5. Liquidity (interaction)
+* 7. Liquidity (interaction)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -513,7 +531,7 @@ esttab int_FPC_* int_Liquid_* int_Cash_* using tables\tables_Feb2024\liquid_B.cs
 
 *-------------------------------------------------------------------------------
 
-* 6. Borrowing cost (first stage)
+* 8. Borrowing cost (first stage)
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
@@ -534,28 +552,28 @@ esttab borrow_* debt_* using tables\tables_Feb2024\borrow_A.csv, replace b(3) se
 
 *-------------------------------------------------------------------------------
 
-* B2. Borrowing cost with lag level (first stage)
+* B3. Borrowing (lag)
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
 keep if exp_int>0
 
-* Borrowing cost (first stage)
+* Borrowing cost (lag)
 eststo lag_borrow_1: reghdfe D.IEoL c.brw#c.l.IEoL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_borrow_2: reghdfe D.IEoCL c.brw#c.l.IEoCL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_borrow_3: reghdfe D.FNoL c.brw#c.l.FNoL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_borrow_4: reghdfe D.FNoCL c.brw#c.l.FNoCL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 
-* Debt (first stage)
+* Debt (lag)
 eststo lag_debt_1: reghdfe D.lnTL c.brw#c.l.lnTL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_debt_2: reghdfe D.lnCL c.brw#c.l.lnCL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 
 estfe lag_borrow_* lag_debt_*, labels(firm_id "Firm FE" year "Year FE")
-esttab lag_borrow_* lag_debt_* using tables\tables_Feb2024\borrow_lag_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+esttab lag_borrow_* lag_debt_* using tables\tables_Feb2024\borrow_lag.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
-* 7. Borrowing cost (interaction)
+* 9. Borrowing cost (interaction)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -575,7 +593,7 @@ esttab int_IEoL_* int_IEoCL_* int_FNoL_* int_FNoCL_* using tables\tables_Feb2024
 
 *-------------------------------------------------------------------------------
 
-* B4. Decomposition into markup and marginal cost
+* B5. Decomposition into markup and marginal cost
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -598,7 +616,7 @@ esttab decomp_* using tables\tables_Feb2024\decomposition.csv, replace b(3) se(3
 
 *-------------------------------------------------------------------------------
 
-* B5. Within-sector and across-sector markup
+* B6. Within-sector and across-sector markup
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -622,7 +640,7 @@ esttab firm_markup_2 within_markup_* across_markup_* using tables\tables_Feb2024
 
 *-------------------------------------------------------------------------------
 
-* B6. Tests of other channels
+* B7. Tests of other channels
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
@@ -642,7 +660,7 @@ esttab material wage material_int wage_int imp_int using tables\tables_Feb2024\o
 
 *-------------------------------------------------------------------------------
 
-* 8. Ordinary vs Processing
+* 10. Ordinary vs Processing
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -663,7 +681,7 @@ esttab ordinary_* process_* processint_* assembly_* assemblyint_* using tables\t
 
 *-------------------------------------------------------------------------------
 
-* 9. Homogenous vs differentiated good
+* 11. Homogenous vs differentiated good
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -682,7 +700,7 @@ esttab Rauch_* using tables\tables_Feb2024\Rauch.csv, replace b(3) se(3) noconst
 
 *-------------------------------------------------------------------------------
 
-* 10. Standardized EU shocks and comparison with brw
+* 12. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -710,7 +728,7 @@ esttab std_* using tables\tables_Feb2024\EU.csv, replace b(4) se(4) noconstant s
 
 *-------------------------------------------------------------------------------
 
-* 11. Fixed and floating regime
+* 13. Fixed and floating regime
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -730,7 +748,7 @@ esttab fixed_* float_* using tables\tables_Feb2024\regime.csv, replace b(3) se(3
 
 *-------------------------------------------------------------------------------
 
-* 12. Monetary tightness in China
+* 14. Monetary tightness in China
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear

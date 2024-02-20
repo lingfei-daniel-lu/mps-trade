@@ -313,8 +313,9 @@ gen Cash=(TWC-NAR-STOCK)/TA
 gen WC=TWC/TA
 gen Liquid=(TWC-CL)/TA
 gen Debt=TL/TA
-gen Arec=NAR/TA
+gen NArec=NAR/TA
 gen Apay=AP/TA
+gen Arec=(NAR+AP)/TA
 gen IEoL=IE/TL
 gen IEoCL=IE/CL
 gen FNoL=FN/TL
@@ -322,15 +323,10 @@ gen FNoCL=FN/CL
 gen CWPoS=CWP/SI
 gen TOIPToS=TOIPT/SI
 * Construct industry-level financial constraints by CIC2
-local varlist "CoS Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec"
+local varlist "CoS Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec Apay NArec"
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys year cic2: egen `var'_cic2 = median(`var')
-}
-local varlist2 "Apay"
-foreach var of local varlist2 {
-	winsor2 `var', replace
-	bys cic2: egen `var'_cic2 = median(`var')
 }
 * Add FLL (2015) measures
 merge n:1 cic2 using "D:\Project C\credit\FLL_Appendix\FLL_Appendix_A1",nogen keep(matched) keepus(ExtFin)
