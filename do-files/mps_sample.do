@@ -712,7 +712,8 @@ xtset firm_id year
 * calculate value change
 by firm_id: gen dlnvalue=ln(value)-ln(L.value)
 * calculate marginal cost
-by firm_id: gen dlnMC=dlnprice-D.Markup_DLWTLD
+gen lnMarkup=ln(Markup_DLWTLD)
+by firm_id: gen dlnMC=dlnprice-D.lnMarkup
 * drop outliers
 winsor2 dlnprice dlnMC, replace trim
 save samples\sample_matched_exp_firm,replace
