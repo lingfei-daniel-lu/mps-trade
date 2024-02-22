@@ -65,6 +65,55 @@ replace real_decrease=1 if d_ffr<0 & d_ffr !=.
 label variable real_decrease "dummy, =1 if average ffr decrease relative to last month"
 save ffr_monthly,replace
 
+* Weighted shock
+
+cd "D:\Project E\MPS\brw\weight"
+
+* (1) monthly
+clear
+set obs 333 
+gen ym = ym(1994, 12) + _n
+format ym %tm
+save year_month.dta, replace
+
+use brw_daily.dta, clear
+gen year=year(date)
+gen month=month(date)
+gen ym=ym(year, month)
+format ym %tm
+tsset ym
+tsfill
+replace year=year[_n+1] if year==.
+replace month=month[_n+1]-1 if month==.
+replace brw=0 if brw==.
+gen day=day(date)
+gen ndays = daysinmonth(date)
+gen rdays=ndays-day+1
+gen weight=rdays/ndays
+replace weight=1 if weight==.
+gen brw_weight=brw[_n-1]*(1-weight[_n-1])+brw[_n]*weight[_n]
+corr brw brw_weight
+keep year month brw_weight
+save brw_weight_m.dta, replace
+
+* (2) annually
+
+use brw_daily.dta, clear
+generate ndays = cond(isleapyear(date), 366, 365)
+gen year=year(date)
+gen first_day = mdy(1,1,year)
+gen last_day = mdy(12, 31, year)
+format date first_day last_day %td
+gen rdays=last_day-date+1
+gen weight=rdays/ndays
+gen brw_thisyear=brw*weight
+gen brw_nextyear=brw*(1-weight)
+
+collapse (sum) brw_thisyear brw_nextyear, by(year)
+gen brw_weight=brw_thisyear+brw_nextyear[_n-1]
+
+keep year brw_weight
+save brw_weight_y.dta, replace
 
 ********************************************************************************
 
