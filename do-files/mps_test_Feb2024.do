@@ -394,23 +394,11 @@ esttab app1_* app2_* using tables\tables_Feb2024\approximate.csv, replace b(3) s
 
 *-------------------------------------------------------------------------------
 
-* A11. Fixed and floating regime
+* A11. Exact annoucement date effect
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo fixed_1: reghdfe dlnprice_YoY brw dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo fixed_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo fixed_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo fixed_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-
-eststo float_1: reghdfe dlnprice_YoY brw dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo float_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo float_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo float_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-
-estfe fixed_* float_*, labels(firm_id "Firm FE")
-esttab fixed_* float_* using tables\tables_Feb2024\regime.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("fixed" "fixed" "fixed" "fixed" "floating" "floating" "floating" "floating")
 
 *-------------------------------------------------------------------------------
 
@@ -520,11 +508,11 @@ eststo domestic_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if FDI==0, 
 eststo FDI_1: reghdfe dlnprice_YoY brw if FDI==1, a(firm_id) vce(cluster firm_id)
 eststo FDI_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if FDI==1, a(firm_id) vce(cluster firm_id)
 
-eststo FDI_int_1: reghdfe dlnprice_YoY c.brw#c.l.FDI, a(firm_id time) vce(cluster firm_id)
-eststo FDI_int_2: reghdfe dlnprice_YoY c.brw#c.l.FDI l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo FDI_int_1: reghdfe dlnprice_YoY c.brw#c.l12.FDI, a(firm_id time) vce(cluster firm_id)
+eststo FDI_int_2: reghdfe dlnprice_YoY c.brw#c.l12.FDI l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
 
 estfe domestic_* FDI_*, labels(firm_id "Firm FE" time "Year-month FE")
-esttab domestic_* FDI_* using tables\tables_Feb2024\FDI_interaction.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
+esttab domestic_* FDI_* using tables\tables_Feb2024\FDI.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
 
 *-------------------------------------------------------------------------------
 
@@ -751,7 +739,53 @@ esttab Rauch_* using tables\tables_Feb2024\Rauch.csv, replace b(3) se(3) noconst
 
 *-------------------------------------------------------------------------------
 
-* 12. Standardized EU shocks and comparison with brw
+* B8. Fixed and floating regime
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo fixed_1: reghdfe dlnprice_YoY brw dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+
+eststo float_1: reghdfe dlnprice_YoY brw dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+
+estfe fixed_* float_*, labels(firm_id "Firm FE")
+esttab fixed_* float_* using tables\tables_Feb2024\regime.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("fixed" "fixed" "fixed" "fixed" "floating" "floating" "floating" "floating")
+
+*-------------------------------------------------------------------------------
+
+* 12. Monetary tightness in China
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge m:1 year month using control\china\China_m2g,nogen keep(matched master)
+
+bys firm_id: egen m2g_YoY_mean = mean(m2g_YoY) 
+by firm_id: egen m2g_YoY_sd  = sd(m2g_YoY)
+gen tight_YoY = -(m2g_YoY - m2g_YoY_mean) / m2g_YoY_sd
+
+bys firm_id: egen m2g_MoM_mean = mean(m2g_MoM) 
+by firm_id: egen m2g_MoM_sd  = sd(m2g_MoM)
+gen tight_MoM = -(m2g_MoM - m2g_MoM_mean) / m2g_MoM_sd
+
+xtset firm_id time
+
+eststo tight_1: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo tight_2: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo tight_3: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo tight_4: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+estfe tight_*, labels(firm_id "Firm FE")
+esttab tight_* using tables\tables_Feb2024\tightness.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("YoY" "YoY" "MoM" "MoM") order(brw c.brw* tight*)
+
+*-------------------------------------------------------------------------------
+
+* 13. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -779,26 +813,16 @@ esttab std_* using tables\tables_Feb2024\EU.csv, replace b(4) se(4) noconstant s
 
 *-------------------------------------------------------------------------------
 
-* 14. Monetary tightness in China
+* 14. Asymmetric impact
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
-merge m:1 year month using control\china\China_m2g,nogen keep(matched master)
 
-bys firm_id: egen m2g_YoY_mean = mean(m2g_YoY) 
-by firm_id: egen m2g_YoY_sd  = sd(m2g_YoY)
-gen tight_YoY = -(m2g_YoY - m2g_YoY_mean) / m2g_YoY_sd
+eststo up_1: reghdfe dlnprice_YoY brw dlnNER_US if brw>=0, a(firm_id) vce(cluster firm_id)
+eststo up_2: reghdfe dlnprice_YoY brw dlnNER_US l.dlnprice_YoY l12.lnrSI if brw>=0, a(firm_id) vce(cluster firm_id)
 
-bys firm_id: egen m2g_MoM_mean = mean(m2g_MoM) 
-by firm_id: egen m2g_MoM_sd  = sd(m2g_MoM)
-gen tight_MoM = -(m2g_MoM - m2g_MoM_mean) / m2g_MoM_sd
+eststo down_1: reghdfe dlnprice_YoY brw dlnNER_US if brw<=0, a(firm_id) vce(cluster firm_id)
+eststo down_2: reghdfe dlnprice_YoY brw dlnNER_US l.dlnprice_YoY l12.lnrSI if brw<=0, a(firm_id) vce(cluster firm_id)
 
-xtset firm_id time
-
-eststo tight_1: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo tight_2: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo tight_3: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo tight_4: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-estfe tight_*, labels(firm_id "Firm FE")
-esttab tight_* using tables\tables_Feb2024\tightness.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("YoY" "YoY" "MoM" "MoM") order(brw c.brw* tight*)
+estfe up_* down_*, labels(firm_id "Firm FE")
+esttab up_* down_* using tables\tables_Feb2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("brw>=0" "brw>=0" "brw<=0" "brw<=0")
