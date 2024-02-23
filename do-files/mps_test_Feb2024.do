@@ -394,6 +394,26 @@ esttab app1_* app2_* using tables\tables_Feb2024\approximate.csv, replace b(3) s
 
 *-------------------------------------------------------------------------------
 
+* A11. Fixed and floating regime
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo fixed_1: reghdfe dlnprice_YoY brw dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo fixed_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+
+eststo float_1: reghdfe dlnprice_YoY brw dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+eststo float_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
+
+estfe fixed_* float_*, labels(firm_id "Firm FE")
+esttab fixed_* float_* using tables\tables_Feb2024\regime.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("fixed" "fixed" "fixed" "fixed" "floating" "floating" "floating" "floating")
+
+*-------------------------------------------------------------------------------
+
 * FA2. Country heterogeneity
 
 cd "D:\Project E"
@@ -488,14 +508,19 @@ esttab int_Apay_* int_Arec_* foreign_* using tables\tables_Feb2024\TrCredit_B.cs
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-gen foreign=1 if ownership=="MNE" | ownership=="JV"
-replace foreign=0 if ownership=="SOE" | ownership=="DPE"
+gen FDI=1 if ownership=="MNE" | ownership=="JV"
+replace FDI=0 if ownership=="SOE" | ownership=="DPE"
 
-eststo foreign_1: reghdfe dlnprice_YoY c.brw#c.l.foreign, a(firm_id time) vce(cluster firm_id)
-eststo foreign_2: reghdfe dlnprice_YoY c.brw#c.l.foreign l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo domestic_1: reghdfe dlnprice_YoY brw if FDI==0, a(firm_id) vce(cluster firm_id)
+eststo domestic_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if FDI==0, a(firm_id) vce(cluster firm_id)
+eststo FDI_1: reghdfe dlnprice_YoY brw if FDI==1, a(firm_id) vce(cluster firm_id)
+eststo FDI_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if FDI==1, a(firm_id) vce(cluster firm_id)
 
-estfe foreign_*, labels(firm_id "Firm FE" time "Year-month FE")
-esttab foreign_* using tables\tables_Feb2024\FDI_interaction.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
+eststo FDI_int_1: reghdfe dlnprice_YoY c.brw#c.l.FDI, a(firm_id time) vce(cluster firm_id)
+eststo FDI_int_2: reghdfe dlnprice_YoY c.brw#c.l.FDI l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+estfe domestic_* FDI_*, labels(firm_id "Firm FE" time "Year-month FE")
+esttab domestic_* FDI_* using tables\tables_Feb2024\FDI_interaction.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
 
 *-------------------------------------------------------------------------------
 
@@ -747,26 +772,6 @@ eststo std_EU_JK_3: reghdfe dlnprice_YoY mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY d
 
 estfe std_*, labels(firm_id "Firm FE")
 esttab std_* using tables\tables_Feb2024\EU.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw_std *_eu *lnrSI *dlnprice*)
-
-*-------------------------------------------------------------------------------
-
-* 13. Fixed and floating regime
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-eststo fixed_1: reghdfe dlnprice_YoY brw dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo fixed_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo fixed_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo fixed_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if time<monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-
-eststo float_1: reghdfe dlnprice_YoY brw dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo float_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo float_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-eststo float_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if time>=monthly("2005m7","YM"), a(firm_id) vce(cluster firm_id)
-
-estfe fixed_* float_*, labels(firm_id "Firm FE")
-esttab fixed_* float_* using tables\tables_Feb2024\regime.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("fixed" "fixed" "fixed" "fixed" "floating" "floating" "floating" "floating")
 
 *-------------------------------------------------------------------------------
 
