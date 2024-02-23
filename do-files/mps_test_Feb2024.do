@@ -454,6 +454,10 @@ eststo Apay_exp: reghdfe D.Apay brw L.lnrSI L.Debt if exp_int>0, a(firm_id) vce(
 eststo Arec_exp: reghdfe D.Arec brw L.lnrSI L.Debt if exp_int>0, a(firm_id) vce(cluster firm_id)
 eststo NArec_exp: reghdfe D.NArec brw L.lnrSI L.Debt if exp_int>0, a(firm_id) vce(cluster firm_id)
 
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+keep if exp_int==0
+
 * Trade credit (non-exporter)
 eststo Apay_nonexp: reghdfe D.Apay brw L.lnrSI L.Debt if exp_int==0, a(firm_id) vce(cluster firm_id)
 eststo Arec_nonexp: reghdfe D.Arec brw L.lnrSI L.Debt if exp_int==0, a(firm_id) vce(cluster firm_id)
