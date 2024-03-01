@@ -91,10 +91,10 @@ gen ndays = daysinmonth(date)
 gen rdays=ndays-day+1
 gen weight=rdays/ndays
 replace weight=1 if weight==.
-gen brw_weight=brw[_n-1]*(1-weight[_n-1])+brw[_n]*weight[_n]
-corr brw brw_weight
-keep year month brw_weight
-save brw_weight_m.dta, replace
+gen brw_weight_m=brw[_n-1]*(1-weight[_n-1])+brw[_n]*weight[_n]
+corr brw brw_weight_m
+keep year month brw_weight_m
+save brw_weight_m, replace
 
 * (2) annually
 
@@ -110,10 +110,10 @@ gen brw_thisyear=brw*weight
 gen brw_nextyear=brw*(1-weight)
 
 collapse (sum) brw_thisyear brw_nextyear, by(year)
-gen brw_weight=brw_thisyear+brw_nextyear[_n-1]
+gen brw_weight_y=brw_thisyear+brw_nextyear[_n-1]
 
-keep year brw_weight
-save brw_weight_y.dta, replace
+keep year brw_weight_y
+save brw_weight_y, replace
 
 ********************************************************************************
 
