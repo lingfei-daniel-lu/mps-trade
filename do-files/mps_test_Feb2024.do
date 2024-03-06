@@ -506,8 +506,8 @@ eststo int_Apay_2: reghdfe dlnprice_YoY c.brw#c.l12.Apay_cic2 l12.lnrSI l.dlnpri
 eststo int_Arec_1: reghdfe dlnprice_YoY c.brw#c.l12.Arec_cic2, a(firm_id time) vce(cluster firm_id)
 eststo int_Arec_2: reghdfe dlnprice_YoY c.brw#c.l12.Arec_cic2 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
 
-estfe int_Apay_* int_Arec_* foreign_*, labels(firm_id "Firm FE" time "Year-month FE")
-esttab int_Apay_* int_Arec_* foreign_* using tables\tables_Feb2024\TrCredit_B.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
+estfe int_Apay_* int_Arec_*, labels(firm_id "Firm FE" time "Year-month FE")
+esttab int_Apay_* int_Arec_* using tables\tables_Feb2024\TrCredit_B.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
 
 *-------------------------------------------------------------------------------
 
@@ -714,6 +714,7 @@ esttab firm_markup_2 within_markup_* across_markup_* using tables\tables_Feb2024
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
+keep if exp_int>0
 
 eststo material: reghdfe D.TOIPToS brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 eststo wage: reghdfe D.CWPoS brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
