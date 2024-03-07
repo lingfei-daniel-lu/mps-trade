@@ -62,6 +62,18 @@ eststo baseline_8: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id)
 estfe baseline_*, labels(firm_id "Firm FE")
 esttab baseline_* using tables\tables_Feb2024\baseline.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("monthly" "monthly" "monthly" "monthly" "annual" "annual" "annual" "annual")
 
+* 2+. Month-on-month price
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo MoM_1: reghdfe dlnprice_MoM brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo MoM_2: reghdfe dlnprice_MoM brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo MoM_3: reghdfe dlnprice_MoM brw l.dlnprice_MoM dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo MoM_4: reghdfe dlnprice_MoM brw l12.lnrSI l.dlnprice_MoM dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+esttab MoM_* using tables\tables_Feb2024\MoM.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
 *-------------------------------------------------------------------------------
 
 * A1. Dynamic regression
@@ -93,6 +105,15 @@ eststo lag_12: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw
 
 estfe lag_*, labels(firm_id "Firm FE")
 esttab lag_* using tables\tables_Feb2024\multilag.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw L*brw)
+
+* A1++. Dynamic regression with different time gap
+
+forv i=1/12{
+eststo gap_`i': reghdfe s`i'.f`i'.price_index brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+}
+estfe gap_*, labels(firm_id "Firm FE")
+esttab gap_* using tables\tables_Feb2024\gap.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
 
 *-------------------------------------------------------------------------------
 
