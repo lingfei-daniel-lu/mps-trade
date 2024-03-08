@@ -90,6 +90,9 @@ esttab forward_* using tables\tables_Feb2024\dynamic.csv, replace b(3) se(3) noc
 
 * A1+. Multi-lag regression
 
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
 eststo lag_1: reghdfe dlnprice_YoY brw l.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo lag_2: reghdfe dlnprice_YoY brw l.brw l2.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo lag_3: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
@@ -108,12 +111,14 @@ esttab lag_* using tables\tables_Feb2024\multilag.csv, replace b(3) se(3) nocons
 
 * A1++. Dynamic regression with different time gap
 
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
 forv i=1/12{
-eststo gap_`i': reghdfe s`i'.f`i'.price_index brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo gap_`i': reghdfe s`i'.l.f`i'.price_index brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
 }
 estfe gap_*, labels(firm_id "Firm FE")
 esttab gap_* using tables\tables_Feb2024\gap.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
-
 
 *-------------------------------------------------------------------------------
 
