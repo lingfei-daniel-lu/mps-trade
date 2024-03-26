@@ -30,7 +30,7 @@ replace share_bar=share_it if share_bar==.
 sort party_id year
 by party_id year: egen dlnprice_RMB=sum(dlnprice_h_RMB*share_bar), missing
 by party_id year: egen dlnprice=sum(dlnprice_h*share_bar), missing
-collapse (sum) value value_RMB, by(party_id year dlnprice_RMB dlnprice HS6_count)
+collapse (sum) value, by(party_id year dlnprice_RMB dlnprice HS6_count)
 save custom_0015\customs_00_15_exp_firm,replace
 
 *-------------------------------------------------------------------------------
@@ -62,6 +62,8 @@ save samples\sample_customs_exp,replace
 
 cd "D:\Project E"
 use custom_0015\customs_00_15_exp_firm,replace
+* add exchange rates and other macro variables
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
 * add monetary policy shocks
 merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
 drop if dlnprice==.

@@ -42,7 +42,9 @@ cd "D:\Project E"
 use samples\sample_customs_exp_firm,clear
 
 eststo customs_firm_1: reghdfe dlnprice brw, a(firm_id) vce(cluster firm_id)
-eststo customs_firm_2: reghdfe dlnprice l.dlnprice brw, a(firm_id) vce(cluster firm_id)
+eststo customs_firm_2: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo customs_firm_3: reghdfe dlnprice brw l.dlnprice, a(firm_id) vce(cluster firm_id)
+eststo customs_firm_4: reghdfe dlnprice brw l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 *-------------------------------------------------------------------------------
 
