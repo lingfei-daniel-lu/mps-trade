@@ -371,6 +371,10 @@ gen FNoL=FN/TL
 gen FNoCL=FN/CL
 gen CWPoS=CWP/SI
 gen TOIPToS=TOIPT/SI
+save CIE\cie_var,replace
+
+cd "D:\Project E"
+use CIE\cie_var,clear
 * Construct industry-level financial constraints by CIC2
 local varlist "CoS Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec Apay NArec"
 foreach var of local varlist {
@@ -432,7 +436,7 @@ duplicates drop
 save CIE\cie_int,replace
 
 cd "D:\Project E"
-use CIE\cie_credit_v2,clear
+use CIE\cie_var,clear
 * Calculate firm-level markup from CIE
 merge 1:1 FRDM year using markup\cie9907markup, nogen keep(matched master) keepus(Markup_* tfp_*)
 merge n:1 FRDM using markup\cie9907markup_1st, nogen keep(matched master)
