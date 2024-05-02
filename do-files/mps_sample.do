@@ -362,9 +362,8 @@ gen Cash=(TWC-NAR-STOCK)/TA
 gen WC=TWC/TA
 gen Liquid=(TWC-CL)/TA
 gen Debt=TL/TA
-gen NArec=NAR/TA
+gen Arec=NAR/TA
 gen Apay=AP/TA
-gen Arec=(NAR+AP)/TA
 gen IEoL=IE/TL
 gen IEoCL=IE/CL
 gen FNoL=FN/TL
@@ -376,7 +375,7 @@ save CIE\cie_var,replace
 cd "D:\Project E"
 use CIE\cie_var,clear
 * Construct industry-level financial constraints by CIC2
-local varlist "CoS Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec Apay NArec"
+local varlist "CoS Tang Invent Turnover IEoL IEoCL FNoL FNoCL Debt WC Liquid Cash Arec Apay"
 foreach var of local varlist {
 	winsor2 `var', replace
 	bys year cic2: egen `var'_cic2 = median(`var')
@@ -411,7 +410,7 @@ rename f1 FPC_liquid_cic2
 merge n:1 FRDM using "D:\Project C\parent_affiliate\affiliate_2004",nogen keep(matched master)
 replace affiliate=0 if affiliate==.
 * log sales and costs
-local varlist "rSI STOCK TP TL CL"
+local varlist "rSI TP TL CL"
 foreach var of local varlist{
 gen ln`var'=ln(`var')
 }
@@ -470,6 +469,11 @@ replace tfp_High=0 if tfp_tld!=. & tfp_tld <= tfp_cic2
 gen tfp_High_1st=1 if tfp_tld_1st!=. & tfp_tld_1st > tfp_cic2_1st
 replace tfp_High_1st=0 if tfp_tld_1st!=. & tfp_tld_1st <= tfp_cic2_1st
 save CIE\cie_markup,replace
+
+cd "D:\Project E"
+use CIE\cie_credit_v2,clear
+collapse (mean) *_cic2, by(cic2 year)
+save CIE\cie_credit_cic2,replace
 
 cd "D:\Project E"
 use CIE\cie_credit_v2,clear
