@@ -413,3 +413,51 @@ xtset firm_id time
 
 eststo EU_exposure_1: reghdfe dlnprice_YoY target_ea path_ea c.target_ea#c.exposure_EU c.path_ea#c.exposure_EU l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 eststo EU_exposure_2: reghdfe dlnprice_YoY mp_eu cbi_eu c.mp_eu#c.exposure_EU c.cbi_eu#c.exposure_EU l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+
+*-------------------------------------------------------------------------------
+
+* 23. Market share
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_HS6,clear
+merge n:1 FRDM HS6 year using customs_matched\market_share\customs_exp_HS6_MS,nogen keep(matched)
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+xtset group_id time 
+
+reghdfe dlnprice_h_YoY brw dlnNER_US if MS_q>=19, a(group_id) vce(cluster group_id)
+reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if MS_q>=19, a(group_id) vce(cluster group_id)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using customs_matched\market_share\customs_exp_firm_MS,nogen keep(matched)
+xtset firm_id time 
+
+reghdfe S12.Markup_DLWTLD brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
+reghdfe dlnMC_YoY brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
+reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
+reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
+
+*-------------------------------------------------------------------------------
+
+* 24. Product concentration index
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_HS6,clear
+merge n:1 HS6 year using customs_matched\market_share\customs_exp_HS6_CRI,nogen keep(matched)
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+xtset group_id time 
+
+reghdfe dlnprice_h_YoY brw dlnNER_US if hhi_MS>=0.35, a(group_id) vce(cluster group_id)
+reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if hhi_MS>=0.35, a(group_id) vce(cluster group_id)
+reghdfe dlnprice_h_YoY brw dlnNER_US if CR4>=0.88, a(group_id) vce(cluster group_id)
+reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if CR4>=0.88, a(group_id) vce(cluster group_id)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using customs_matched\market_share\customs_exp_firm_CRI,nogen keep(matched)
+xtset firm_id time 
+
+reghdfe S12.Markup_DLWTLD brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
+reghdfe dlnMC_YoY brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
+reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)
+reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)

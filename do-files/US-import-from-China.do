@@ -25,6 +25,7 @@ gen HS2=substr(HS6,1,2)
 gen price=value/quantity
 save HS6_imp_China_89_22,replace
 
+cd "E:\Data\Peter Schott\US HS-level imports and exports\imp_China"
 use HS6_imp_China_89_22,clear
 merge m:1 year using "D:\Project E\MPS\brw\brw_94_22",nogen keep(matched)
 merge n:1 year using "D:\Project E\ER\US_NER_99_19",nogen keep(matched)
@@ -32,6 +33,7 @@ sort HS6 year
 by HS6: gen dlnprice=ln(price)-ln(price[_n-1]) if year==year[_n-1]+1
 egen product_id=group(HS6)
 xtset product_id year
+winsor2 dlnprice,trim replace
 save "D:\Project E\samples\HS6_US-import",replace
 
 use "D:\Project E\samples\HS6_US-import",clear

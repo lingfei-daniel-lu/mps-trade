@@ -663,6 +663,29 @@ save customs_matched\customs_monthly_exp_HS6,replace
 
 cd "D:\Project E"
 use customs_matched\customs_monthly_exp_HS6,clear
+* calculate market shares
+bys HS6 year: egen value_HS6=total(value)
+bys HS6 year FRDM: egen value_HS6_firm=total(value)
+gen MS=value_HS6_firm/value_HS6
+collapse (mean) MS, by(FRDM HS6 year)
+xtile MS_q20 = MS, nq(20)
+save customs_matched\market_share\customs_exp_HS6_MS,replace
+
+cd "D:\Project E"
+use customs_matched\market_share\customs_exp_HS6_MS,clear
+gsort HS6 year -MS
+by HS6 year: gen rank_firm=_n
+gen top4=1 if rank_firm<=4
+replace top4=0 if top4==.
+by HS6 year: egen CR4=total(MS*top4)
+hhi MS, by (HS6 year)
+collapse (mean) CR4 hhi_MS, by (HS6 year)
+by HS6: egen CR4_mean=mean(CR4)
+by HS6: egen hhi_MS_mean=mean(hhi_MS)
+save customs_matched\market_share\customs_exp_HS6_CRI,replace
+
+cd "D:\Project E"
+use customs_matched\customs_monthly_exp_HS6,clear
 bys FRDM time: egen share_it=pc(value),prop
 by FRDM time: egen HS6_count=nvals(HS6)
 sort group_id time
@@ -691,6 +714,18 @@ by FRDM time: egen dlnprice_RMB_YoY=sum(dlnprice_h_RMB_YoY*share_bar_YoY), missi
 by FRDM time: egen dlnprice_RMB_next=sum(dlnprice_h_RMB_next*share_bar_next), missing
 collapse (sum) value (mean) process Rauch_*, by(FRDM time year month dlnprice_MoM dlnprice_YoY* dlnprice_next dlnprice_RMB* HS6_count)
 save customs_matched\customs_monthly_exp_firm,replace
+
+cd "D:\Project E"
+use customs_matched\market_share\customs_exp_HS6_MS,clear
+collapse (mean) MS, by(FRDM year)
+xtile MS_q20 = MS, nq(20)
+save customs_matched\market_share\customs_exp_firm_MS,replace
+
+cd "D:\Project E"
+use customs_matched\market_share\customs_exp_HS6_MS,clear
+merge n:1 HS6 year using customs_matched\market_share\customs_exp_HS6_CRI,nogen
+collapse (mean) hhi_MS CR4, by(FRDM year)
+save customs_matched\market_share\customs_exp_firm_CRI,replace
 
 ********************************************************************************
 
