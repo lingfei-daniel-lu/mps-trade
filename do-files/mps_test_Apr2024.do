@@ -467,6 +467,45 @@ twoway (bar _b_brw rank_exp, horizontal) (rcap lower_bound upper_bound rank_exp,
 
 *-------------------------------------------------------------------------------
 
+* FA3. Monte Carlo permutation tests
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+gen beta_brw=.
+gen se_brw=.
+gen tval_brw=.
+gen pval_brw=.
+
+forvalues i=1/1000{
+shufflevar brw
+qui reghdfe dlnprice_YoY brw_shuffled dlnNER_US, a(firm_id) vce(cluster firm_id)
+replace beta_brw=_b[brw] if _n==`i'
+replace se_brw=_se[brw] if _n==`i'
+replace tval_brw=_b[brw]/_se[brw] if _n==`i'
+replace pval_brw=2*ttail(e(df_r),abs(tval_brw))
+}
+keep if beta_brw!=.
+keep *_brw
+gen sig_brw=0 if abs(pval_brw)>0.1
+replace sig_brw=1 if abs(pval_brw)<=0.1
+replace sig_brw=2 if abs(pval_brw)<=0.05
+replace sig_brw=3 if abs(pval_brw)<=0.01
+save tables\shuffle_1000,replace
+
+use figures\shuffle_1000,clear
+hist tval_brw, bin(50) kdensity xlabel(-3(1)3) xtitle(T-statistic of beta) xline(-1.96 1.96)
+graph export "D:\Project E\figures\permutation_shuffle_1000.png", as(png) replace
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+permute brw _b[brw], r(100) strata(firm_id): reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+ritest brw _b[brw], r(100) strata(firm_id) kdensityplot: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+graph export "D:\Project E\figures\permutation_ritest_100.png", as(png) replace
+
+*-------------------------------------------------------------------------------
+
 * 4. Trade credit (first stage)
 
 cd "D:\Project E"
@@ -815,19 +854,3 @@ eststo std_EU_JK_3: reghdfe dlnprice_YoY mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY d
 
 estfe std_*, labels(firm_id "Firm FE")
 esttab std_* using tables\tables_Apr2024\EU.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw_std *_eu *lnrSI *dlnprice*)
-
-*-------------------------------------------------------------------------------
-
-* ?. Asymmetric impact
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-eststo up_1: reghdfe dlnprice_YoY brw dlnNER_US if brw>=0, a(firm_id) vce(cluster firm_id)
-eststo up_2: reghdfe dlnprice_YoY brw dlnNER_US l.dlnprice_YoY l12.lnrSI if brw>=0, a(firm_id) vce(cluster firm_id)
-
-eststo down_1: reghdfe dlnprice_YoY brw dlnNER_US if brw<=0, a(firm_id) vce(cluster firm_id)
-eststo down_2: reghdfe dlnprice_YoY brw dlnNER_US l.dlnprice_YoY l12.lnrSI if brw<=0, a(firm_id) vce(cluster firm_id)
-
-estfe up_* down_*, labels(firm_id "Firm FE")
-esttab up_* down_* using tables\tables_Apr2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("brw>=0" "brw>=0" "brw<=0" "brw<=0")

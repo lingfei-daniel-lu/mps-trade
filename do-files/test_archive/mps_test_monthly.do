@@ -416,7 +416,23 @@ eststo EU_exposure_2: reghdfe dlnprice_YoY mp_eu cbi_eu c.mp_eu#c.exposure_EU c.
 
 *-------------------------------------------------------------------------------
 
-* 23. Market share
+* 23. Asymmetric impact
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo up_1: reghdfe dlnprice_YoY brw dlnNER_US if brw>=0, a(firm_id) vce(cluster firm_id)
+eststo up_2: reghdfe dlnprice_YoY brw dlnNER_US l.dlnprice_YoY l12.lnrSI if brw>=0, a(firm_id) vce(cluster firm_id)
+
+eststo down_1: reghdfe dlnprice_YoY brw dlnNER_US if brw<=0, a(firm_id) vce(cluster firm_id)
+eststo down_2: reghdfe dlnprice_YoY brw dlnNER_US l.dlnprice_YoY l12.lnrSI if brw<=0, a(firm_id) vce(cluster firm_id)
+
+estfe up_* down_*, labels(firm_id "Firm FE")
+esttab up_* down_* using tables\tables_May2024\asymmetry.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("brw>=0" "brw>=0" "brw<=0" "brw<=0")
+
+*-------------------------------------------------------------------------------
+
+* 24. Firms with large market share
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_HS6,clear
@@ -424,22 +440,25 @@ merge n:1 FRDM HS6 year using customs_matched\market_share\customs_exp_HS6_MS,no
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 xtset group_id time 
 
-reghdfe dlnprice_h_YoY brw dlnNER_US if MS_q>=19, a(group_id) vce(cluster group_id)
-reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if MS_q>=19, a(group_id) vce(cluster group_id)
+eststo MS_1: reghdfe dlnprice_h_YoY brw dlnNER_US if MS_q>=19, a(group_id) vce(cluster group_id)
+eststo MS_2: reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if MS_q>=19, a(group_id) vce(cluster group_id)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 merge n:1 FRDM year using customs_matched\market_share\customs_exp_firm_MS,nogen keep(matched)
 xtset firm_id time 
 
-reghdfe S12.Markup_DLWTLD brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
-reghdfe dlnMC_YoY brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
-reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
-reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
+eststo MS_3: reghdfe S12.Markup_DLWTLD brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
+eststo MS_4: reghdfe dlnMC_YoY brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
+eststo MS_5: reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
+eststo MS_6: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
+
+estfe MS_*, labels(firm_id "Firm FE")
+esttab MS_* using tables\tables_May2024\market_share.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
-* 24. Product concentration index
+* 25. Product concentration index
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_HS6,clear
@@ -447,17 +466,25 @@ merge n:1 HS6 year using customs_matched\market_share\customs_exp_HS6_CRI,nogen 
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 xtset group_id time 
 
-reghdfe dlnprice_h_YoY brw dlnNER_US if hhi_MS>=0.35, a(group_id) vce(cluster group_id)
-reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if hhi_MS>=0.35, a(group_id) vce(cluster group_id)
-reghdfe dlnprice_h_YoY brw dlnNER_US if CR4>=0.88, a(group_id) vce(cluster group_id)
-reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if CR4>=0.88, a(group_id) vce(cluster group_id)
+eststo hhi_1: reghdfe dlnprice_h_YoY brw dlnNER_US if hhi_MS>=0.35, a(group_id) vce(cluster group_id)
+eststo hhi_2: reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if hhi_MS>=0.35, a(group_id) vce(cluster group_id)
+eststo CR4_1: reghdfe dlnprice_h_YoY brw dlnNER_US if CR4>=0.88, a(group_id) vce(cluster group_id)
+eststo CR4_2: reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US if CR4>=0.88, a(group_id) vce(cluster group_id)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 merge n:1 FRDM year using customs_matched\market_share\customs_exp_firm_CRI,nogen keep(matched)
 xtset firm_id time 
 
-reghdfe S12.Markup_DLWTLD brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
-reghdfe dlnMC_YoY brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
-reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)
-reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)
+eststo hhi_3: reghdfe S12.Markup_DLWTLD brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
+eststo hhi_4: reghdfe dlnMC_YoY brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
+eststo hhi_5: reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
+eststo hhi_6: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
+
+eststo CR4_3: reghdfe S12.Markup_DLWTLD brw l12.lnrSI if CR4>=0.88, a(firm_id) vce(cluster firm_id)
+eststo CR4_4: reghdfe dlnMC_YoY brw l12.lnrSI if CR4>=0.88, a(firm_id) vce(cluster firm_id)
+eststo CR4_5: reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)
+eststo CR4_6: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)
+
+estfe hhi_* CR4_*, labels(firm_id "Firm FE")
+esttab hhi_* CR4_* using tables\tables_May2024\concentration.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
