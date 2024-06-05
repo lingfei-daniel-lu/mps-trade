@@ -448,9 +448,9 @@ use samples\sample_monthly_exp_firm,clear
 merge n:1 FRDM year using customs_matched\market_share\customs_exp_firm_MS,nogen keep(matched)
 xtset firm_id time 
 
-eststo MS_3: reghdfe S12.Markup_DLWTLD brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
+eststo MS_3: reghdfe S12.lnMarkup brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
 eststo MS_4: reghdfe dlnMC_YoY brw l12.lnrSI if MS_q>=19, a(firm_id) vce(cluster firm_id)
-eststo MS_5: reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
+eststo MS_5: reghdfe dlnprice_YoY brw S12.lnMarkup l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
 eststo MS_6: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if MS_q>=19, a(firm_id) vce(cluster firm_id)
 
 estfe MS_*, labels(firm_id "Firm FE")
@@ -476,14 +476,14 @@ use samples\sample_monthly_exp_firm,clear
 merge n:1 FRDM year using customs_matched\market_share\customs_exp_firm_CRI,nogen keep(matched)
 xtset firm_id time 
 
-eststo hhi_3: reghdfe S12.Markup_DLWTLD brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
+eststo hhi_3: reghdfe S12.lnMarkup brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
 eststo hhi_4: reghdfe dlnMC_YoY brw l12.lnrSI if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
-eststo hhi_5: reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
+eststo hhi_5: reghdfe dlnprice_YoY brw S12.lnMarkup l12.lnrSI l.dlnprice_YoY dlnNER_US if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
 eststo hhi_6: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if hhi_MS>=0.35, a(firm_id) vce(cluster firm_id)
 
-eststo CR4_3: reghdfe S12.Markup_DLWTLD brw l12.lnrSI if CR4>=0.88, a(firm_id) vce(cluster firm_id)
+eststo CR4_3: reghdfe S12.lnMarkup brw l12.lnrSI if CR4>=0.88, a(firm_id) vce(cluster firm_id)
 eststo CR4_4: reghdfe dlnMC_YoY brw l12.lnrSI if CR4>=0.88, a(firm_id) vce(cluster firm_id)
-eststo CR4_5: reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)
+eststo CR4_5: reghdfe dlnprice_YoY brw S12.lnMarkup l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)
 eststo CR4_6: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US if CR4>=0.88, a(firm_id) vce(cluster firm_id)
 
 estfe hhi_* CR4_*, labels(firm_id "Firm FE")
