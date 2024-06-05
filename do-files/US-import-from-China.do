@@ -24,6 +24,7 @@ collapse (sum) quantity=quantity value=value, by(year HS6)
 gen HS2=substr(HS6,1,2)
 gen price=value/quantity
 save HS6_imp_China_89_22,replace
+**# Bookmark #1
 
 cd "E:\Data\Peter Schott\US HS-level imports and exports\imp_China"
 use HS6_imp_China_89_22,clear
@@ -36,8 +37,16 @@ xtset product_id year
 winsor2 dlnprice,trim replace
 save "D:\Project E\samples\HS6_US-import",replace
 
-use "D:\Project E\samples\HS6_US-import",clear
-reghdfe dlnprice brw dlnNER_US, a(product_id) vce(cluster product_id)
-reghdfe dlnprice brw l.dlnprice dlnNER_US, a(product_id) vce(cluster product_id)
-reghdfe dlnprice brw if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
-reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
+cd "D:\Project E"
+use samples\HS6_US-import,clear
+eststo USCN_0019_1: reghdfe dlnprice brw dlnNER_US, a(product_id) vce(cluster product_id)
+eststo USCN_0019_2: reghdfe dlnprice brw l.dlnprice dlnNER_US, a(product_id) vce(cluster product_id)
+eststo USCN_0006_1: reghdfe dlnprice brw dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
+eststo USCN_0006_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
+eststo USCN_0713_1: reghdfe dlnprice brw dlnNER_US if year>=2007 & year<=2013, a(product_id) vce(cluster product_id)
+eststo USCN_0713_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2007 & year<=2013, a(product_id) vce(cluster product_id)
+eststo USCN_1419_1: reghdfe dlnprice brw dlnNER_US if year>=2014 & year<=2019, a(product_id) vce(cluster product_id)
+eststo USCN_1419_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2014 & year<=2019, a(product_id) vce(cluster product_id)
+
+estfe USCN_*, labels(product_id "Product FE")
+esttab USCN_* using tables\tables_May2024\US-imp-CN.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("00-19" "00-19" "00-06" "00-06" "07-13" "07-13" "14-19" "14-19")
