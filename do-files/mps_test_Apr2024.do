@@ -119,7 +119,7 @@ gen d=0
 * Regression
 
 forv h = 0/12 {
-reghdfe f`h'.dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY f`h'.dlnNER_US, a(firm_id) vce(cluster firm_id)
+reghdfe f`h'.dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY f`h'.dlnNER_US, a(firm_id) vce(cluster firm_id time)
 replace b = _b[brw]                    if _n == `h'+1
 replace u = _b[brw] + 1.96* _se[brw]  if _n == `h'+1
 replace d = _b[brw] - 1.96* _se[brw]  if _n == `h'+1
@@ -700,21 +700,21 @@ esttab domestic_* FDI_* using tables\tables_Apr2024\FDI.csv, replace b(3) se(3) 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo decomp_1: reghdfe S12.Markup_DLWTLD brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo decomp_1: reghdfe S12.lnMarkup brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
 eststo decomp_2: reghdfe dlnMC_YoY brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo decomp_3: reghdfe dlnprice_YoY brw S12.Markup_DLWTLD l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo decomp_3: reghdfe dlnprice_YoY brw S12.lnMarkup l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo decomp_4: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
 
-eststo decomp_5: reghdfe D.Markup_DLWTLD brw l.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo decomp_5: reghdfe D.lnMarkup brw l.lnrSI, a(firm_id) vce(cluster firm_id)
 eststo decomp_6: reghdfe dlnMC brw l.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo decomp_7: reghdfe dlnprice brw D.Markup_DLWTLD l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo decomp_7: reghdfe dlnprice brw D.lnMarkup l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo decomp_8: reghdfe dlnprice brw dlnMC l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe decomp_*, labels(firm_id "Firm FE")
-esttab decomp_* using tables\tables_Apr2024\decomposition.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+esttab decomp_* using tables\tables_May2024\decomposition.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
