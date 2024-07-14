@@ -24,7 +24,6 @@ collapse (sum) quantity=quantity value=value, by(year HS6)
 gen HS2=substr(HS6,1,2)
 gen price=value/quantity
 save HS6_imp_China_89_22,replace
-**# Bookmark #1
 
 cd "E:\Data\Peter Schott\US HS-level imports and exports\imp_China"
 use HS6_imp_China_89_22,clear
