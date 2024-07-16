@@ -709,7 +709,7 @@ esttab ordinary_* process_* processint_* using tables\tables_July2024\process.cs
 
 *-------------------------------------------------------------------------------
 
-* 10. Homogenous vs differentiated good
+* B6. Homogenous vs differentiated good
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -728,7 +728,7 @@ esttab Rauch_* using tables\tables_July2024\Rauch.csv, replace b(3) se(3) nocons
 
 *-------------------------------------------------------------------------------
 
-* 11. Monetary tightness in China
+* 9. Monetary tightness in China
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -754,7 +754,7 @@ esttab tight_* using tables\tables_July2024\tightness.csv, replace b(3) se(3) no
 
 *-------------------------------------------------------------------------------
 
-* 12. Standardized EU shocks and comparison with brw
+* 10. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -780,21 +780,39 @@ eststo std_EU_JK_3: reghdfe dlnprice_YoY mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY d
 estfe std_*, labels(firm_id "Firm FE")
 esttab std_* using tables\tables_July2024\EU.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw_std *_eu *lnrSI *dlnprice*)
 
+*-------------------------------------------------------------------------------
+
+* B7?. External validity (longer period)
+
+cd "D:\Project E"
+use samples\sample_customs_exp_firm,clear
+
+eststo customs_0113_1: reghdfe dlnprice brw, a(firm_id) vce(cluster firm_id)
+eststo customs_0113_2: reghdfe dlnprice brw l.dlnprice, a(firm_id) vce(cluster firm_id)
+
+eststo customs_0107_1: reghdfe dlnprice brw dlnNER_US if year<=2007, a(firm_id) vce(cluster firm_id)
+eststo customs_0107_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year<=2007, a(firm_id) vce(cluster firm_id)
+
+eststo customs_0813_1: reghdfe dlnprice brw dlnNER_US if year>=2008 & year<=2013, a(firm_id) vce(cluster firm_id)
+eststo customs_0813_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2008 & year<=2013, a(firm_id) vce(cluster firm_id)
+
+estfe customs_*, labels(firm_id "Firm FE")
+esttab customs_* using tables\tables_July2024\longer.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
-* A6. Market-specific exposure
+* ?. Financial development
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
-merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
+merge n:1 FRDM year using GFDD\GFDD_matched_firm,nogen keep(matched)
+
 xtset firm_id time
 
-eststo exposure_US: reghdfe dlnprice_YoY brw c.brw#c.exposure_US l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_EU: reghdfe dlnprice_YoY brw c.brw#c.exposure_EU l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_OECD: reghdfe dlnprice_YoY brw c.brw#c.exposure_OECD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo exposure_all: reghdfe dlnprice_YoY brw c.brw#c.exposure_US c.brw#c.exposure_EU c.brw#c.exposure_OECD c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo fd_firm_d50_1: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d50_d, a(firm_id) vce(cluster firm_id)
+eststo fd_firm_d50_2: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d50_d l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo fd_firm_d75_1: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d75_d, a(firm_id) vce(cluster firm_id)
+eststo fd_firm_d75_2: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d75_d l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
-estfe exposure_*, labels(firm_id "Firm FE")
-esttab exposure_* using tables\tables_July2024\exposure.csv, replace b(3) se(3) noconstant nogap star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress order(brw *brw*)
+estfe fd_firm_*, labels(firm_id "Firm FE")
+esttab fd_firm_* using tables\tables_July2024\fd_firm.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw*)
