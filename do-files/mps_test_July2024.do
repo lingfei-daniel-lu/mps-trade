@@ -805,14 +805,17 @@ esttab customs_* using tables\tables_July2024\longer.csv, replace b(4) se(4) noc
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
-merge n:1 FRDM year using GFDD\GFDD_matched_firm,nogen keep(matched)
+merge n:1 FRDM year using GFDD\GFDD_matched_firm_dummy,nogen keep(matched)
+merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
 
 xtset firm_id time
 
-eststo fd_firm_d50_1: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d50_d, a(firm_id) vce(cluster firm_id)
-eststo fd_firm_d50_2: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d50_d l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-eststo fd_firm_d75_1: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d75_d, a(firm_id) vce(cluster firm_id)
-eststo fd_firm_d75_2: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d75_d l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo fd_firm_d50_1: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d50, a(firm_id) vce(cluster firm_id)
+eststo fd_firm_d50_2: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d50 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+*eststo fd_firm_d25_1: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d25, a(firm_id) vce(cluster firm_id)
+*eststo fd_firm_d25_2: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d25 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
-estfe fd_firm_*, labels(firm_id "Firm FE")
-esttab fd_firm_* using tables\tables_July2024\fd_firm.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw*)
+estfe fd_firm_d50*, labels(firm_id "Firm FE")
+esttab fd_firm_d50_* using tables\tables_July2024\fd_firm.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw*)
+
+eststo exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
