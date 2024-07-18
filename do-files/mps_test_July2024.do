@@ -709,7 +709,7 @@ esttab ordinary_* process_* processint_* using tables\tables_July2024\process.cs
 
 *-------------------------------------------------------------------------------
 
-* B6. Homogenous vs differentiated good
+* B7. Homogenous vs differentiated good
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -725,10 +725,29 @@ eststo Rauch_8: reghdfe dlnprice_YoY brw c.brw#c.Rauch_lib_r l12.lnrSI l.dlnpric
 
 estfe Rauch_*, labels(firm_id "Firm FE")
 esttab Rauch_* using tables\tables_July2024\Rauch.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("Conservative" "Conservative" "Conservative" "Conservative" "Liberal" "Liberal" "Liberal" "Liberal") order(brw c.brw*)
+*-------------------------------------------------------------------------------
+
+* 9. Financial development
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using GFDD\GFDD_matched_firm_dummy,nogen keep(matched)
+
+xtset firm_id time
+
+eststo fd0_1: reghdfe dlnprice_YoY brw dlnNER_US if fd_firm_d50==0, a(firm_id) vce(cluster firm_id)
+eststo fd0_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US l.dlnprice_YoY if fd_firm_d50==0, a(firm_id) vce(cluster firm_id)
+eststo fd1_1: reghdfe dlnprice_YoY brw dlnNER_US if fd_firm_d50==1, a(firm_id) vce(cluster firm_id)
+eststo fd1_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if fd_firm_d50==1, a(firm_id) vce(cluster firm_id)
+eststo fdint_1: reghdfe dlnprice_YoY c.brw#c.fd_firm_d50, a(firm_id time) vce(cluster firm_id)
+eststo fdint_2: reghdfe dlnprice_YoY c.brw#c.fd_firm_d50 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+
+estfe fd*, labels(firm_id "Firm FE")
+esttab fd* using tables\tables_July2024\fd_firm.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw*)
 
 *-------------------------------------------------------------------------------
 
-* 9. Monetary tightness in China
+* 10. Monetary tightness in China
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -754,7 +773,7 @@ esttab tight_* using tables\tables_July2024\tightness.csv, replace b(3) se(3) no
 
 *-------------------------------------------------------------------------------
 
-* 10. Standardized EU shocks and comparison with brw
+* 11. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -782,7 +801,7 @@ esttab std_* using tables\tables_July2024\EU.csv, replace b(4) se(4) noconstant 
 
 *-------------------------------------------------------------------------------
 
-* B7?. External validity (longer period)
+* ?. External validity (longer period)
 
 cd "D:\Project E"
 use samples\sample_customs_exp_firm,clear
@@ -801,21 +820,19 @@ esttab customs_* using tables\tables_July2024\longer.csv, replace b(4) se(4) noc
 
 *-------------------------------------------------------------------------------
 
-* ?. Financial development
+* B8. Advanced vs Emerging
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
-merge n:1 FRDM year using GFDD\GFDD_matched_firm_dummy,nogen keep(matched)
 merge n:1 FRDM year using customs_matched\customs_matched_exposure,nogen keep(matched)
 
 xtset firm_id time
 
-eststo fd_firm_d50_1: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d50, a(firm_id) vce(cluster firm_id)
-eststo fd_firm_d50_2: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d50 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
-*eststo fd_firm_d25_1: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d25, a(firm_id) vce(cluster firm_id)
-*eststo fd_firm_d25_2: reghdfe dlnprice_YoY brw c.brw#c.fd_firm_d25 l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+eststo exposure_EME_1: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME, a(firm_id) vce(cluster firm_id)
+eststo exposure_EME_2: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
-estfe fd_firm_d50*, labels(firm_id "Firm FE")
-esttab fd_firm_d50_* using tables\tables_July2024\fd_firm.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw*)
+eststo exposure_AD_1: reghdfe dlnprice_YoY brw c.brw#c.exposure_AD, a(firm_id) vce(cluster firm_id)
+eststo exposure_AD_2: reghdfe dlnprice_YoY brw c.brw#c.exposure_AD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
-eststo exposure_EME: reghdfe dlnprice_YoY brw c.brw#c.exposure_EME l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
+estfe exposure_*, labels(firm_id "Firm FE")
+esttab exposure_* using tables\tables_July2024\exposure.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps

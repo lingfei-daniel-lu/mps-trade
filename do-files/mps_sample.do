@@ -237,7 +237,7 @@ foreach code of local EU_code{
 	replace EU=1 if countrycode=="`code'"
 }
 gen EME=0
-local EME_code "TWN BRA CHL COL CZE HUN IND IDN MYS MEX MAR PER PHL POL RUS ZAF KOR THA TUR"
+local EME_code "ARG TWN BRA CHL COL CZE HUN IND IDN MYS MEX MAR PER PHL POL RUS ZAF KOR THA TUR"
 foreach code of local EME_code{
 	replace EME=1 if countrycode=="`code'"
 }
