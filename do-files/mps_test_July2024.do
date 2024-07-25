@@ -684,8 +684,8 @@ eststo domestic_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if FDI==0, 
 eststo FDI_1: reghdfe dlnprice_YoY brw if FDI==1, a(firm_id) vce(cluster firm_id)
 eststo FDI_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY if FDI==1, a(firm_id) vce(cluster firm_id)
 
-eststo FDI_int_1: reghdfe dlnprice_YoY c.brw#c.l12.FDI, a(firm_id time) vce(cluster firm_id)
-eststo FDI_int_2: reghdfe dlnprice_YoY c.brw#c.l12.FDI l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
+eststo FDI_int_1: reghdfe dlnprice_YoY c.brw#c.FDI, a(firm_id time) vce(cluster firm_id)
+eststo FDI_int_2: reghdfe dlnprice_YoY c.brw#c.FDI l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
 
 estfe domestic_* FDI_*, labels(firm_id "Firm FE" time "Year-month FE")
 esttab domestic_* FDI_* using tables\tables_July2024\FDI.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(c.brw*)
