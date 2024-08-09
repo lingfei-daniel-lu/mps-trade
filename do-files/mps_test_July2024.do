@@ -606,20 +606,18 @@ esttab int_Cash_* int_Liquid_* int_Apay_* int_Arec_* using tables\tables_July202
 * B3. Decomposition into markup and marginal cost
 
 cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-eststo decomp_1: reghdfe S12.lnMarkup brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo decomp_2: reghdfe dlnMC_YoY brw l12.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo decomp_3: reghdfe dlnprice_YoY brw S12.lnMarkup l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo decomp_4: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
 
-eststo decomp_5: reghdfe D.lnMarkup brw l.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo decomp_6: reghdfe dlnMC brw l.lnrSI, a(firm_id) vce(cluster firm_id)
-eststo decomp_7: reghdfe dlnprice brw D.lnMarkup l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo decomp_8: reghdfe dlnprice brw dlnMC l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo decomp_1: reghdfe D.lnMarkup brw l.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo decomp_2: reghdfe dlnMC brw l.lnrSI, a(firm_id) vce(cluster firm_id)
+eststo decomp_3: reghdfe dlnprice brw D.lnMarkup l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo decomp_4: reghdfe dlnprice brw dlnMC l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo decomp_5: reghdfe dlnprice_YoY brw S12.lnMarkup l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo decomp_6: reghdfe dlnprice_YoY brw dlnMC_YoY l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe decomp_*, labels(firm_id "Firm FE")
 esttab decomp_* using tables\tables_July2024\decomposition.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
@@ -647,6 +645,22 @@ eststo across_markup_4: reghdfe dlnprice_YoY c.brw#c.Markup_cic4_1st l12.lnrSI l
 
 estfe firm_markup_2 within_markup_* across_markup_*, labels(firm_id "Firm FE" time "Time FE")
 esttab firm_markup_2 within_markup_* across_markup_* using tables\tables_July2024\markup.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(*brw*)
+
+* B4*. Within-sector and across-sector markup (Markup change)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_*)
+xtset firm_id year
+
+reghdfe D.lnMarkup brw c.brw#c.Markup_cic2_High_1st l.lnrSI, a(firm_id) vce(cluster firm_id)
+reghdfe D.lnMarkup brw c.brw#c.Markup_cic4_High_1st l.lnrSI, a(firm_id) vce(cluster firm_id)
+
+reghdfe D.lnMarkup brw c.brw#c.l.Markup_cic2 l.lnrSI, a(firm_id) vce(cluster firm_id)
+reghdfe D.lnMarkup brw c.brw#c.Markup_cic2_1st l.lnrSI, a(firm_id) vce(cluster firm_id)
+
+reghdfe D.lnMarkup brw c.brw#c.l.Markup_cic4 l.lnrSI, a(firm_id) vce(cluster firm_id)
+reghdfe D.lnMarkup brw c.brw#c.Markup_cic4_1st l.lnrSI, a(firm_id) vce(cluster firm_id)
 
 *-------------------------------------------------------------------------------
 
