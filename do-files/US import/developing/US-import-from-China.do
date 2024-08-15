@@ -38,10 +38,10 @@ save "D:\Project E\samples\US_import\HS6_imp_China_sample",replace
 
 cd "D:\Project E"
 use samples\US_import\HS6_imp_China_sample,clear
-eststo USCN_0019_1: reghdfe dlnprice brw dlnNER_US, a(product_id) vce(cluster product_id)
-eststo USCN_0019_2: reghdfe dlnprice brw l.dlnprice dlnNER_US, a(product_id) vce(cluster product_id)
-eststo USCN_0006_1: reghdfe dlnprice brw dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
-eststo USCN_0006_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
+eststo USCHN_0019_1: reghdfe dlnprice brw dlnNER_US, a(product_id) vce(cluster product_id)
+eststo USCHN_0019_2: reghdfe dlnprice brw l.dlnprice dlnNER_US, a(product_id) vce(cluster product_id)
+eststo USCHN_0006_1: reghdfe dlnprice brw dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
+eststo USCHN_0006_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
 
-estfe USCN_*, labels(product_id "Product FE")
-esttab USCN_* using tables\tables_Aug2024\US-imp-CN.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("00-19" "00-19" "00-06" "00-06" "07-13" "07-13" "14-19" "14-19")
+estfe USCHN_*, labels(product_id "Product FE")
+esttab USCHN_* using tables\tables_Aug2024\US-imp-CHN.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("00-19" "00-19" "00-06" "00-06" "07-13" "07-13" "14-19" "14-19")

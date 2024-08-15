@@ -37,10 +37,10 @@ save "D:\Project E\samples\US_import\HS6_imp_Brazil_sample",replace
 
 cd "D:\Project E"
 use samples\US_import\HS6_imp_Brazil_sample,clear
-eststo USBR_0019_1: reghdfe dlnprice brw, a(product_id) vce(cluster product_id)
-eststo USBR_0019_2: reghdfe dlnprice brw l.dlnprice, a(product_id) vce(cluster product_id)
-eststo USBR_0006_1: reghdfe dlnprice brw if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
-eststo USBR_0006_2: reghdfe dlnprice brw l.dlnprice if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
+eststo USBRA_0019_1: reghdfe dlnprice brw, a(product_id) vce(cluster product_id)
+eststo USBRA_0019_2: reghdfe dlnprice brw l.dlnprice, a(product_id) vce(cluster product_id)
+eststo USBRA_0006_1: reghdfe dlnprice brw if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
+eststo USBRA_0006_2: reghdfe dlnprice brw l.dlnprice if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
 
-estfe USBR_*, labels(product_id "Product FE")
-esttab USBR_* using tables\tables_Aug2024\US-imp-BR.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("00-19" "00-19" "00-06" "00-06")
+estfe USBRA_*, labels(product_id "Product FE")
+esttab USBRA_* using tables\tables_Aug2024\US-imp-BRA.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("00-19" "00-19" "00-06" "00-06")
