@@ -23,6 +23,8 @@ cd "D:\Project E\US_import"
 use US-imp_coef_GDP.dta,clear
 drop if countrycode=="VEN" | countrycode=="SAU"
 
+twoway scatter coefficient1 lngdp_pc, mlabel(countrycode) xtitle(Log GDP per capita) ytitle(Coefficients of price response) yline(0)
+
 reg coefficient1 lngdp_pc
 predict yhat1
 
