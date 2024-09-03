@@ -443,7 +443,7 @@ esttab  weightm_* weighty_* using tables\tables_July2024\dateweight.csv, replace
 * A13. Product-level US-import-from-China prices
 
 cd "D:\Project E"
-use samples\HS6_US-import,clear
+use samples\US_import\HS6_imp_China_sample,clear
 eststo USCN_0006_1: reghdfe dlnprice brw dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
 eststo USCN_0006_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
 eststo USCN_0019_1: reghdfe dlnprice brw dlnNER_US, a(product_id) vce(cluster product_id)
