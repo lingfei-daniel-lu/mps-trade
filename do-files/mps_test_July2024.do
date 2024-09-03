@@ -264,9 +264,30 @@ eststo JV_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if owne
 estfe SOE_* DPE_* MNE_* JV_*, labels(firm_id "Firm FE")
 esttab SOE_* DPE_* MNE_* JV_* using tables\tables_July2024\ownership.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("SOE" "SOE" "DPE" "DPE" "MNE" "MNE"  "JV" "JV")
 
+
 *-------------------------------------------------------------------------------
 
-* A6. Fixed and floating regime
+* A6. Two-way traders
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge n:1 FRDM year using "D:\Project C\sample_matched\customs_matched_twoway",nogen keep(matched)
+xtset firm_id time
+
+eststo twoway_1: reghdfe dlnprice_YoY brw dlnNER_US if twoway_trade==1, a(firm_id) vce(cluster firm_id)
+eststo twoway_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if twoway_trade==1, a(firm_id) vce(cluster firm_id)
+eststo twoway_3: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if twoway_trade==1, a(firm_id) vce(cluster firm_id)
+
+eststo oneway_1: reghdfe dlnprice_YoY brw dlnNER_US if twoway_trade==0, a(firm_id) vce(cluster firm_id)
+eststo oneway_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US if twoway_trade==0, a(firm_id) vce(cluster firm_id)
+eststo oneway_3: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if twoway_trade==0, a(firm_id) vce(cluster firm_id)
+
+estfe twoway_* oneway_*, labels(firm_id "Firm FE")
+esttab twoway_* oneway_* using tables\tables_Aug2024\twoway_trade.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+*-------------------------------------------------------------------------------
+
+* A7. Fixed and floating regime
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -286,7 +307,7 @@ esttab fixed_* float_* using tables\tables_July2024\regime.csv, replace b(3) se(
 
 *-------------------------------------------------------------------------------
 
-* A7. RMB price
+* A8. RMB price
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -308,7 +329,7 @@ estfe RMB_*, labels(firm_id "Firm FE")
 esttab RMB_* using tables\tables_July2024\RMB.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("monthly" "monthly" "monthly" "monthly" "annual" "annual" "annual" "annual")
 *-------------------------------------------------------------------------------
 
-* A8. Alternative FE and cluster
+* A9. Alternative FE and cluster
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -333,7 +354,7 @@ esttab FE_* cluster_* using tables\tables_July2024\altFE.csv, replace b(3) se(3)
 
 *-------------------------------------------------------------------------------
 
-* A9. Additional control variables
+* A10. Additional control variables
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -372,7 +393,7 @@ esttab control_* using tables\tables_July2024\control.csv, replace b(3) se(3) no
 
 *-------------------------------------------------------------------------------
 
-* A10. Approximate time match
+* A11. Approximate time match
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -392,7 +413,7 @@ esttab app1_* app2_* using tables\tables_July2024\approximate.csv, replace b(3) 
 
 *-------------------------------------------------------------------------------
 
-* A11. Exact announcement date effect
+* A12. Exact announcement date effect
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -419,7 +440,7 @@ esttab  weightm_* weighty_* using tables\tables_July2024\dateweight.csv, replace
 
 *-------------------------------------------------------------------------------
 
-* A12. Product-level US-import-from-China prices
+* A13. Product-level US-import-from-China prices
 
 cd "D:\Project E"
 use samples\HS6_US-import,clear
