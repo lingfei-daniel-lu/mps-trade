@@ -778,7 +778,7 @@ eststo fdint_1: reghdfe dlnprice_YoY c.brw#c.fd_firm_d50, a(firm_id time) vce(cl
 eststo fdint_2: reghdfe dlnprice_YoY c.brw#c.fd_firm_d50 l12.lnrSI l.dlnprice_YoY, a(firm_id time) vce(cluster firm_id)
 
 estfe fd*, labels(firm_id "Firm FE")
-esttab fd* using tables\tables_July2024\fd_firm.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw*)
+esttab fd* using tables\tables_July2024\fd_firm.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw*)
 
 *-------------------------------------------------------------------------------
 
@@ -851,7 +851,7 @@ eststo customs_0813_1: reghdfe dlnprice brw dlnNER_US if year>=2008 & year<=2013
 eststo customs_0813_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2008 & year<=2013, a(firm_id) vce(cluster firm_id)
 
 estfe customs_*, labels(firm_id "Firm FE")
-esttab customs_* using tables\tables_July2024\longer.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+esttab customs_* using tables\tables_July2024\longer.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
@@ -870,4 +870,4 @@ eststo exposure_AD_1: reghdfe dlnprice_YoY brw c.brw#c.exposure_AD, a(firm_id) v
 eststo exposure_AD_2: reghdfe dlnprice_YoY brw c.brw#c.exposure_AD l12.lnrSI l.dlnprice_YoY, a(firm_id) vce(cluster firm_id)
 
 estfe exposure_*, labels(firm_id "Firm FE")
-esttab exposure_* using tables\tables_July2024\exposure.csv, replace b(4) se(4) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+esttab exposure_* using tables\tables_July2024\exposure.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps

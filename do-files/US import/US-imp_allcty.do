@@ -29,7 +29,10 @@ xtset product_id year
 winsor2 dlnprice,trim replace
 save "D:\Project E\samples\US_import\HS6_imp_all_sample",replace
 
+use "D:\Project E\samples\US_import\HS6_imp_all_sample",clear
 eststo USall_0019_1: reghdfe dlnprice brw dlnNER_US, a(product_id) vce(cluster product_id)
 eststo USall_0019_2: reghdfe dlnprice brw l.dlnprice dlnNER_US, a(product_id) vce(cluster product_id)
 eststo USall_0006_1: reghdfe dlnprice brw dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
 eststo USall_0006_2: reghdfe dlnprice brw l.dlnprice dlnNER_US if year>=2000 & year<=2006, a(product_id) vce(cluster product_id)
+
+esttab USall_* using tables\tables_Aug2024\US_import_all.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
