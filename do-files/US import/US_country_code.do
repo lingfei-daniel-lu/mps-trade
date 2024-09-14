@@ -19,6 +19,7 @@ save US_country_code_B,replace
 use US_country_code_B,clear
 merge 1:n cty_name using US_country_code_A,nogen keep(matched)
 drop if alpha2code=="SB"
+drop if alpha2code=="IM"
 duplicates drop
 format cty_name %40s
 sort alpha2code

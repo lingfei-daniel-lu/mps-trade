@@ -1,5 +1,4 @@
 cd "D:\Project E\BLS_US"
-
 import excel GDP.xls, sheet("FRED Graph") cellrange(A11:B321) firstrow clear
 gen year=year(observation_date)
 gen month=month(observation_date)
@@ -19,6 +18,7 @@ gen dlnGDP=ln(GDP)-ln(GDP[_n-1])
 drop if year==2024
 save GDP_US_annual,replace
 
+cd "D:\Project E\BLS_US"
 use price_index_import_FRED.dta, clear
 keep ym year month ln_pim dln_pim
 gen quarter=1 if month<=3
@@ -33,12 +33,14 @@ merge 1:1 year month using INDPRO_US,nogen keep(matched)
 tsset ym
 save sample_BLS,replace
 
+cd "D:\Project E\BLS_US"
 use sample_BLS,clear
 binscatter dln_pim brw, n(300)
 
-use sample_BLS,clear
-reg dln_pim brw dlndollar d_lnindpro, r
-reg dln_pim brw l.dln_pim dlndollar d_lnindpro, r
-
-reg dln_pim brw l.dlndollar l.d_lnindpro, r
-reg dln_pim brw l.dln_pim l.dlndollar l.d_lnindpro, r
+cd "D:\Project E"
+use BLS_US\sample_BLS,clear
+eststo BLS_9519_1: reg dln_pim brw dlndollar dlnGDP, r
+eststo BLS_9519_2: reg dln_pim brw l.dln_pim dlndollar dlnGDP, r
+eststo BLS_0006_1: reg dln_pim brw dlndollar dlnGDP if year>=2000 & year<=2006, r
+eststo BLS_0006_2: reg dln_pim brw l.dln_pim dlndollar dlnGDP if year>=2000 & year<=2006, r
+esttab BLS* using tables\tables_Sep2024\BLS.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
