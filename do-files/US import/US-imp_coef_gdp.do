@@ -21,7 +21,7 @@ save US-imp_coef_GDP.dta,replace
 
 cd "D:\Project E\US_import"
 use US-imp_coef_GDP.dta,clear
-drop if countrycode=="VEN" | countrycode=="SAU"
+drop if countrycode=="VEN"
 
 twoway (scatter coefficient1 lngdp_pc, mlabel(countrycode)) (lfit coefficient1 lngdp_pc), xtitle(Log GDP per capita) ytitle(Coefficients of price response) yline(0) legend (label(1 "Price change") label(2 "Fitted line"))
 
