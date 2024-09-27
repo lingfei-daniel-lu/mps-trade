@@ -37,21 +37,29 @@ esttab sum_stats using "tables\tables_July2024\sum_stats.tex", replace cells("me
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo baseline_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_2: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_3: reghdfe dlnprice_YoY brw l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_US,clear
+
+eststo baseline_month_3: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_month_4: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
 
-eststo baseline_5: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_6: reghdfe dlnprice brw l.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_7: reghdfe dlnprice brw l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_8: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm_US,clear
+
+eststo baseline_annual_3: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_annual_4: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe baseline_*, labels(firm_id "Firm FE")
-esttab baseline_* using tables\tables_July2024\baseline.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("monthly" "monthly" "monthly" "monthly" "annual" "annual" "annual" "annual")
+esttab baseline_* using tables\tables_Sep2024\baseline.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 * 2+. Month-on-month price
 

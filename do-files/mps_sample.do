@@ -899,7 +899,7 @@ use customs_matched\customs_monthly_exp_firm,clear
 by FRDM: gen price_index=1 if dlnprice_next==.
 by FRDM: replace price_index=price_index[_n-1]+dlnprice_next if price_index==. & price_index[_n-1]!=.
 * merge with CIE data
-merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS *oL ln* ownership affiliate)
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
 * add monetary policy shocks
