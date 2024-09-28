@@ -88,4 +88,7 @@ esttab imp_* using tables\tables_Sep2024\otherimp.csv, replace b(3) se(3) nocons
 statsby _b _se n=(e(N)), by(countrycode lngdp_pc) clear: areg dlnp brw, a(HS6) vce(cluster HS2)
 
 scatter _b_brw lngdp_pc, mlabel(countrycode) xtitle(Log GDP per capita) ytitle(Coefficients of price response) yline(0) yscale(r(0 0.6))
-graph export figures\Other-imp_ctr_20_raw.png, as(png) replace
+graph export figures\Other-imp_ctr_30_raw.png, as(png) replace
+
+histogram _b_brw, bin(20)
+graph export figures\Other-imp_ctr_30_raw_hist.png, as(png) replace

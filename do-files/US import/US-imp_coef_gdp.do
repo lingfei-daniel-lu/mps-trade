@@ -28,9 +28,15 @@ twoway (scatter coefficient1 lngdp_pc, mlabel(countrycode)) (lfit coefficient1 l
 reg coefficient1 lngdp_pc
 predict yhat1
 
+histogram coefficient1, bin(20) start(-0.2) xlabel(-0.2(0.2)0.8)
+graph export "D:\Project E\figures\US-imp_ctr_30_raw_hist.png", as(png) replace
+
 twoway (scatter coefficient1 lngdp_pc if AD==1, mlabel(countrycode) mcolor(blue)) (scatter coefficient1 lngdp_pc if AD==0, mlabel(countrycode) mcolor(maroon))  (lfit coefficient1 lngdp_pc), xtitle(Log GDP per capita) ytitle(Coefficients of price response) legend (label(1 "Developed") label(2 "Developing") label(3 "Fitted line")) yline(0)
 
 reg coefficient2 lngdp_pc
 predict yhat2
 
-twoway (scatter coefficient1 lngdp_pc if AD==1, mlabel(countrycode) mcolor(blue)) (scatter coefficient2 lngdp_pc if AD==0, mlabel(countrycode) mcolor(maroon))  (lfit coefficient2 lngdp_pc), xtitle(Log GDP per capita) ytitle(Coefficients of price response) legend (label(1 "Developed") label(2 "Developing") label(3 "Fitted line")) yline(0)
+twoway (scatter coefficient2 lngdp_pc if AD==1, mlabel(countrycode) mcolor(blue)) (scatter coefficient2 lngdp_pc if AD==0, mlabel(countrycode) mcolor(maroon))  (lfit coefficient2 lngdp_pc), xtitle(Log GDP per capita) ytitle(Coefficients of price response) legend (label(1 "Developed") label(2 "Developing") label(3 "Fitted line")) yline(0)
+
+histogram coefficient2, bin(20) start(-0.2) xlabel(-0.2(0.2)1.2)
+graph export "D:\Project E\figures\US-imp_ctr_30_control_hist.png", as(png) replace
