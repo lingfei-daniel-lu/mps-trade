@@ -16,20 +16,28 @@ collapse (mean) lngdp_pc, by(countrycode country)
 merge 1:1 countrycode using "D:\Project E\US_import\US-imp_coef.dta",nogen keep(matched)
 merge 1:1 countrycode using "D:\Project E\country_X\country_advanced.dta",nogen keep(matched) keepus(AD)
 replace AD=1 if countrycode=="KOR" | countrycode=="TWN"
+drop if countrycode=="VEN"
 cd "D:\Project E\US_import"
 save US-imp_coef_GDP.dta,replace
 
 cd "D:\Project E\US_import"
 use US-imp_coef_GDP.dta,clear
-drop if countrycode=="VEN"
+
+replace coefficient1=0.5 if coefficient1>0.5
 
 twoway (scatter coefficient1 lngdp_pc, mlabel(countrycode)) (lfit coefficient1 lngdp_pc), xtitle(Log GDP per capita) ytitle(Coefficients of price response) yline(0) legend (label(1 "Price change") label(2 "Fitted line"))
 
 reg coefficient1 lngdp_pc
 predict yhat1
 
-histogram coefficient1, bin(20) start(-0.2) xlabel(-0.2(0.2)0.8)
+twoway (hist coefficient1, width(0.1) start(-0.2) frequency legend(off)) (scatteri 0 0 8 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.162 8 0.162,recast(line) lcolor(red) lpattern(solid)) 
+
 graph export "D:\Project E\figures\US-imp_ctr_30_raw_hist.png", as(png) replace
+
+cd "D:\Project E\US_import"
+use US-imp_coef_GDP.dta,clear
+
+replace coefficient2=0.5 if coefficient2>0.5
 
 twoway (scatter coefficient1 lngdp_pc if AD==1, mlabel(countrycode) mcolor(blue)) (scatter coefficient1 lngdp_pc if AD==0, mlabel(countrycode) mcolor(maroon))  (lfit coefficient1 lngdp_pc), xtitle(Log GDP per capita) ytitle(Coefficients of price response) legend (label(1 "Developed") label(2 "Developing") label(3 "Fitted line")) yline(0)
 
@@ -38,5 +46,6 @@ predict yhat2
 
 twoway (scatter coefficient2 lngdp_pc if AD==1, mlabel(countrycode) mcolor(blue)) (scatter coefficient2 lngdp_pc if AD==0, mlabel(countrycode) mcolor(maroon))  (lfit coefficient2 lngdp_pc), xtitle(Log GDP per capita) ytitle(Coefficients of price response) legend (label(1 "Developed") label(2 "Developing") label(3 "Fitted line")) yline(0)
 
-histogram coefficient2, bin(20) start(-0.2) xlabel(-0.2(0.2)1.2)
+twoway (hist coefficient2, width(0.1) start(-0.2) frequency legend(off)) (scatteri 0 0 10 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.298 10 0.298,recast(line) lcolor(red) lpattern(solid))
+
 graph export "D:\Project E\figures\US-imp_ctr_30_control_hist.png", as(png) replace
