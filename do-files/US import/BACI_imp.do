@@ -76,9 +76,9 @@ areg dlnp brw l.dlnp dlnrgdp if year>=2000 & year<=2006, a(group_id) vce(cluster
 cd "D:\Project E"
 use BACI\sample_BACI_HS6,clear
 gen HS2=substr(HS6,1,2)
-keep if countrycode=="ARG" | countrycode=="BGD" |countrycode=="BRA" |countrycode=="BRA" |countrycode=="CHN" |countrycode=="COL" |countrycode=="DEU" |countrycode=="EGY" |countrycode=="FRA" |countrycode=="GBR" |countrycode=="HKG" |countrycode=="IDN" |countrycode=="IND" |countrycode=="IRL" |countrycode=="ISR" |countrycode=="ITA" |countrycode=="JPN" |countrycode=="KOR" |countrycode=="MEX" |countrycode=="MYS" |countrycode=="NGA" |countrycode=="PAK" |countrycode=="PHL" |countrycode=="ROU" |countrycode=="RUS" |countrycode=="SAU" |countrycode=="THA" |countrycode=="TUR" |countrycode=="VNM" |countrycode=="ZAF"
+keep if countrycode=="ARG" | countrycode=="BGD" |countrycode=="BRA" |countrycode=="BRA" |countrycode=="CHN" |countrycode=="COL" |countrycode=="DEU" |countrycode=="EGY" |countrycode=="FRA" |countrycode=="GBR" |countrycode=="HKG" |countrycode=="IDN" |countrycode=="IND" |countrycode=="IRL" |countrycode=="ISR" |countrycode=="ITA" |countrycode=="JPN" |countrycode=="KOR" |countrycode=="MEX" |countrycode=="MYS" |countrycode=="NGA" |countrycode=="PAK" |countrycode=="PHL" |countrycode=="ROU" |countrycode=="RUS" |countrycode=="SAU" |countrycode=="THA" |countrycode=="TUR" |countrycode=="USA" |countrycode=="VNM" |countrycode=="ZAF"
 
-local country "ARG BGD BRA BRA CHN COL DEU EGY FRA GBR HKG IDN IND IRL ISR ITA JPN KOR MEX MYS NGA PAK PHL ROU RUS SAU THA TUR VNM ZAF"
+local country "ARG BGD BRA BRA CHN COL DEU EGY FRA GBR HKG IDN IND IRL ISR ITA JPN KOR MEX MYS NGA PAK PHL ROU RUS SAU THA TUR USA VNM ZAF"
 foreach i of local country{
 eststo imp_`i': areg dlnp brw if countrycode=="`i'", a(HS6) vce(cluster HS2)
 }
@@ -86,9 +86,24 @@ estfe imp_*, labels(HS6 "Product FE")
 esttab imp_* using tables\tables_Sep2024\otherimp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 statsby _b _se n=(e(N)), by(countrycode lngdp_pc) clear: areg dlnp brw, a(HS6) vce(cluster HS2)
+save BACI\BACI_HS6_coef_raw,replace
+
+statsby _b _se n=(e(N)), by(countrycode lngdp_pc) clear: areg dlnp brw l.dlnp dlnrgdp, a(HS6) vce(cluster HS2)
+save BACI\BACI_HS6_coef_control,replace
+
+cd "D:\Project E"
+use BACI\BACI_HS6_coef_raw,clear
 
 scatter _b_brw lngdp_pc, mlabel(countrycode) xtitle(Log GDP per capita) ytitle(Coefficients of price response) yline(0) yscale(r(0 0.6))
 graph export figures\Other-imp_ctr_30_raw.png, as(png) replace
 
-histogram _b_brw, bin(20)
+twoway (hist _b_brw, width(0.2) start(0) frequency legend(off)) (scatteri 0 0 20 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.209 20 0.209, recast(line) lcolor(red) lpattern(solid) text(20 0.21 "US, 0.209", color(red) place(e)))
 graph export figures\Other-imp_ctr_30_raw_hist.png, as(png) replace
+
+cd "D:\Project E"
+use BACI\BACI_HS6_coef_control,clear
+
+replace _b_brw=0.5 if _b_brw>0.5
+
+twoway (hist _b_brw, width(0.2) start(-0.2) frequency legend(off)) (scatteri 0 0 20 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.268 20 0.268, recast(line) lcolor(red) lpattern(solid) text(20 0.27 "US, 0.268", color(red) place(e)))
+graph export figures\Other-imp_ctr_30_control_hist.png, as(png) replace

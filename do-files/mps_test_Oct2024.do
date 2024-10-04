@@ -35,18 +35,6 @@ esttab sum_stats using "tables\tables_Oct2024\sum_stats.tex", replace cells("mea
 * 2. Baseline
 
 cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-eststo baseline_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-cd "D:\Project E"
-use samples\sample_matched_exp_firm,clear
-
-eststo baseline_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
-
-cd "D:\Project E"
 use samples\sample_monthly_exp_firm_US,clear
 
 eststo ToUS_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
@@ -57,6 +45,20 @@ use samples\sample_matched_exp_firm_US,clear
 
 eststo ToUS_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo ToUS_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+esttab ToUS_* using tables\tables_Oct2024\baseline_spillback.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo baseline_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+
+eststo baseline_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_nonUS,clear
@@ -70,11 +72,7 @@ use samples\sample_matched_exp_firm_nonUS,clear
 eststo NonUS_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
 eststo NonUS_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
 
-estfe *_month_*, labels(firm_id "Firm FE")
-esttab *_month_* using tables\tables_Sep2024\baseline_month.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("Global" "Global" "US" "US" "Non-US" "Non-US")
-
-estfe *_annual_*, labels(firm_id "Firm FE")
-esttab *_annual_* using tables\tables_Sep2024\baseline_annual.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("Global" "Global" "US" "US" "Non-US" "Non-US")
+esttab NonUS_* baseline_* using tables\tables_Oct2024\baseline_spillover.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 * 2+. Month-on-month price
 
@@ -607,6 +605,24 @@ eststo Arec: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 estfe Cash Liquid Apay Arec, labels(firm_id "Firm FE")
 esttab Cash Liquid Apay Arec using tables\tables_July2024\liquid_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
+* 5+. Liquidity (first stage)
+
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+keep if exp_int>0
+
+gen FDI=1 if ownership=="MNE" | ownership=="JV"
+replace FDI=0 if ownership=="SOE" | ownership=="DPE"
+
+* Liquidity (first stage, FDI interaction)
+eststo Cash_FDI: reghdfe D.Cash brw c.brw#c.FDI L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Liquid_FDI: reghdfe D.Liquid brw c.brw#c.FDI L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Apay_FDI: reghdfe D.Apay brw c.brw#c.FDI L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Arec_FDI: reghdfe D.Arec brw c.brw#c.FDI L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe Cash_FDI Liquid_FDI Apay_FDI Arec_FDI, labels(firm_id "Firm FE")
+esttab Cash_FDI Liquid_FDI Apay_FDI Arec_FDI using tables\tables_Oct2024\liquid_FDI.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
 *-------------------------------------------------------------------------------
 
 * 6. Borrowing cost (first stage)
@@ -910,7 +926,7 @@ eststo EU_MAN_US: reghdfe dlnprice_YoY brw target_eu path_eu l12.lnrSI l.dlnpric
 eststo EU_JK_US: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
-use samples\sample_monthly_exp_firm_nonUS,clear
+use samples\sample_monthly_exp_firm_EU,clear
 merge m:1 year month using MPS\monthly\shock_std,nogen keep(matched master)
 local std_shock "target_eu path_eu mp_eu cbi_eu"
 foreach var of local std_shock{
@@ -919,9 +935,9 @@ foreach var of local std_shock{
 }
 xtset firm_id time
 * Miranda-Agrippino & Nenova
-eststo EU_MAN_nonUS: reghdfe dlnprice_YoY brw target_eu path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo EU_MAN_EU: reghdfe dlnprice_YoY brw target_eu path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 * Jarocinski & Karadi
-eststo EU_JK_nonUS: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo EU_JK_EU: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe EU_*, labels(firm_id "Firm FE")
 esttab EU_* using tables\tables_Oct2024\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw *_eu *lnrSI *dlnprice*)
