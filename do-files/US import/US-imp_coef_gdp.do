@@ -30,7 +30,7 @@ twoway (scatter coefficient1 lngdp_pc, mlabel(countrycode)) (lfit coefficient1 l
 reg coefficient1 lngdp_pc
 predict yhat1
 
-twoway (hist coefficient1, width(0.2) start(-0.2) frequency legend(off)) (scatteri 0 0 16 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.162 16 0.162, recast(line) lcolor(red) lpattern(solid) text(16 0.18 "China, 0.162", color(red) place(e)))
+twoway (hist coefficient1, width(0.2) start(-0.2) frequency legend(off)) (scatteri 0 0 16 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.162 16 0.162, recast(line) lcolor(red) lpattern(solid) text(16 0.165 "China, 0.162", color(red) place(e)))
 
 graph export "D:\Project E\figures\US-imp_ctr_30_raw_hist.png", as(png) replace
 

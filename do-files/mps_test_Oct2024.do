@@ -898,7 +898,7 @@ esttab Rauch_* using tables\tables_July2024\Rauch.csv, replace b(3) se(3) nocons
 * 11. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
+use samples\sample_monthly_exp_firm_ECB,clear
 merge m:1 year month using MPS\monthly\shock_std,nogen keep(matched master)
 local std_shock "target_eu path_eu mp_eu cbi_eu"
 foreach var of local std_shock{
@@ -906,10 +906,7 @@ foreach var of local std_shock{
 	replace `var'=0.1*`var'
 }
 xtset firm_id time
-* Miranda-Agrippino & Nenova
-eststo EU_MAN_all: reghdfe dlnprice_YoY brw target_eu path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-* Jarocinski & Karadi
-eststo EU_JK_all: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo EU_JK_ECB: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_US,clear
@@ -920,13 +917,10 @@ foreach var of local std_shock{
 	replace `var'=0.1*`var'
 }
 xtset firm_id time
-* Miranda-Agrippino & Nenova
-eststo EU_MAN_US: reghdfe dlnprice_YoY brw target_eu path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-* Jarocinski & Karadi
 eststo EU_JK_US: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 cd "D:\Project E"
-use samples\sample_monthly_exp_firm_EU,clear
+use samples\sample_monthly_exp_firm_nonUSECB,clear
 merge m:1 year month using MPS\monthly\shock_std,nogen keep(matched master)
 local std_shock "target_eu path_eu mp_eu cbi_eu"
 foreach var of local std_shock{
@@ -934,13 +928,21 @@ foreach var of local std_shock{
 	replace `var'=0.1*`var'
 }
 xtset firm_id time
-* Miranda-Agrippino & Nenova
-eststo EU_MAN_EU: reghdfe dlnprice_YoY brw target_eu path_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-* Jarocinski & Karadi
-eststo EU_JK_EU: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo EU_JK_non: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+merge m:1 year month using MPS\monthly\shock_std,nogen keep(matched master)
+local std_shock "target_eu path_eu mp_eu cbi_eu"
+foreach var of local std_shock{
+	replace `var'=0 if `var'==.
+	replace `var'=0.1*`var'
+}
+xtset firm_id time
+eststo EU_JK_all: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
 
 estfe EU_*, labels(firm_id "Firm FE")
-esttab EU_* using tables\tables_Oct2024\EU.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw *_eu *lnrSI *dlnprice*)
+esttab EU_* using tables\tables_Oct2024\ECB.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw *_eu *lnrSI *dlnprice*)
 
 *-------------------------------------------------------------------------------
 

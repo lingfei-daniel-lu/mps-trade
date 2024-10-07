@@ -97,7 +97,7 @@ use BACI\BACI_HS6_coef_raw,clear
 scatter _b_brw lngdp_pc, mlabel(countrycode) xtitle(Log GDP per capita) ytitle(Coefficients of price response) yline(0) yscale(r(0 0.6))
 graph export figures\Other-imp_ctr_30_raw.png, as(png) replace
 
-twoway (hist _b_brw, width(0.2) start(0) frequency legend(off)) (scatteri 0 0 20 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.209 20 0.209, recast(line) lcolor(red) lpattern(solid) text(20 0.21 "US, 0.209", color(red) place(e)))
+twoway (hist _b_brw, width(0.2) start(-0.2) frequency legend(off)) (scatteri 0 0 20 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.209 20 0.209, recast(line) lcolor(red) lpattern(solid) text(20 0.21 "US, 0.209", color(red) place(e)))
 graph export figures\Other-imp_ctr_30_raw_hist.png, as(png) replace
 
 cd "D:\Project E"
