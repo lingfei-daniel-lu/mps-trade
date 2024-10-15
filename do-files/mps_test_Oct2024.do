@@ -16,7 +16,7 @@ twoway scatter brw ym, ytitle(US monetary policy shock) xtitle(time) tline(2000m
 
 *-------------------------------------------------------------------------------
 
-* 1. Summary Statistics
+* A1. Summary Statistics
 
 cd "D:\Project E"
 use customs_matched\customs_matched_exp_firm,clear
@@ -32,45 +32,47 @@ esttab sum_stats using "tables\tables_Oct2024\sum_stats.tex", replace cells("mea
 
 *-------------------------------------------------------------------------------
 
-* 2. Baseline
+* 1. Baseline (spillback)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_US,clear
 
-eststo ToUS_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo ToUS_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo ToUS_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo ToUS_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm_US,clear
 
-eststo ToUS_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo ToUS_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo ToUS_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id year) 
+eststo ToUS_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
 
 esttab ToUS_* using tables\tables_Oct2024\baseline_spillback.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+* 2. Baseline (spillover)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-eststo baseline_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo baseline_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
 
-eststo baseline_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo baseline_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo baseline_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo baseline_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_nonUS,clear
 
-eststo NonUS_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo NonUS_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo NonUS_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo NonUS_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm_nonUS,clear
 
-eststo NonUS_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo NonUS_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo NonUS_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo NonUS_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
 
 esttab NonUS_* baseline_* using tables\tables_Oct2024\baseline_spillover.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
@@ -88,12 +90,22 @@ esttab MoM_* using tables\tables_July2024\MoM.csv, replace b(3) se(3) noconstant
 
 *-------------------------------------------------------------------------------
 
-* F2. Monthly US MPS and China's Export Prices
+* F5. Monthly US MPS and China's Export Prices
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
 
-binscatter dlnprice_YoY brw, xtitle("Monetary policy shocks") ytitle("{&Delta} log price") savegraph("D:\Project E\tables\tables_July2024\brw_monthly.png") replace discrete
+binscatter dlnprice_YoY brw, xtitle("Monetary policy shocks") ytitle("{&Delta} log price") savegraph("D:\Project E\figures\brw_monthly.png") replace discrete
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_US,clear
+
+binscatter dlnprice_YoY brw, xtitle("Monetary policy shocks") ytitle("{&Delta} log price") savegraph("D:\Project E\figures\brw_monthly_US.png") replace discrete text(0.06 0.05 "{&beta}=0.212", color(red) place(e) size(6))
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_nonUS,clear
+
+binscatter dlnprice_YoY brw, xtitle("Monetary policy shocks") ytitle("{&Delta} log price") savegraph("D:\Project E\figures\brw_monthly_nonUS.png") replace discrete text(0.07 0.05 "{&beta}=0.277", color(red) place(e) size(6))
 
 *-------------------------------------------------------------------------------
 
@@ -150,7 +162,7 @@ esttab gap2_* using tables\tables_July2024\gap2.csv, replace b(3) se(3) noconsta
 
 *-------------------------------------------------------------------------------
 
-* FA0. Dynamic regression
+* F*. Dynamic regression
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -223,17 +235,17 @@ replace path=0 if path==.
 replace mp=0 if mp==.
 replace cbi=0 if cbi==.
 
-eststo scaledmps_1: reghdfe dlnprice_YoY ffr_shock dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_2: reghdfe dlnprice_YoY ffr_shock l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_3: reghdfe dlnprice_YoY ns dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_4: reghdfe dlnprice_YoY ns l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_5: reghdfe dlnprice_YoY target path dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_6: reghdfe dlnprice_YoY target path l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_7: reghdfe dlnprice_YoY mp cbi dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo scaledmps_8: reghdfe dlnprice_YoY mp cbi l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo scaledmps_1: reghdfe dlnprice_YoY ffr_shock dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo scaledmps_2: reghdfe dlnprice_YoY ffr_shock l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo scaledmps_3: reghdfe dlnprice_YoY ns dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo scaledmps_4: reghdfe dlnprice_YoY ns l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo scaledmps_5: reghdfe dlnprice_YoY target path dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo scaledmps_6: reghdfe dlnprice_YoY target path l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo scaledmps_7: reghdfe dlnprice_YoY mp cbi dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo scaledmps_8: reghdfe dlnprice_YoY mp cbi l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 estfe scaledmps_*, labels(firm_id "Firm FE")
-esttab scaledmps_* using tables\tables_July2024\scaledmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS" "Acosta" "Acosta" "JK" "JK") order(ffr_shock ns target path mp cbi)
+esttab scaledmps_* using tables\tables_Oct2024\scaledmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS" "Acosta" "Acosta" "JK" "JK") order(ffr_shock ns target path mp cbi)
 
 *-------------------------------------------------------------------------------
 
@@ -508,9 +520,9 @@ xtset group_id time
 
 statsby _b _se n=(e(N)), by(countrycode rank_exp) clear: reghdfe dlnprice_YoY brw dlnRER dlnrgdp dlnNER_US, a(group_id) vce(cluster group_id)
 
-graph hbar (asis) _b_brw, over(countrycode, label(labsize(*0.45)) sort(rank_exp)) ytitle("Export price responses to US monetary policy shocks") nofill
+graph hbar (asis) _b_brw, over(countrycode, label(labsize(*0.45)) sort(_b_brw) des) ytitle("Export price responses to US monetary policy shocks") nofill
 
-graph export tables\tables_July2024\brw_month_country_20.png, as(png) replace
+graph export figures\brw_month_country_20.png, as(png) replace
 
 /*
 drop if _b_brw==.
@@ -580,13 +592,13 @@ gen tight_MoM = -(m2g_MoM - m2g_MoM_mean) / m2g_MoM_sd
 
 xtset firm_id time
 
-eststo tight_1: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo tight_2: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo tight_3: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM dlnNER_US, a(firm_id) vce(cluster firm_id)
-eststo tight_4: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id)
+eststo tight_1: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo tight_2: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo tight_3: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo tight_4: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 estfe tight_*, labels(firm_id "Firm FE")
-esttab tight_* using tables\tables_July2024\tightness.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("YoY" "YoY" "MoM" "MoM") order(brw c.brw* tight*)
+esttab tight_* using tables\tables_Oct2024\tightness.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("YoY" "YoY" "MoM" "MoM") order(brw c.brw* tight*)
 
 *-------------------------------------------------------------------------------
 
