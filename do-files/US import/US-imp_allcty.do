@@ -33,12 +33,12 @@ cd "D:\Project E"
 use samples\US_import\cty_HS6_imp_all_sample,clear
 gen exp_CN=1 if countrycode=="CHN"
 replace exp_CN=0 if exp_CN==.
-eststo US_pc_9519_1: reghdfe dlnprice brw, a(group_id) vce(cluster cty_code HS2)
-eststo US_pc_9519_2: reghdfe dlnprice brw l.dlnprice dlnGDP dlnNER_toUS, a(group_id) vce(cluster cty_code HS2)
-eststo US_pc_9519_3: reghdfe dlnprice brw c.brw#c.exp_CN l.dlnprice dlnGDP dlnNER_toUS, a(group_id) vce(cluster cty_code HS2)
-eststo US_pc_0006_1: reghdfe dlnprice brw if year>=2000 & year<=2006, a(group_id) vce(cluster cty_code HS2)
-eststo US_pc_0006_2: reghdfe dlnprice brw l.dlnprice dlnGDP dlnNER_toUS if year>=2000 & year<=2006, a(group_id) vce(cluster cty_code HS2)
-eststo US_pc_0006_3: reghdfe dlnprice brw c.brw#c.exp_CN l.dlnprice dlnGDP dlnNER_toUS if year>=2000 & year<=2006, a(group_id) vce(cluster cty_code HS2)
+eststo US_pc_9519_1: reghdfe dlnprice brw, a(group_id) vce(cluster group_id)
+eststo US_pc_9519_2: reghdfe dlnprice brw l.dlnprice dlnGDP dlnNER_toUS, a(group_id) vce(cluster group_id)
+eststo US_pc_9519_3: reghdfe dlnprice brw c.brw#c.exp_CN l.dlnprice dlnGDP dlnNER_toUS, a(group_id) vce(cluster group_id)
+eststo US_pc_0006_1: reghdfe dlnprice brw if year>=2000 & year<=2006, a(group_id) vce(cluster group_id)
+eststo US_pc_0006_2: reghdfe dlnprice brw l.dlnprice dlnGDP dlnNER_toUS if year>=2000 & year<=2006, a(group_id) vce(cluster group_id)
+eststo US_pc_0006_3: reghdfe dlnprice brw c.brw#c.exp_CN l.dlnprice dlnGDP dlnNER_toUS if year>=2000 & year<=2006, a(group_id) vce(cluster group_id)
 
 esttab US_pc_* using tables\tables_Oct2024\US_import_all_pc.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mlabel("95-19" "95-19" "95-19" "00-06" "00-06" "00-06")
 
@@ -63,10 +63,10 @@ save "D:\Project E\samples\US_import\HS6_imp_all_sample",replace
 
 cd "D:\Project E"
 use samples\US_import\HS6_imp_all_sample,clear
-eststo US_p_9519_1: reghdfe dlnprice brw, a(product_id) vce(cluster HS2)
-eststo US_p_9519_2: reghdfe dlnprice brw l.dlnprice dlnGDP dlndollar, a(product_id) vce(cluster HS2)
-eststo US_p_0006_1: reghdfe dlnprice brw dlnGDP dlndollar if year>=2000 & year<=2006, a(product_id) vce(cluster HS2)
-eststo US_p_0006_2: reghdfe dlnprice brw dlnGDP l.dlnprice dlndollar if year>=2000 & year<=2006, a(product_id) vce(cluster HS2)
+eststo US_p_9519_1: reghdfe dlnprice brw, a(product_id) vce(cluster HS6)
+eststo US_p_9519_2: reghdfe dlnprice brw l.dlnprice dlnGDP dlndollar, a(product_id) vce(cluster HS6)
+eststo US_p_0006_1: reghdfe dlnprice brw dlnGDP dlndollar if year>=2000 & year<=2006, a(product_id) ce(cluster HS6)
+eststo US_p_0006_2: reghdfe dlnprice brw dlnGDP l.dlnprice dlndollar if year>=2000 & year<=2006, a(product_id) ce(cluster HS6)
 
 esttab US_p_* using tables\tables_Sep2024\US_import_all_p.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mlabel("95-19" "95-19" "00-06" "00-06")
 
