@@ -618,19 +618,16 @@ esttab Cash Liquid Apay Arec using tables\tables_Oct2024\liquid_A.csv, replace b
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
-keep if exp_int>0
+keep if exp_int==0
 
-gen FDI=1 if ownership=="MNE" | ownership=="JV"
-replace FDI=0 if ownership=="SOE" | ownership=="DPE"
+* Liquidity (first stage, non-exporter)
+eststo Cash_nonexp: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Liquid_nonexp: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Apay_nonexp: reghdfe D.Apay brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Arec_nonexp: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
-* Liquidity (first stage, FDI interaction)
-eststo Cash_FDI: reghdfe D.Cash brw c.brw#c.FDI L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo Liquid_FDI: reghdfe D.Liquid brw c.brw#c.FDI L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo Apay_FDI: reghdfe D.Apay brw c.brw#c.FDI L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo Arec_FDI: reghdfe D.Arec brw c.brw#c.FDI L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-
-estfe Cash_FDI Liquid_FDI Apay_FDI Arec_FDI, labels(firm_id "Firm FE")
-esttab Cash_FDI Liquid_FDI Apay_FDI Arec_FDI using tables\tables_Oct2024\liquid_FDI.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+estfe Cash_nonexp Liquid_nonexp Apay_nonexp Arec_nonexp, labels(firm_id "Firm FE")
+esttab Cash_nonexp Liquid_nonexp Apay_nonexp Arec_nonexp using tables\tables_Oct2024\liquid_nonexp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
@@ -652,6 +649,21 @@ eststo debt_2: reghdfe D.lnCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id
 
 estfe borrow_* debt_*, labels(firm_id "Firm FE")
 esttab borrow_* debt_* using tables\tables_Oct2024\borrow_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+* 6+. Borrowing cost (first stage)
+
+cd "D:\Project E"
+use samples\cie_credit_brw,clear
+keep if exp_int==0
+
+* Borrowing cost (first stage, non-exporter)
+eststo IEoL_nonexp: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_nonexp: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_nonexp: reghdfe D.Apay brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo Arec_nonexp: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe Cash_nonexp Liquid_nonexp Apay_nonexp Arec_nonexp, labels(firm_id "Firm FE")
+esttab Cash_nonexp Liquid_nonexp Apay_nonexp Arec_nonexp using tables\tables_Oct2024\liquid_nonexp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
