@@ -135,6 +135,17 @@ eststo lag_12: reghdfe dlnprice_YoY brw l.brw l2.brw l3.brw l4.brw l5.brw l6.brw
 estfe lag*, labels(firm_id "Firm FE")
 esttab lag_* using tables\tables_Oct2024\dynamic_lag.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
+gen b=0
+gen u=0
+gen d=0
+
+forv h = 0/12 {
+replace b = _b[l`h'.brw]                    	 if _n == `h'+1
+replace u = _b[l`h'.brw] + 1.645* _se[l`h'.brw]  if _n == `h'+1
+replace d = _b[l`h'.brw] - 1.645* _se[l`h'.brw]  if _n == `h'+1
+}
+
+
 * A?. Dynamic regression with different time gap
 
 cd "D:\Project E"
@@ -168,8 +179,8 @@ gen d=0
 forv h = 0/12 {
 reghdfe f`h'.dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY f`h'.dlnNER_US, a(firm_id) vce(cluster firm_id time)
 replace b = _b[brw]                    if _n == `h'+1
-replace u = _b[brw] + 1.96* _se[brw]  if _n == `h'+1
-replace d = _b[brw] - 1.96* _se[brw]  if _n == `h'+1
+replace u = _b[brw] + 1.645* _se[brw]  if _n == `h'+1
+replace d = _b[brw] - 1.645* _se[brw]  if _n == `h'+1
 }
 
 *Plot
@@ -638,14 +649,14 @@ use samples\cie_credit_brw,clear
 keep if exp_int>0
 
 * Borrowing cost (first stage)
-eststo borrow_1: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id year)
-eststo borrow_2: reghdfe D.IEoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id year)
-eststo borrow_3: reghdfe D.FNoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id year)
-eststo borrow_4: reghdfe D.FNoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id year)
+eststo borrow_1: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_2: reghdfe D.IEoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_3: reghdfe D.FNoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_4: reghdfe D.FNoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 * Debt (first stage)
-eststo debt_1: reghdfe D.lnTL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id year)
-eststo debt_2: reghdfe D.lnCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id year)
+eststo debt_1: reghdfe D.lnTL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo debt_2: reghdfe D.lnCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
 estfe borrow_* debt_*, labels(firm_id "Firm FE")
 esttab borrow_* debt_* using tables\tables_Oct2024\borrow_A.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
@@ -657,13 +668,17 @@ use samples\cie_credit_brw,clear
 keep if exp_int==0
 
 * Borrowing cost (first stage, non-exporter)
-eststo IEoL_nonexp: reghdfe D.Cash brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo borrow_nonexp: reghdfe D.Liquid brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo borrow_nonexp: reghdfe D.Apay brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
-eststo Arec_nonexp: reghdfe D.Arec brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_1_nonexp: reghdfe D.IEoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_2_nonexp: reghdfe D.IEoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_3_nonexp: reghdfe D.FNoL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo borrow_4_nonexp: reghdfe D.FNoCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
 
-estfe Cash_nonexp Liquid_nonexp Apay_nonexp Arec_nonexp, labels(firm_id "Firm FE")
-esttab Cash_nonexp Liquid_nonexp Apay_nonexp Arec_nonexp using tables\tables_Oct2024\liquid_nonexp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+* Debt (first stage)
+eststo debt_1_nonexp: reghdfe D.lnTL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+eststo debt_2_nonexp: reghdfe D.lnCL brw L.lnrSI L.Debt, a(firm_id) vce(cluster firm_id)
+
+estfe borrow_*_nonexp debt_*_nonexp, labels(firm_id "Firm FE")
+esttab borrow_*_nonexp debt_*_nonexp using tables\tables_Oct2024\borrow_nonexp.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
@@ -705,10 +720,6 @@ eststo lag_borrow_1: reghdfe D.IEoL c.brw#c.l.IEoL L.lnrSI L.Debt, a(firm_id yea
 eststo lag_borrow_2: reghdfe D.IEoCL c.brw#c.l.IEoCL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_borrow_3: reghdfe D.FNoL c.brw#c.l.FNoL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 eststo lag_borrow_4: reghdfe D.FNoCL c.brw#c.l.FNoCL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
-
-* Debt (lag)
-eststo lag_debt_1: reghdfe D.lnTL c.brw#c.l.lnTL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
-eststo lag_debt_2: reghdfe D.lnCL c.brw#c.l.lnCL L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
 
 * Liquidity (lag)
 eststo lag_Cash: reghdfe D.Cash c.brw#c.l.Cash L.lnrSI L.Debt, a(firm_id year) vce(cluster firm_id)
