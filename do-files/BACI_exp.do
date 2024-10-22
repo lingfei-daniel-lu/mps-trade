@@ -86,18 +86,20 @@ save BACI\BACI_exp_HS6_coef_control,replace
 restore
 
 cd "D:\Project E"
-use BACI\BACI_HS6_coef_raw,clear
+use BACI\BACI_exp_HS6_coef_raw,clear
 
 scatter _b_brw lngdp_pc, mlabel(countrycode) xtitle(Log GDP per capita) ytitle(Coefficients of price response) yline(0) yscale(r(0 0.6))
-graph export figures\Other-imp_ctr_30_raw.png, as(png) replace
-
-twoway (hist _b_brw, width(0.2) start(-0.2) frequency legend(off)) (scatteri 0 0 20 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.209 20 0.209, recast(line) lcolor(red) lpattern(solid) text(20 0.21 "US, 0.209", color(red) place(e)size(6) ))
-graph export figures\Other-imp_ctr_30_raw_hist.png, as(png) replace
-
-cd "D:\Project E"
-use BACI\BACI_HS6_coef_control,clear
+graph export figures\Other-exp_ctr_30_raw.png, as(png) replace
 
 replace _b_brw=0.5 if _b_brw>0.5
 
-twoway (hist _b_brw, width(0.2) start(-0.2) frequency legend(off)) (scatteri 0 0 20 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.268 20 0.268, recast(line) lcolor(red) lpattern(solid) text(20 0.27 "US, 0.268", color(red) place(e)  size(6) ))
-graph export figures\Other-imp_ctr_30_control_hist.png, as(png) replace
+twoway (hist _b_brw, width(0.1) start(-0.1) frequency legend(off)) (scatteri 0 0 15 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.346 15 0.346, recast(line) lcolor(red) lpattern(solid) text(15 0.35 "China, 0.346", color(red) place(e) size(5)) )
+graph export figures\Other-exp_ctr_30_raw_hist.png, as(png) replace
+
+cd "D:\Project E"
+use BACI\BACI_exp_HS6_coef_control,clear
+
+replace _b_brw=0.5 if _b_brw>0.5
+
+twoway (hist _b_brw, width(0.1) start(-0.2) frequency legend(off)) (scatteri 0 0 15 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.310 15 0.310, recast(line) lcolor(red) lpattern(solid) text(15 0.32 "China, 0.310", color(red) place(e)  size(5)) )
+graph export figures\Other-exp_ctr_30_control_hist.png, as(png) replace
