@@ -81,6 +81,8 @@ save BACI\BACI_exp_HS6_coef_raw,replace
 restore
 
 preserve
+egen group_id=group(countrycode HS6)
+xtset group_id year
 statsby _b _se n=(e(N)), by(countrycode lngdp_pc) clear: areg dlnp brw l.dlnp dlnrgdp, a(HS6) vce(cluster HS2)
 save BACI\BACI_exp_HS6_coef_control,replace
 restore
@@ -93,7 +95,7 @@ graph export figures\Other-exp_ctr_30_raw.png, as(png) replace
 
 replace _b_brw=0.5 if _b_brw>0.5
 
-twoway (hist _b_brw, width(0.1) start(-0.1) frequency legend(off)) (scatteri 0 0 15 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.346 15 0.346, recast(line) lcolor(red) lpattern(solid) text(15 0.35 "China, 0.346", color(red) place(e) size(5)) )
+twoway (hist _b_brw, width(0.1) start(-0.1) frequency legend(off)) (scatteri 0 0 15 0, recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.346 15 0.346, recast(line) lcolor(red) lpattern(solid) text(15 0.35 "China, 0.346", color(red) place(e) size(5)))
 graph export figures\Other-exp_ctr_30_raw_hist.png, as(png) replace
 
 cd "D:\Project E"
@@ -101,5 +103,26 @@ use BACI\BACI_exp_HS6_coef_control,clear
 
 replace _b_brw=0.5 if _b_brw>0.5
 
-twoway (hist _b_brw, width(0.1) start(-0.2) frequency legend(off)) (scatteri 0 0 15 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.310 15 0.310, recast(line) lcolor(red) lpattern(solid) text(15 0.32 "China, 0.310", color(red) place(e)  size(5)) )
+twoway (hist _b_brw, width(0.1) start(-0.2) frequency legend(off)) (scatteri 0 0 15 0, recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.310 15 0.310, recast(line) lcolor(red) lpattern(solid) text(15 0.32 "China, 0.310", color(red) place(e) size(5)))
 graph export figures\Other-exp_ctr_30_control_hist.png, as(png) replace
+
+*-------------------------------------------------------------------------------
+
+* Interest rate responses of different countries to brw
+
+cd "D:\Project E"
+use country_X\country_FOMC_response, clear
+statsby _b _se n=(e(N)), by(countrycode) clear: reg yield2y_2day brw
+keep countrycode _b_brw
+rename _b_brw exp_brw
+label var exp_brw exp_brw
+save country_X\country_exposure_brw,replace
+
+twoway (hist _b_brw, width(0.1) frequency legend(off)) (scatteri 0 0 8 0,recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.764 8 0.764, recast(line) lcolor(red) lpattern(solid) text(8 0.7 "US, 0.764", color(red) place(e) size(5))) (scatteri 0 0.057 8 0.057, recast(line) lcolor(black) lpattern(solid) text(8 0.06 "China, 0.057", color(black) place(e) size(5)))
+
+cd "D:\Project E"
+use BACI\BACI_exp_HS6_coef_raw,clear
+merge 1:1 countrycode using country_X\country_exposure_brw,nogen keep(matched)
+drop if countrycode=="IDN"
+drop if exp_brw==.
+twoway (scatter _b_brw exp_brw, legend(off) xtitle("Interest responses") ytitle("Export price responses")) (lfit _b_brw exp_brw)
