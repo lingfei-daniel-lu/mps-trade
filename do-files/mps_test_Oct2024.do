@@ -224,7 +224,7 @@ esttab value_* quant_* using tables\tables_Oct2024\value_quant.csv, replace b(3)
 
 *-------------------------------------------------------------------------------
 
-* 3. Rescaled monetary policy shock measures
+* 3. Alternative monetary policy shock measures
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -238,17 +238,17 @@ replace path=0 if path==.
 replace mp=0 if mp==.
 replace cbi=0 if cbi==.
 
-eststo scaledmps_1: reghdfe dlnprice_YoY ffr_shock dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo scaledmps_2: reghdfe dlnprice_YoY ffr_shock l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo scaledmps_3: reghdfe dlnprice_YoY ns dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo scaledmps_4: reghdfe dlnprice_YoY ns l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo scaledmps_5: reghdfe dlnprice_YoY target path dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo scaledmps_6: reghdfe dlnprice_YoY target path l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo scaledmps_7: reghdfe dlnprice_YoY mp cbi dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo scaledmps_8: reghdfe dlnprice_YoY mp cbi l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_1: reghdfe dlnprice_YoY ffr_shock dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_2: reghdfe dlnprice_YoY ffr_shock l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_3: reghdfe dlnprice_YoY ns dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_4: reghdfe dlnprice_YoY ns l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_5: reghdfe dlnprice_YoY target path dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_6: reghdfe dlnprice_YoY target path l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_7: reghdfe dlnprice_YoY mp cbi dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_8: reghdfe dlnprice_YoY mp cbi l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
-estfe scaledmps_*, labels(firm_id "Firm FE")
-esttab scaledmps_* using tables\tables_Oct2024\scaledmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS" "Acosta" "Acosta" "JK" "JK") order(ffr_shock ns target path mp cbi)
+estfe monthmps_*, labels(firm_id "Firm FE")
+esttab monthmps_* using tables\tables_Oct2024\monthmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS" "Acosta" "Acosta" "JK" "JK") order(ffr_shock ns target path mp cbi)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
@@ -273,6 +273,37 @@ eststo annualmps_8: reghdfe dlnprice mp cbi l.lnrSI l.dlnprice dlnNER_US, a(firm
 
 estfe annualmps_*, labels(firm_id "Firm FE")
 esttab annualmps_* using tables\tables_Oct2024\scaledmps_annual.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS" "Acosta" "Acosta" "JK" "JK") order(ffr_shock ns target path mp cbi)
+
+*-------------------------------------------------------------------------------
+
+* Bauer and Swanson (2022)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+merge m:1 year month using MPS\monthly\Bauer_Swanson_monthly,nogen keep(matched master)
+xtset firm_id time
+
+eststo monthBS_1: reghdfe dlnprice_YoY MPS dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthBS_2: reghdfe dlnprice_YoY MPS l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+
+eststo monthBS_3: reghdfe dlnprice_YoY MPS_ORTH dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthBS_4: reghdfe dlnprice_YoY MPS_ORTH l12.lnrSI l.dlnprice_YoY  dlnNER_US, a(firm_id) vce(cluster firm_id time)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+
+merge m:1 year using MPS\monthly\Bauer_Swanson_annual,nogen keep(matched master)
+xtset firm_id year
+
+eststo annualBS_1: reghdfe dlnprice MPS dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualBS_2: reghdfe dlnprice MPS l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+eststo annualBS_3: reghdfe dlnprice MPS_ORTH dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualBS_4: reghdfe dlnprice MPS_ORTH l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+estfe monthBS_* annualBS_*, labels(firm_id "Firm FE")
+esttab monthBS_* annualBS_* using tables\tables_Oct2024\Bauer_Swanson.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(MPS MPS_ORTH)
 
 *-------------------------------------------------------------------------------
 
@@ -532,6 +563,32 @@ eststo control_all: reghdfe dlnprice_YoY brw l.s12.cpi_cn l.s12.iva_cn l.s12.lnv
 
 estfe control_*, labels(firm_id "Firm FE")
 esttab control_* using tables\tables_Oct2024\control_new.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("CN CPI" "CN Value Added" "VIX" "Input Price" "All") order(brw *cpi* *iva* *vix* *pindu* *ln*)
+
+*-------------------------------------------------------------------------------
+
+* A?. Arrelleno-Bond estimation and Arellano-Bover/Blundell-Bond system estimation
+
+* Difference GMM and System GMM
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo ab_monthly_1: xtabond dlnprice_YoY brw dlnNER_US, lags(1) twostep vce(robust)
+eststo ab_monthly_2: xtabond dlnprice_YoY brw l12.lnrSI dlnNER_US, lags(1) twostep vce(robust)
+
+eststo sys_monthly_1: xtdpdsys dlnprice_YoY brw dlnNER_US, lags(1) twostep vce(robust)
+eststo sys_monthly_2: xtdpdsys dlnprice_YoY brw l12.lnrSI dlnNER_US, lags(1) twostep vce(robust)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+
+eststo ab_annual_1: xtabond dlnprice brw dlnNER_US, lags(1) twostep vce(robust)
+eststo ab_annual_2: xtabond dlnprice brw l.lnrSI dlnNER_US, lags(1) twostep vce(robust)
+
+eststo sys_annual_1: xtdpdsys dlnprice brw dlnNER_US, lags(1) twostep vce(robust)
+eststo sys_annual_2: xtdpdsys dlnprice brw l.lnrSI dlnNER_US, lags(1) twostep vce(robust)
+
+esttab ab_monthly_* ab_annual_* sys_monthly_* sys_annual_* using tables\tables_Oct2024\Arrelleno-Bond.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) compress nogaps
 
 *-------------------------------------------------------------------------------
 

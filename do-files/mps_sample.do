@@ -287,7 +287,24 @@ gen m2g_YoY=(m2_china-l12.m2_china)/l12.m2_china
 gen m2g_MoM=(m2_china-l.m2_china)/l.m2_china
 save China_m2g,replace
 
-* Interest rate responses to brw in different countries
+* 2.6 Other country-level characteristics
+
+** Country X
+
+cd "D:\Project E"
+use country_X\country_X,clear
+gen countrycode=upper(Country_Code)
+replace countrycode="GBR" if Country_Code=="uk"
+replace countrycode="USA" if Country_Code=="us"
+replace countrycode="DEU" if Country_Code=="ger"
+replace countrycode="JPN" if Country_Code=="jap"
+replace countrycode="CHE" if Country_Code=="swi"
+replace countrycode="IRL" if Country_Code=="ire"
+replace countrycode="ZAF" if Country_Code=="saf"
+drop Country_Code Country_Name
+save country_X_revised,replace
+
+** Interest rate responses to brw in different countries
 
 cd "D:\Project E"
 use country_X\fomc_panel_b,clear

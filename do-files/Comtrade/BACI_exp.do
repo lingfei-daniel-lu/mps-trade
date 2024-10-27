@@ -108,7 +108,7 @@ graph export figures\Other-exp_ctr_30_control_hist.png, as(png) replace
 
 *-------------------------------------------------------------------------------
 
-* Interest rate responses of different countries to brw
+* Interest rate responses to brw
 
 cd "D:\Project E"
 use country_X\country_FOMC_response, clear
@@ -126,3 +126,17 @@ merge 1:1 countrycode using country_X\country_exposure_brw,nogen keep(matched)
 drop if countrycode=="IDN"
 drop if exp_brw==.
 twoway (scatter _b_brw exp_brw, legend(off) xtitle("Interest responses") ytitle("Export price responses")) (lfit _b_brw exp_brw)
+
+*-------------------------------------------------------------------------------
+
+* Financial vulnerability/development of exporting countries
+
+cd "D:\Project E"
+use BACI\BACI_exp_HS6_coef_raw,clear
+merge 1:1 countrycode using GFDD\GFDD_matched_mean,nogen keep(matched)
+merge 1:1 countrycode using country_X\country_X_mean,nogen keep(master matched)
+
+twoway (scatter _b_brw fd, legend(off) xtitle("Financial development") ytitle("Export price responses")) (lfit _b_brw fd)
+twoway (scatter _b_brw trade_open, legend(off) xtitle("Trade Openness") ytitle("Export price responses")) (lfit _b_brw trade_open)
+twoway (scatter _b_brw vuln_index, legend(off) xtitle("Vulnerability Index") ytitle("Export price responses")) (lfit _b_brw vuln_index)
+twoway (scatter _b_brw lndollar_asset, legend(off) xtitle("Dollar Asset") ytitle("Export price responses")) (lfit _b_brw lndollar_asset)
