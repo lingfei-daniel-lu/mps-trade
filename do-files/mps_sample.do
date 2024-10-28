@@ -283,9 +283,32 @@ collapse (mean) m2_china, by(year month)
 gen time=monthly(string(year)+"-"+string(month),"YM")
 format time %tm
 tsset time
+drop if m2_china==.
+save China_m2g,replace
+
+cd "D:\Project E\control\china"
+use China_m2g,clear
+keep if year>=2000 & year<=2007
 gen m2g_YoY=(m2_china-l12.m2_china)/l12.m2_china
 gen m2g_MoM=(m2_china-l.m2_china)/l.m2_china
-save China_m2g,replace
+egen m2g_YoY_mean = mean(m2g_YoY) 
+egen m2g_YoY_sd  = sd(m2g_YoY)
+gen tight_YoY = -(m2g_YoY - m2g_YoY_mean) / m2g_YoY_sd
+egen m2g_MoM_mean = mean(m2g_MoM) 
+egen m2g_MoM_sd  = sd(m2g_MoM)
+gen tight_MoM = -(m2g_MoM - m2g_MoM_mean) / m2g_MoM_sd
+save China_m2g_monthly,replace
+
+cd "D:\Project E\control\china"
+use China_m2g,clear
+collapse (sum) m2_china, by(year)
+tsset year
+keep if year>=2000 & year<=2007
+gen m2g_annual=(m2_china-l.m2_china)/l.m2_china
+egen m2g_annual_mean = mean(m2g_annual) 
+egen m2g_annual_sd  = sd(m2g_annual)
+gen tight_annual = -(m2g_annual - m2g_annual_mean) / m2g_annual_sd
+save China_m2g_annual,replace
 
 * 2.6 Other country-level characteristics
 

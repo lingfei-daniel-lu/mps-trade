@@ -101,7 +101,7 @@ binscatter dlnprice_YoY brw, xtitle("Monetary policy shocks") ytitle("{&Delta} l
 
 *-------------------------------------------------------------------------------
 
-* A2. Dynamic regression
+* A2. Dynamic regression (forward prices)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -113,7 +113,32 @@ eststo forward_`i': reghdfe f`i'.dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY f`i'.
 estfe forward_*, labels(firm_id "Firm FE")
 esttab forward_* using tables\tables_Oct2024\dynamic.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
-* A4. Dynamic regression with lagged brw
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+gen b=0
+gen u=0
+gen d=0
+
+forv h = 0/12 {
+reghdfe f`h'.dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY f`h'.dlnNER_US, a(firm_id) vce(cluster firm_id time)
+replace b = _b[brw]                    if _n == `h'+1
+replace u = _b[brw] + 1.645* _se[brw]  if _n == `h'+1
+replace d = _b[brw] - 1.645* _se[brw]  if _n == `h'+1
+}
+
+*Plot
+
+gen h=_n-1
+gen Zero=0
+twoway (rarea u d h if h<=12, fcolor(gs13) lcolor(gs13) lw(none) lpattern(solid)) ///
+  (line b h if h<=12, lcolor(blue) lpattern(solid) lwidth(thick)) /// 
+  (line Zero h if h<=12, lcolor(black)), legend(off) ///
+  title("Dynamic responses in 12 months", color(black)) ///
+  ytitle("Price response", size(medsmall)) xtitle("Time horizon", size(medsmall)) xlabel(0 (1) 12) ///
+  graphregion(color(white)) plotregion(color(white))
+
+* A4. Dynamic regression (lagged shocks)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -162,37 +187,6 @@ eststo gap2_`i': reghdfe s`i'.price_index brw l12.lnrSI dlnNER_US, a(firm_id) vc
 }
 estfe gap2_*, labels(firm_id "Firm FE")
 esttab gap2_* using tables\tables_Oct2024\gap2.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
-
-*-------------------------------------------------------------------------------
-
-* F?. Dynamic regression
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-gen b=0
-gen u=0
-gen d=0
-
-* Regression
-
-forv h = 0/12 {
-reghdfe f`h'.dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY f`h'.dlnNER_US, a(firm_id) vce(cluster firm_id time)
-replace b = _b[brw]                    if _n == `h'+1
-replace u = _b[brw] + 1.645* _se[brw]  if _n == `h'+1
-replace d = _b[brw] - 1.645* _se[brw]  if _n == `h'+1
-}
-
-*Plot
-
-gen h=_n-1
-gen Zero=0
-twoway (rarea u d h if h<=12, fcolor(gs13) lcolor(gs13) lw(none) lpattern(solid)) ///
-  (line b h if h<=12, lcolor(blue) lpattern(solid) lwidth(thick)) /// 
-  (line Zero h if h<=12, lcolor(black)), legend(off) ///
-  title("Dynamic responses in 12 months", color(black)) ///
-  ytitle("Price response", size(medsmall)) xtitle("Time horizon", size(medsmall)) xlabel(0 (1) 12) ///
-  graphregion(color(white)) plotregion(color(white))
   
 *-------------------------------------------------------------------------------
 
@@ -228,82 +222,37 @@ esttab value_* quant_* using tables\tables_Oct2024\value_quant.csv, replace b(3)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
-
-merge m:1 year month using MPS\monthly\US_shock_scaled,nogen keep(matched master)
+merge m:1 year month using MPS\monthly\Shock_rescale\data\US_shock_scaled,nogen keep(matched master) keepus(*_s)
 xtset firm_id time
-replace ffr_shock=0 if ffr_shock==.
-replace ns=0 if ns==.
-replace target=0 if target==.
-replace path=0 if path==.
-replace mp=0 if mp==.
-replace cbi=0 if cbi==.
 
-eststo monthmps_1: reghdfe dlnprice_YoY ffr_shock dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthmps_2: reghdfe dlnprice_YoY ffr_shock l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthmps_3: reghdfe dlnprice_YoY ns dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthmps_4: reghdfe dlnprice_YoY ns l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthmps_5: reghdfe dlnprice_YoY target path dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthmps_6: reghdfe dlnprice_YoY target path l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthmps_7: reghdfe dlnprice_YoY mp cbi dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthmps_8: reghdfe dlnprice_YoY mp cbi l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_1: reghdfe dlnprice_YoY ns_s dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_2: reghdfe dlnprice_YoY ns_s l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_3: reghdfe dlnprice_YoY BS_s dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_4: reghdfe dlnprice_YoY BS_s l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_5: reghdfe dlnprice_YoY target_s path_s dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_6: reghdfe dlnprice_YoY target_s path_s l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_7: reghdfe dlnprice_YoY mp_s cbi_s dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo monthmps_8: reghdfe dlnprice_YoY mp_s cbi_s l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 estfe monthmps_*, labels(firm_id "Firm FE")
-esttab monthmps_* using tables\tables_Oct2024\monthmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS" "Acosta" "Acosta" "JK" "JK") order(ffr_shock ns target path mp cbi)
+esttab monthmps_* using tables\tables_Oct2024\monthmps.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("NS" "NS" "BS" "BS"  "Acosta" "Acosta" "JK" "JK") order(ns* BS* target* path* mp* cbi*)
 
 cd "D:\Project E"
 use samples\sample_matched_exp_firm,clear
-
-merge m:1 year using MPS\monthly\US_shock_scaled_annual,nogen keep(matched master)
+merge m:1 year using MPS\monthly\Shock_rescale\data\US_shock_scaled_annual,nogen keep(matched master) keepus(*_s)
 xtset firm_id year
-replace ffr_shock=0 if ffr_shock==.
-replace ns=0 if ns==.
-replace target=0 if target==.
-replace path=0 if path==.
-replace mp=0 if mp==.
-replace cbi=0 if cbi==.
 
-eststo annualmps_1: reghdfe dlnprice ffr_shock dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualmps_2: reghdfe dlnprice ffr_shock l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualmps_3: reghdfe dlnprice ns dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualmps_4: reghdfe dlnprice ns l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualmps_5: reghdfe dlnprice target path dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualmps_6: reghdfe dlnprice target path l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualmps_7: reghdfe dlnprice mp cbi dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualmps_8: reghdfe dlnprice mp cbi l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualmps_1: reghdfe dlnprice ns_s dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualmps_2: reghdfe dlnprice ns_s l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualmps_3: reghdfe dlnprice BS_s dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualmps_4: reghdfe dlnprice BS_s l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualmps_5: reghdfe dlnprice target_s path_s dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualmps_6: reghdfe dlnprice target_s path_s l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualmps_7: reghdfe dlnprice mp_s cbi_s dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo annualmps_8: reghdfe dlnprice mp_s cbi_s l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
 
 estfe annualmps_*, labels(firm_id "Firm FE")
-esttab annualmps_* using tables\tables_Oct2024\scaledmps_annual.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("FFR" "FFR" "NS" "NS" "Acosta" "Acosta" "JK" "JK") order(ffr_shock ns target path mp cbi)
-
-*-------------------------------------------------------------------------------
-
-* Bauer and Swanson (2022)
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-merge m:1 year month using MPS\monthly\Bauer_Swanson_monthly,nogen keep(matched master)
-xtset firm_id time
-
-eststo monthBS_1: reghdfe dlnprice_YoY MPS dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthBS_2: reghdfe dlnprice_YoY MPS l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-
-eststo monthBS_3: reghdfe dlnprice_YoY MPS_ORTH dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo monthBS_4: reghdfe dlnprice_YoY MPS_ORTH l12.lnrSI l.dlnprice_YoY  dlnNER_US, a(firm_id) vce(cluster firm_id time)
-
-cd "D:\Project E"
-use samples\sample_matched_exp_firm,clear
-
-merge m:1 year using MPS\monthly\Bauer_Swanson_annual,nogen keep(matched master)
-xtset firm_id year
-
-eststo annualBS_1: reghdfe dlnprice MPS dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualBS_2: reghdfe dlnprice MPS l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
-
-eststo annualBS_3: reghdfe dlnprice MPS_ORTH dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo annualBS_4: reghdfe dlnprice MPS_ORTH l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
-
-estfe monthBS_* annualBS_*, labels(firm_id "Firm FE")
-esttab monthBS_* annualBS_* using tables\tables_Oct2024\Bauer_Swanson.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(MPS MPS_ORTH)
+esttab annualmps_* using tables\tables_Oct2024\scaledmps_annual.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("NS" "NS" "BS" "BS"  "Acosta" "Acosta" "JK" "JK") order(ns* BS* target* path* mp* cbi*)
 
 *-------------------------------------------------------------------------------
 
@@ -311,25 +260,25 @@ esttab monthBS_* annualBS_* using tables\tables_Oct2024\Bauer_Swanson.csv, repla
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
-merge m:1 year month using control\china\China_m2g,nogen keep(matched master)
-
-bys firm_id: egen m2g_YoY_mean = mean(m2g_YoY) 
-by firm_id: egen m2g_YoY_sd  = sd(m2g_YoY)
-gen tight_YoY = -(m2g_YoY - m2g_YoY_mean) / m2g_YoY_sd
-bys firm_id: egen m2g_MoM_mean = mean(m2g_MoM) 
-by firm_id: egen m2g_MoM_sd  = sd(m2g_MoM)
-gen tight_MoM = -(m2g_MoM - m2g_MoM_mean) / m2g_MoM_sd
-
+merge m:1 year month using control\china\China_m2g_monthly,nogen keep(matched master)
 xtset firm_id time
 
-eststo tight_1: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo tight_2: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo tight_3: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo tight_4: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo tight_monthly_1: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo tight_monthly_2: reghdfe dlnprice_YoY brw c.brw#c.tight_YoY tight_YoY l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
-estfe tight_*, labels(firm_id "Firm FE")
-esttab tight_* using tables\tables_Oct2024\tightness.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("YoY" "YoY" "MoM" "MoM") order(brw c.brw* tight*)
+eststo tight_monthly_3: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo tight_monthly_4: reghdfe dlnprice_YoY brw c.brw#c.tight_MoM tight_MoM l.dlnprice_YoY l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+merge m:1 year using control\china\China_m2g_annual,nogen keep(matched master)
+xtset firm_id year
+
+eststo tight_annual_1: reghdfe dlnprice brw c.brw#c.tight_annual tight_annual dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo tight_annual_2: reghdfe dlnprice brw c.brw#c.tight_annual tight_annual l.dlnprice l.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+estfe tight_annual_* tight_monthly_*, labels(firm_id "Firm FE")
+esttab tight_annual_* tight_monthly_* using tables\tables_Oct2024\tightness.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw c.brw* tight*)
 
 *-------------------------------------------------------------------------------
 
