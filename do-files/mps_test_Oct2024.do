@@ -34,6 +34,15 @@ eststo sum_stats: estpost sum HS6_count value SI PERSENG exp_int, detail
 
 esttab sum_stats using "tables\tables_Oct2024\sum_stats.tex", replace cells("mean(fmt(2)) sd(fmt(2)) p50(fmt(2)) p25(fmt(2)) p75(fmt(2))") label booktab nonumber nomtitles
 
+
+*-------------------------------------------------------------------------------
+
+* A2. Correlations of alternative monetary policy shock measures
+
+cd "D:\Project E"
+use MPS\monthly\Shock_rescale\data\US_shock_scaled,clear
+corr brw ns BS target path mp cbi
+
 *-------------------------------------------------------------------------------
 
 * 1. Baseline (spillback)
@@ -101,7 +110,7 @@ binscatter dlnprice_YoY brw, xtitle("Monetary policy shocks") ytitle("{&Delta} l
 
 *-------------------------------------------------------------------------------
 
-* A2. Dynamic regression (forward prices)
+* B1. Dynamic regression (forward prices)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -138,7 +147,7 @@ twoway (rarea u d h if h<=12, fcolor(gs13) lcolor(gs13) lw(none) lpattern(solid)
   ytitle("Price response", size(medsmall)) xtitle("Time horizon", size(medsmall)) xlabel(0 (1) 12) ///
   graphregion(color(white)) plotregion(color(white))
 
-* A4. Dynamic regression (lagged shocks)
+* B2. Dynamic regression (lagged shocks)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -171,7 +180,7 @@ replace d = _b[l`h'.brw] - 1.645* _se[l`h'.brw]  if _n == `h'+1
 }
 
 
-* A?. Dynamic regression with different time gap
+* Dynamic regression with different time gap
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -190,7 +199,7 @@ esttab gap2_* using tables\tables_Oct2024\gap2.csv, replace b(3) se(3) noconstan
   
 *-------------------------------------------------------------------------------
 
-* A3. Firm-level value and Firm-product level quantity
+* B3. Firm-level value and Firm-product level quantity
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -282,7 +291,7 @@ esttab tight_annual_* tight_monthly_* using tables\tables_Oct2024\tightness.csv,
 
 *-------------------------------------------------------------------------------
 
-* A4. Exact announcement date effect
+* B4. Exact announcement date effect
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -304,6 +313,94 @@ eststo weighty_3: reghdfe dlnprice brw_weight_y l.lnrSI l.dlnprice dlnNER_US, a(
 
 estfe weightm_* weighty_*, labels(firm_id "Firm FE")
 esttab  weightm_* weighty_* using tables\tables_Oct2024\dateweight.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+*-------------------------------------------------------------------------------
+
+* B5. Alternative aggregation
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_HS6,clear
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+xtset group_id time 
+
+eststo altagg_1: reghdfe dlnprice_h_YoY brw dlnNER_US, a(group_id) vce(cluster group_id time)
+eststo altagg_2: reghdfe dlnprice_h_YoY brw l12.lnrSI dlnNER_US, a(group_id) vce(cluster group_id time)
+eststo altagg_3: reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US, a(group_id) vce(cluster group_id time)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp,clear
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+rename group_id group_id_ipc
+sort group_id_ipc time
+
+eststo altagg_4: reghdfe dlnprice_YoY brw dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc time)
+eststo altagg_5: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc time)
+eststo altagg_6: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc time)
+
+estfe altagg_*, labels(group_id "Firm-Product FE" group_id_ipc "Firm-Product-Country FE")
+esttab altagg_* using tables\tables_Oct2024\altagg.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw L.*)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm_HS6,clear
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
+xtset group_id year
+
+eststo annualagg_1: reghdfe dlnprice_h brw dlnNER_US, a(group_id) vce(cluster group_id year)
+eststo annualagg_2: reghdfe dlnprice_h brw l.lnrSI dlnNER_US, a(group_id) vce(cluster group_id year)
+eststo annualagg_3: reghdfe dlnprice_h brw l.lnrSI l.dlnprice_h dlnNER_US, a(group_id) vce(cluster group_id year)
+
+cd "D:\Project E"
+use samples\sample_matched_exp,clear
+merge n:1 coun_aim year using ER\RER_99_19,nogen keep(matched)
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
+rename group_id group_id_ipc
+sort group_id_ipc year
+
+eststo annualagg_4: reghdfe dlnprice brw dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc year)
+eststo annualagg_5: reghdfe dlnprice brw l.lnrSI dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc year)
+eststo annualagg_6: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc year)
+
+estfe annualagg_*, labels(group_id "Firm-Product FE" group_id_ipc "Firm-Product-Country FE")
+esttab annualagg_* using tables\tables_Oct2024\altagg_annual.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw L.*)
+
+*-------------------------------------------------------------------------------
+
+* B6. Approximate time match
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo app1_1: reghdfe dlnprice_YoY_app1 brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo app1_2: reghdfe dlnprice_YoY_app1 brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo app1_3: reghdfe dlnprice_YoY_app1 brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+
+eststo app2_1: reghdfe dlnprice_YoY_app2 brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo app2_2: reghdfe dlnprice_YoY_app2 brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo app2_3: reghdfe dlnprice_YoY_app2 brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+
+estfe app1_* app2_*, labels(firm_id "Firm FE")
+esttab app1_* app2_* using tables\tables_Oct2024\approximate.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("+- 1 month" "+- 1 month" "+- 1 month" "+- 2 months" "+- 2 months" "+- 2 months")
+
+*-------------------------------------------------------------------------------
+
+* B7. RMB price
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+
+eststo RMB_1: reghdfe dlnprice_RMB_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo RMB_2: reghdfe dlnprice_RMB_YoY brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
+eststo RMB_3: reghdfe dlnprice_RMB_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+
+eststo RMB_4: reghdfe dlnprice_RMB brw dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo RMB_5: reghdfe dlnprice_RMB brw l.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo RMB_6: reghdfe dlnprice_RMB brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+estfe RMB_*, labels(firm_id "Firm FE")
+esttab RMB_* using tables\tables_Oct2024\RMB.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("monthly" "monthly" "monthly" "annual" "annual" "annual")
 
 *-------------------------------------------------------------------------------
 
@@ -366,94 +463,6 @@ eststo oneway_3: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US if 
 
 estfe twoway_* oneway_*, labels(firm_id "Firm FE")
 esttab twoway_* oneway_* using tables\tables_Oct2024\twoway_trade.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
-
-*-------------------------------------------------------------------------------
-
-* A8. Approximate time match
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-eststo app1_1: reghdfe dlnprice_YoY_app1 brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo app1_2: reghdfe dlnprice_YoY_app1 brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo app1_3: reghdfe dlnprice_YoY_app1 brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-
-eststo app2_1: reghdfe dlnprice_YoY_app2 brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo app2_2: reghdfe dlnprice_YoY_app2 brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo app2_3: reghdfe dlnprice_YoY_app2 brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-
-estfe app1_* app2_*, labels(firm_id "Firm FE")
-esttab app1_* app2_* using tables\tables_Oct2024\approximate.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("+- 1 month" "+- 1 month" "+- 1 month" "+- 2 months" "+- 2 months" "+- 2 months")
-
-*-------------------------------------------------------------------------------
-
-* A9. RMB price
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-
-eststo RMB_1: reghdfe dlnprice_RMB_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo RMB_2: reghdfe dlnprice_RMB_YoY brw l12.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id time)
-eststo RMB_3: reghdfe dlnprice_RMB_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
-
-cd "D:\Project E"
-use samples\sample_matched_exp_firm,clear
-
-eststo RMB_4: reghdfe dlnprice_RMB brw dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo RMB_5: reghdfe dlnprice_RMB brw l.lnrSI dlnNER_US, a(firm_id) vce(cluster firm_id year)
-eststo RMB_6: reghdfe dlnprice_RMB brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
-
-estfe RMB_*, labels(firm_id "Firm FE")
-esttab RMB_* using tables\tables_Oct2024\RMB.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps mtitle("monthly" "monthly" "monthly" "annual" "annual" "annual")
-
-*-------------------------------------------------------------------------------
-
-* A10. Alternative aggregation
-
-cd "D:\Project E"
-use samples\sample_monthly_exp_firm_HS6,clear
-merge n:1 year month using ER\NER_US_month,nogen keep(matched)
-xtset group_id time 
-
-eststo altagg_1: reghdfe dlnprice_h_YoY brw dlnNER_US, a(group_id) vce(cluster group_id time)
-eststo altagg_2: reghdfe dlnprice_h_YoY brw l12.lnrSI dlnNER_US, a(group_id) vce(cluster group_id time)
-eststo altagg_3: reghdfe dlnprice_h_YoY brw l12.lnrSI l.dlnprice_h_YoY dlnNER_US, a(group_id) vce(cluster group_id time)
-
-cd "D:\Project E"
-use samples\sample_monthly_exp,clear
-merge n:1 year month using ER\NER_US_month,nogen keep(matched)
-rename group_id group_id_ipc
-sort group_id_ipc time
-
-eststo altagg_4: reghdfe dlnprice_YoY brw dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc time)
-eststo altagg_5: reghdfe dlnprice_YoY brw l12.lnrSI dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc time)
-eststo altagg_6: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc time)
-
-estfe altagg_*, labels(group_id "Firm-Product FE" group_id_ipc "Firm-Product-Country FE")
-esttab altagg_* using tables\tables_Oct2024\altagg.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw L.*)
-
-cd "D:\Project E"
-use samples\sample_matched_exp_firm_HS6,clear
-merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
-xtset group_id year
-
-eststo annualagg_1: reghdfe dlnprice_h brw dlnNER_US, a(group_id) vce(cluster group_id year)
-eststo annualagg_2: reghdfe dlnprice_h brw l.lnrSI dlnNER_US, a(group_id) vce(cluster group_id year)
-eststo annualagg_3: reghdfe dlnprice_h brw l.lnrSI l.dlnprice_h dlnNER_US, a(group_id) vce(cluster group_id year)
-
-cd "D:\Project E"
-use samples\sample_matched_exp,clear
-merge n:1 coun_aim year using ER\RER_99_19,nogen keep(matched)
-merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
-rename group_id group_id_ipc
-sort group_id_ipc year
-
-eststo annualagg_4: reghdfe dlnprice brw dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc year)
-eststo annualagg_5: reghdfe dlnprice brw l.lnrSI dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc year)
-eststo annualagg_6: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER inflation dlnrgdp dlnNER_US, a(group_id_ipc) vce(cluster group_id_ipc year)
-
-estfe annualagg_*, labels(group_id "Firm-Product FE" group_id_ipc "Firm-Product-Country FE")
-esttab annualagg_* using tables\tables_Oct2024\altagg_annual.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw L.*)
 
 *-------------------------------------------------------------------------------
 
@@ -953,7 +962,7 @@ esttab Rauch_* using tables\tables_Oct2024\Rauch.csv, replace b(3) se(3) noconst
 
 *-------------------------------------------------------------------------------
 
-* 11. Standardized EU shocks and comparison with brw
+* 9. Standardized EU shocks and comparison with brw
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_ECB,clear
@@ -985,3 +994,34 @@ eststo EU_JK_all: reghdfe dlnprice_YoY brw mp_eu cbi_eu l12.lnrSI l.dlnprice_YoY
 hel
 estfe EU_*, labels(firm_id "Firm FE")
 esttab EU_* using tables\tables_Oct2024\ECB.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw *_eu *lnrSI *dlnprice*)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm_ECB,clear
+merge m:1 year using MPS\monthly\eu_infoshock_annual,nogen keep(matched master)
+rename (mp_median_mpd cbi_median_mpd) (mp_eu cbi_eu)
+xtset firm_id year
+eststo annual_EU_JK_ECB: reghdfe dlnprice brw mp_eu cbi_eu l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm_US,clear
+merge m:1 year using MPS\monthly\eu_infoshock_annual,nogen keep(matched master)
+rename (mp_median_mpd cbi_median_mpd) (mp_eu cbi_eu)
+xtset firm_id year
+eststo annual_EU_JK_US: reghdfe dlnprice brw mp_eu cbi_eu l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm_nonUSECB,clear
+merge m:1 year using MPS\monthly\eu_infoshock_annual,nogen keep(matched master)
+rename (mp_median_mpd cbi_median_mpd) (mp_eu cbi_eu)
+xtset firm_id year
+eststo annual_EU_JK_non: reghdfe dlnprice brw mp_eu cbi_eu l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+cd "D:\Project E"
+use samples\sample_matched_exp_firm,clear
+merge m:1 year using MPS\monthly\eu_infoshock_annual,nogen keep(matched master)
+rename (mp_median_mpd cbi_median_mpd) (mp_eu cbi_eu)
+xtset firm_id year
+eststo annual_EU_JK_all: reghdfe dlnprice brw mp_eu cbi_eu l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+hel
+estfe annual_EU_*, labels(firm_id "Firm FE")
+esttab annual_EU_* using tables\tables_Oct2024\ECB_annual.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps order(brw *_eu *lnrSI *dlnprice*)
