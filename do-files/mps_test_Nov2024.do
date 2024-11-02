@@ -34,7 +34,6 @@ eststo sum_stats: estpost sum HS6_count value SI PERSENG exp_int, detail
 
 esttab sum_stats using "tables\tables_Oct2024\sum_stats.tex", replace cells("mean(fmt(2)) sd(fmt(2)) p50(fmt(2)) p25(fmt(2)) p75(fmt(2))") label booktab nonumber nomtitles
 
-
 *-------------------------------------------------------------------------------
 
 * A2. Correlations of alternative monetary policy shock measures
@@ -147,7 +146,7 @@ twoway (rarea u d h if h<=12, fcolor(gs13) lcolor(gs13) lw(none) lpattern(solid)
   ytitle("Price response", size(medsmall)) xtitle("Time horizon", size(medsmall)) xlabel(0 (1) 12) ///
   graphregion(color(white)) plotregion(color(white))
 
-* B2. Dynamic regression (lagged shocks)
+* B1. Dynamic regression (lagged shocks)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -198,7 +197,7 @@ esttab gap2_* using tables\tables_Oct2024\gap2.csv, replace b(3) se(3) noconstan
   
 *-------------------------------------------------------------------------------
 
-* B3. Firm-level value and Firm-product level quantity
+* B2. Firm-level value and Firm-product level quantity
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -290,7 +289,7 @@ esttab tight_annual_* tight_monthly_* using tables\tables_Oct2024\tightness.csv,
 
 *-------------------------------------------------------------------------------
 
-* B4. Exact announcement date effect
+* B3. Exact announcement date effect
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -315,7 +314,7 @@ esttab  weightm_* weighty_* using tables\tables_Oct2024\dateweight.csv, replace 
 
 *-------------------------------------------------------------------------------
 
-* B5. Alternative aggregation
+* B4. Alternative aggregation
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_HS6,clear
@@ -364,7 +363,7 @@ esttab annualagg_* using tables\tables_Oct2024\altagg_annual.csv, replace b(3) s
 
 *-------------------------------------------------------------------------------
 
-* B6. Approximate time match
+* B5. Approximate time match
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -382,7 +381,7 @@ esttab app1_* app2_* using tables\tables_Oct2024\approximate.csv, replace b(3) s
 
 *-------------------------------------------------------------------------------
 
-* B7. RMB price
+* B6. RMB price
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -403,7 +402,7 @@ esttab RMB_* using tables\tables_Oct2024\RMB.csv, replace b(3) se(3) noconstant 
 
 *-------------------------------------------------------------------------------
 
-* B8. Single product firm
+* B7. Single product firm
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -426,7 +425,7 @@ esttab single_* using tables\tables_Oct2024\single.csv, replace b(3) se(3) nocon
 
 *-------------------------------------------------------------------------------
 
-* B9. Ownership type
+* B8. Ownership type
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -461,7 +460,7 @@ esttab annual_SOE_* annual_DPE_* annual_MNE_* annual_JV_* using tables\tables_Oc
 
 *-------------------------------------------------------------------------------
 
-* B10. Two-way traders
+* B9. Two-way traders
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -497,7 +496,7 @@ esttab annual_twoway_* annual_oneway_* using tables\tables_Oct2024\twoway_trade_
 
 *-------------------------------------------------------------------------------
 
-* B11. Alternative FE and cluster
+* B10. Alternative FE and cluster
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -528,7 +527,7 @@ eststo annual_cluster_4: reghdfe dlnprice brw l1.lnrSI l.dlnprice dlnNER_US, a(f
 
 *-------------------------------------------------------------------------------
 
-* B12. Additional control variables
+* B11. Additional control variables
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -829,7 +828,7 @@ esttab annual_IEoL_* annual_IEoCL_* annual_FNoL_* annual_FNoCL_* using tables\ta
 
 *-------------------------------------------------------------------------------
 
-* B2. Liquidity (interaction)
+* C2. Liquidity (interaction)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -892,7 +891,7 @@ esttab decomp_* using tables\tables_Oct2024\decomposition.csv, replace b(3) se(3
 
 *-------------------------------------------------------------------------------
 
-* B4. Within-sector and across-sector markup
+* C3. Within-sector and across-sector markup
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -932,7 +931,7 @@ reghdfe D.lnMarkup brw c.brw#c.Markup_cic4_1st l.lnrSI, a(firm_id) vce(cluster f
 
 *-------------------------------------------------------------------------------
 
-* B5. Discussion about other production cost
+* C4. Discussion about other production cost
 
 cd "D:\Project E"
 use samples\cie_credit_brw,clear
@@ -953,7 +952,7 @@ esttab material wage material_int wage_int imp_int using tables\tables_Oct2024\o
 
 *-------------------------------------------------------------------------------
 
-* 9. FDI (interaction)
+* C6. FDI (interaction)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -974,7 +973,7 @@ esttab domestic_* FDI_* using tables\tables_Oct2024\FDI.csv, replace b(3) se(3) 
 
 *-------------------------------------------------------------------------------
 
-* 10. Financial development
+* C7. Financial development
 
 cd "D:\Project E"
 use samples\sample_monthly_exp,clear
@@ -993,7 +992,7 @@ esttab fd* using tables\tables_Oct2024\fd_fpc.csv, replace b(3) se(3) noconstant
 
 *-------------------------------------------------------------------------------
 
-* 11. Ordinary vs Processing
+* C8. Ordinary vs Processing
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -1010,7 +1009,7 @@ esttab ordinary_* process_* processint_* using tables\tables_Oct2024\process.csv
 
 *-------------------------------------------------------------------------------
 
-* B7. Homogenous vs differentiated good
+* C8. Homogenous vs differentiated good
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear

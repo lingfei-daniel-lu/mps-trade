@@ -17,14 +17,10 @@ append using dta\BACI_HS96_Y`i'_V202401b
 drop if q==. | q==0
 collapse (sum) v q, by(j k t)
 gen p=v/q
-save BACI_96_22_imp_HS6,replace
-
-cd "D:\Project E"
-use BACI\BACI_96_22_imp_HS6,clear
 sort j k t
 by j k: gen dlnp= ln(p)-ln(p[_n-1]) if t==t[_n-1]+1
 winsor2 dlnp, trim replace
-save BACI\BACI_96_22_imp_HS6_price,replace
+save BACI_96_22_imp_HS6_price,replace
 
 cd "D:\Project E"
 use BACI\BACI_96_22_imp_HS6_price,clear
@@ -67,6 +63,32 @@ gen lngdp_pc=ln(gdp_pc)
 save BACI\sample_BACI_imp_HS6,replace
 
 cd "D:\Project E"
+use BACI\BACI_96_22_imp_HS6_price_US,clear
+rename (j k t v) (country_code HS6 year value)
+merge n:1 country_code using BACI\dta\country_codes_V202401b,nogen keep(matched) keepus(country_iso3)
+drop country_code
+rename country_iso3 countrycode
+merge n:1 year using MPS\brw\brw_94_22,nogen keep(matched)
+merge n:1 year countrycode using ER\RER_89_19,nogen keep(matched) keepus(dlnrgdp)
+merge n:1 countrycode using country_X\country_GDP_2006,nogen keep(matched master) keepus(gdp_pc)
+gen lngdp_pc=ln(gdp_pc)
+save BACI\sample_BACI_imp_HS6_US,replace
+
+cd "D:\Project E"
+use BACI\BACI_96_22_imp_HS6_price_CN,clear
+rename (j k t v) (country_code HS6 year value)
+merge n:1 country_code using BACI\dta\country_codes_V202401b,nogen keep(matched) keepus(country_iso3)
+drop country_code
+rename country_iso3 countrycode
+merge n:1 year using MPS\brw\brw_94_22,nogen keep(matched)
+merge n:1 year countrycode using ER\RER_89_19,nogen keep(matched) keepus(dlnrgdp)
+merge n:1 countrycode using country_X\country_GDP_2006,nogen keep(matched master) keepus(gdp_pc)
+gen lngdp_pc=ln(gdp_pc)
+save BACI\sample_BACI_imp_HS6_CN,replace
+
+*-------------------------------------------------------------------------------
+
+cd "D:\Project E"
 use BACI\sample_BACI_imp_HS6,clear
 egen group_id=group(countrycode HS6)
 xtset group_id year
@@ -91,7 +113,9 @@ save BACI\BACI_imp_HS6_coef_raw,replace
 restore
 
 preserve
-statsby _b _se n=(e(N)), by(countrycode lngdp_pc) clear: areg dlnp brw l.dlnp dlnrgdp, a(HS6) vce(cluster HS2)
+sort countrycode HS6 year
+by countrycode HS6: gen dlnp_lag=dlnp[_n-1]
+statsby _b _se n=(e(N)), by(countrycode lngdp_pc) clear: areg dlnp brw dlnp_lag dlnrgdp, a(HS6) vce(cluster HS2)
 save BACI\BACI_imp_HS6_coef_control,replace
 restore
 
@@ -101,7 +125,7 @@ use BACI\BACI_imp_HS6_coef_raw,clear
 scatter _b_brw lngdp_pc, mlabel(countrycode) xtitle(Log GDP per capita) ytitle(Coefficients of price response) yline(0) yscale(r(0 0.6))
 graph export figures\Other-imp_ctr_30_raw.png, as(png) replace
 
-twoway (hist _b_brw, width(0.2) start(-0.2) frequency legend(off)) (scatteri 0 0 20 0, recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.209 20 0.209, recast(line) lcolor(red) lpattern(solid) text(20 0.21 "US, 0.209", color(red) place(e)size(5)))
+twoway (hist _b_brw, width(0.1) start(-0.2) frequency legend(off)) (scatteri 0 0 20 0, recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.209 20 0.209, recast(line) lcolor(red) lpattern(solid) text(20 0.21 "US, 0.209", color(red) place(e)size(5)))
 graph export figures\Other-imp_ctr_30_raw_hist.png, as(png) replace
 
 cd "D:\Project E"
@@ -109,5 +133,5 @@ use BACI\BACI_imp_HS6_coef_control,clear
 
 replace _b_brw=0.5 if _b_brw>0.5
 
-twoway (hist _b_brw, width(0.2) start(-0.2) frequency legend(off)) (scatteri 0 0 20 0, recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.268 20 0.268, recast(line) lcolor(red) lpattern(solid) text(20 0.27 "US, 0.268", color(red) place(e)  size(5)))
+twoway (hist _b_brw, width(0.1) start(-0.1) frequency legend(off)) (scatteri 0 0 20 0, recast(line) lcolor(blue) lpattern(dash)) (scatteri 0 0.268 20 0.268, recast(line) lcolor(red) lpattern(solid) text(20 0.27 "US, 0.268", color(red) place(e)  size(5)))
 graph export figures\Other-imp_ctr_30_control_hist.png, as(png) replace

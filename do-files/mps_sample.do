@@ -977,3 +977,22 @@ gen lnMarkup=ln(Markup_DLWTLD)
 by firm_id: gen dlnMC_YoY=dlnprice_YoY-S12.lnMarkup
 winsor2 dlnprice_YoY dlnprice_MoM dlnprice_RMB_YoY dlnMC_YoY dlnvalue_YoY, trim replace
 save samples\sample_monthly_exp_firm,replace
+
+cd "D:\Project E"
+use customs_matched\customs_monthly_exp_firm,clear
+keep if month==11
+* merge with CIE data
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
+* add monetary policy shocks
+merge m:1 year using MPS\brw\adjust\brw_12_11,nogen keep(matched)
+replace brw_12_11=0 if brw_12_11==.
+merge n:1 year month using ER\NER_US_month,nogen keep(matched)
+* construct firm id
+egen firm_id=group(FRDM)
+xtset firm_id year
+drop month time
+* drop outliers
+winsor2 dlnprice_YoY, replace trim
+save samples\sample_monthly_exp_firm_nov,replace

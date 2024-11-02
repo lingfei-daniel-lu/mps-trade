@@ -7,14 +7,10 @@ append using dta\BACI_HS96_Y`i'_V202401b
 drop if q==. | q==0
 collapse (sum) v q, by(i k t)
 gen p=v/q
-save BACI_96_22_exp_HS6,replace
-
-cd "D:\Project E"
-use BACI\BACI_96_22_exp_HS6,clear
 sort i k t
 by i k: gen dlnp= ln(p)-ln(p[_n-1]) if t==t[_n-1]+1
 winsor2 dlnp, trim replace
-save BACI\BACI_96_22_exp_HS6_price,replace
+save BACI_96_22_exp_HS6_price,replace
 
 cd "D:\Project E"
 use BACI\BACI_96_22_exp_HS6_price,clear
