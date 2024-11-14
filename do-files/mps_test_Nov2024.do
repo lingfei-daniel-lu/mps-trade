@@ -53,15 +53,10 @@ eststo ToUS_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster 
 eststo ToUS_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 cd "D:\Project E"
-use samples\sample_monthly_exp_firm_US,clear
-keep if month==11
-drop month time
-merge m:1 year using MPS\brw\adjust\brw_12_11,nogen keep(matched) keepus(brw_12_11)
-replace brw_12_11=0 if brw_12_11==.
-xtset firm_id year
+use samples\sample_matched_exp_firm_US,clear
 
-eststo ToUS_annual_1: reghdfe dlnprice_YoY brw_12_11 dlnNER_US, a(firm_id) vce(cluster firm_id year) 
-eststo ToUS_annual_2: reghdfe dlnprice_YoY brw_12_11 l.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo ToUS_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id year) 
+eststo ToUS_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
 
 esttab ToUS_* using tables\tables_Nov2024\baseline_spillback.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
@@ -74,15 +69,10 @@ eststo baseline_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(clus
 eststo baseline_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 cd "D:\Project E"
-use samples\sample_monthly_exp_firm,clear
-keep if month==11
-drop month time
-merge m:1 year using MPS\brw\adjust\brw_12_11,nogen keep(matched) keepus(brw_12_11)
-replace brw_12_11=0 if brw_12_11==.
-xtset firm_id year
+use samples\sample_matched_exp_firm,clear
 
-eststo baseline_annual_1: reghdfe dlnprice_YoY brw_12_11 dlnNER_US, a(firm_id) vce(cluster firm_id year) 
-eststo baseline_annual_2: reghdfe dlnprice_YoY brw_12_11 l.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo baseline_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo baseline_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm_nonUS,clear
@@ -91,15 +81,12 @@ eststo NonUS_month_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster
 eststo NonUS_month_2: reghdfe dlnprice_YoY brw l12.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id time)
 
 cd "D:\Project E"
-use samples\sample_monthly_exp_firm_nonUS,clear
-keep if month==11
-drop month time
-merge m:1 year using MPS\brw\adjust\brw_12_11,nogen keep(matched) keepus(brw_12_11)
-replace brw_12_11=0 if brw_12_11==.
-xtset firm_id year
+use samples\sample_matched_exp_firm_nonUS,clear
 
-eststo nonUS_annual_1: reghdfe dlnprice_YoY brw_12_11 dlnNER_US, a(firm_id) vce(cluster firm_id year) 
-eststo nonUS_annual_2: reghdfe dlnprice_YoY brw_12_11 l.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo NonUS_annual_1: reghdfe dlnprice brw dlnNER_US, a(firm_id) vce(cluster firm_id year)
+eststo NonUS_annual_2: reghdfe dlnprice brw l.lnrSI l.dlnprice dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+esttab NonUS_* baseline_* using tables\tables_Nov2024\baseline_spillover.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
 
 *-------------------------------------------------------------------------------
 
@@ -394,7 +381,50 @@ esttab app1_* app2_* using tables\tables_Nov2024\approximate.csv, replace b(3) s
 
 *-------------------------------------------------------------------------------
 
-* B6. RMB price
+* B6. End-of-year price change
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_US,clear
+keep if month==12 | (month==11 & year==2005)
+replace dlnprice_YoY=dlnprice_YoY_app1 if year==2006
+drop month time brw dlnNER_US
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
+xtset firm_id year
+
+eststo ToUS_EoY_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id year) 
+eststo ToUS_EoY_2: reghdfe dlnprice_YoY brw l.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm,clear
+keep if month==12 | (month==11 & year==2005)
+replace dlnprice_YoY=dlnprice_YoY_app1 if year==2006
+drop month time brw dlnNER_US
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
+xtset firm_id year
+
+eststo baseline_EoY_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id year) 
+eststo baseline_EoY_2: reghdfe dlnprice_YoY brw l.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+cd "D:\Project E"
+use samples\sample_monthly_exp_firm_nonUS,clear
+keep if month==12 | (month==11 & year==2005)
+replace dlnprice_YoY=dlnprice_YoY_app1 if year==2006
+drop month time brw dlnNER_US
+merge m:1 year using MPS\brw\brw_94_22,nogen keep(matched)
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
+xtset firm_id year
+
+eststo nonUS_EoY_1: reghdfe dlnprice_YoY brw dlnNER_US, a(firm_id) vce(cluster firm_id year) 
+eststo nonUS_EoY_2: reghdfe dlnprice_YoY brw l.lnrSI l.dlnprice_YoY dlnNER_US, a(firm_id) vce(cluster firm_id year)
+
+estfe *_EoY_*, labels(firm_id "Firm FE")
+esttab *_EoY_* using tables\tables_Nov2024\EoY.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate(`r(indicate_fe)') compress nogaps
+
+*-------------------------------------------------------------------------------
+
+* B7. RMB price
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -415,7 +445,7 @@ esttab RMB_* using tables\tables_Nov2024\RMB.csv, replace b(3) se(3) noconstant 
 
 *-------------------------------------------------------------------------------
 
-* B7. Single product firm
+* B8. Single product firm
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -438,7 +468,7 @@ esttab single_* using tables\tables_Nov2024\single.csv, replace b(3) se(3) nocon
 
 *-------------------------------------------------------------------------------
 
-* B8. Ownership type
+* B9. Ownership type
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -473,7 +503,7 @@ esttab annual_SOE_* annual_DPE_* annual_MNE_* annual_JV_* using tables\tables_No
 
 *-------------------------------------------------------------------------------
 
-* B9. Two-way traders
+* B10. Two-way traders
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -509,7 +539,7 @@ esttab annual_twoway_* annual_oneway_* using tables\tables_Nov2024\twoway_trade_
 
 *-------------------------------------------------------------------------------
 
-* B10. Alternative FE and cluster
+* B11. Alternative FE and cluster
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -540,7 +570,7 @@ eststo annual_cluster_4: reghdfe dlnprice brw l1.lnrSI l.dlnprice dlnNER_US, a(f
 
 *-------------------------------------------------------------------------------
 
-* B11. Additional control variables
+* B12. Additional control variables
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear
@@ -573,7 +603,7 @@ esttab control_* using tables\tables_Nov2024\control_new.csv, replace b(3) se(3)
 
 *-------------------------------------------------------------------------------
 
-* A?. Arrelleno-Bond estimation and Arellano-Bover/Blundell-Bond system estimation
+* B13. Arrelleno-Bond estimation and Arellano-Bover/Blundell-Bond system estimation
 
 * Difference GMM and System GMM
 
@@ -599,7 +629,7 @@ esttab ab_monthly_* ab_annual_* sys_monthly_* sys_annual_* using tables\tables_N
 
 *-------------------------------------------------------------------------------
 
-* FA1. Country heterogeneity
+*. Country heterogeneity
 
 cd "D:\Project E"
 use samples\sample_monthly_exp,clear
@@ -628,7 +658,7 @@ twoway (bar _b_brw rank_exp, horizontal) (rcap lower_bound upper_bound rank_exp,
 
 *-------------------------------------------------------------------------------
 
-* FA?. Monte Carlo permutation tests
+*. Monte Carlo permutation tests
 
 cd "D:\Project E"
 use samples\sample_monthly_exp_firm,clear

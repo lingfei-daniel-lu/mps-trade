@@ -986,8 +986,8 @@ merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_ci
 merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
 merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
 * add monetary policy shocks
-merge m:1 year using MPS\brw\adjust\brw_12_11,nogen keep(matched)
-replace brw_12_11=0 if brw_12_11==.
+merge m:1 year using MPS\brw\adjust\brw_11,nogen keep(matched)
+replace brw_11=0 if brw_11==.
 merge n:1 year month using ER\NER_US_month,nogen keep(matched)
 * construct firm id
 egen firm_id=group(FRDM)
@@ -996,3 +996,22 @@ drop month time
 * drop outliers
 winsor2 dlnprice_YoY, replace trim
 save samples\sample_monthly_exp_firm_nov,replace
+
+cd "D:\Project E"
+use customs_matched\customs_monthly_exp_firm,clear
+keep if month==1
+* merge with CIE data
+merge n:1 FRDM year using CIE\cie_credit_v2,nogen keep(matched) keepus(cic2 *_cic2 *oS ln* ownership affiliate)
+merge n:1 FRDM year using CIE\cie_int,nogen keep(matched) keepus(*_int)
+merge n:1 FRDM year using CIE\cie_markup,nogen keep(matched) keepus(Markup_DLWTLD)
+* add monetary policy shocks
+merge m:1 year using MPS\brw\adjust\brw_1,nogen keep(matched)
+replace brw_1=0 if brw_1==.
+merge n:1 year using ER\US_NER_99_19,nogen keep(matched)
+* construct firm id
+egen firm_id=group(FRDM)
+xtset firm_id year
+drop month time
+* drop outliers
+winsor2 dlnprice_YoY, replace trim
+save samples\sample_monthly_exp_firm_jan,replace
