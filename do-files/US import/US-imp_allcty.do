@@ -103,9 +103,9 @@ esttab US_c_* using tables\tables_Sep2024\US_import_all_c.csv, replace b(3) se(3
 cd "D:\Project E"
 use samples\US_import\HS6_imp_all_sample,clear
 
-binscatter dlnprice brw, xtitle("Monetary policy shocks") ytitle("{&Delta} log price") savegraph("D:\Project E\figures\US_HS6_imp_brw_raw.png") replace nq(30) text(0.03 -0.2 "{&beta}=0.132", color(red) place(e) size(6))
+binscatter dlnprice brw, xtitle("Monetary policy shocks") ytitle("{&Delta} log price") savegraph("D:\Project E\figures\US_HS6_imp_brw_raw.png") replace nq(30) text(0.1 0.1 "{&beta}=0.132", place(e) size(6))
 
-binscatter dlnprice brw, control(dlnGDP dlndollar l.dlnprice) xtitle("Monetary policy shocks") ytitle("{&Delta} log price") savegraph("D:\Project E\figures\US_HS6_imp_brw_control.png") replace nq(30) text(0.05 -0.1 "{&beta}=0.098", color(red) place(e) size(6))
+binscatter dlnprice brw, control(dlnGDP dlndollar l.dlnprice) xtitle("Monetary policy shocks") ytitle("{&Delta} log price") savegraph("D:\Project E\figures\US_HS6_imp_brw_control.png") replace nq(30) text(0.1 0.1 "{&beta}=0.098", place(e) size(6))
 
 import excel MPS\FFR\RIFSPFFNA.xls, sheet("FRED Graph") cellrange(A11:B80) firstrow clear
 gen year=year(observation_date)
